@@ -1,0 +1,6 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/api/callback", "destination": "/api/callback.js" }
+  ]
+}
