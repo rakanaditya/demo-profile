@@ -1,923 +1,216 @@
 <!DOCTYPE html>
-<html lang="id" class="dark">
+<html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Discord Profile Viewer & OAuth Simulator</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: GG Sans / Whitney alternative -->
-    <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        discord: {
-                            blurple: '#5865F2',
-                            green: '#23A55A',
-                            yellow: '#F0B232',
-                            red: '#F23F43',
-                            gray: '#80848E',
-                            dark: '#313338',
-                            darker: '#2B2D31',
-                            darkest: '#1E1F22',
-                            card: '#111214',
-                            hover: '#35373C',
-                            text: '#DBDEE1',
-                            muted: '#949BA4'
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Golos Text', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace']
-                    }
-                }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Discord Profile Viewer</title>
+
+  <!-- Konfigurasi Tailwind & Penyembunyi Warning CDN -->
+  <script>
+    tailwind = {
+      config: {
+        theme: {
+          extend: {
+            colors: {
+              discord: {
+                bg: '#313338',
+                card: '#2b2d31',
+                inner: '#1e1f22',
+                accent: '#5865f2',
+                hover: '#4752c4',
+                green: '#23a55a'
+              }
             }
+          }
         }
-    </script>
-    <style>
-        /* Custom Scrollbar Discord Style */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #2b2d31;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #1a1b1e;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #111214;
-        }
-        .discord-tooltip {
-            visibility: hidden;
-            opacity: 0;
-            transition: opacity 0.2s ease, transform 0.2s ease;
-        }
-        .has-tooltip:hover .discord-tooltip {
-            visibility: visible;
-            opacity: 1;
-        }
-        .badge-glow:hover {
-            filter: drop-shadow(0 0 6px rgba(88, 101, 242, 0.6));
-        }
-    </style>
-</head>
-<body class="bg-discord-darkest text-discord-text font-sans antialiased min-h-screen flex flex-col selection:bg-discord-blurple selection:text-white">
-
-    <!-- Toast Notification Container -->
-    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
-
-    <!-- Navigation Header -->
-    <header class="bg-discord-darker border-b border-discord-darkest px-4 py-3 sticky top-0 z-30 flex justify-between items-center shadow-md">
-        <div class="flex items-center space-x-3">
-            <div class="bg-discord-blurple text-white p-2 rounded-xl flex items-center justify-center shadow-lg shadow-discord-blurple/20">
-                <i class="fa-brands fa-discord text-xl"></i>
-            </div>
-            <div>
-                <h1 class="font-bold text-white text-base leading-tight flex items-center gap-2">
-                    Discord Profile Viewer
-                    <span class="bg-discord-blurple/20 text-discord-blurple text-xs font-semibold px-2 py-0.5 rounded-full border border-discord-blurple/30">v2.5</span>
-                </h1>
-                <p class="text-xs text-discord-muted">Simulator OAuth2 & Profile Viewer</p>
-            </div>
-        </div>
-
-        <div class="flex items-center space-x-2">
-            <button onclick="switchTab('guide')" class="px-3 py-1.5 bg-discord-dark hover:bg-discord-hover text-discord-text text-sm font-medium rounded-md transition flex items-center gap-2 border border-white/5">
-                <i class="fa-solid fa-code text-discord-blurple"></i>
-                <span class="hidden sm:inline">Panduan OAuth Vercel</span>
-            </button>
-            <div id="nav-user-actions" class="hidden flex items-center space-x-2">
-                <button onclick="logout()" class="px-3 py-1.5 bg-discord-red/10 hover:bg-discord-red/20 text-discord-red text-sm font-medium rounded-md transition flex items-center gap-1.5 border border-discord-red/20">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                    <span>Keluar</span>
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Content Container -->
-    <main class="flex-1 max-w-6xl w-full mx-auto p-3 sm:p-6 flex flex-col justify-center">
-
-        <!-- SECTION 1: LANDING / LOGIN PAGE (Default when logged out) -->
-        <section id="view-landing" class="py-8 my-auto">
-            <div class="max-w-3xl mx-auto text-center space-y-8">
-                <!-- Hero Badge -->
-                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-discord-blurple/10 border border-discord-blurple/30 text-discord-blurple text-xs font-semibold">
-                    <i class="fa-solid fa-bolt"></i> Siap Pakai di Vercel & GitHub Pages
-                </div>
-
-                <!-- Hero Heading -->
-                <div class="space-y-3">
-                    <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
-                        Simulasi & Viewer Profil <span class="text-discord-blurple">Discord Resmi</span>
-                    </h2>
-                    <p class="text-discord-muted text-base sm:text-lg max-w-2xl mx-auto">
-                        Lihat tampilan profil Discord beserta badge, avatar HD, banner, dan JSON response API. Dilengkapi simulasi mode offline dan panduan integrasi OAuth2 Vercel.
-                    </p>
-                </div>
-
-                <!-- Action Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left pt-4">
-                    <!-- Real OAuth Login Card -->
-                    <div class="bg-discord-darker p-6 rounded-2xl border border-white/5 flex flex-col justify-between hover:border-discord-blurple/40 transition relative overflow-hidden group">
-                        <div class="absolute -right-6 -bottom-6 text-discord-blurple/5 group-hover:text-discord-blurple/10 transition text-9xl">
-                            <i class="fa-brands fa-discord"></i>
-                        </div>
-                        <div class="relative z-10 space-y-3">
-                            <div class="w-10 h-10 rounded-xl bg-discord-blurple/20 text-discord-blurple flex items-center justify-center font-bold">
-                                <i class="fa-solid fa-key"></i>
-                            </div>
-                            <h3 class="text-xl font-bold text-white">OAuth2 Real Discord</h3>
-                            <p class="text-discord-muted text-sm">
-                                Membutuhkan Client ID, Client Secret, dan Redirect URI yang sudah dikonfigurasi di Vercel Environment variables.
-                            </p>
-                        </div>
-                        <div class="relative z-10 pt-6">
-                            <button onclick="handleRealDiscordLogin()" class="w-full py-3 px-4 bg-discord-blurple hover:bg-discord-blurple/90 text-white font-semibold rounded-lg shadow-lg shadow-discord-blurple/30 transition flex items-center justify-center gap-2">
-                                <i class="fa-brands fa-discord text-lg"></i>
-                                Login dengan Discord
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Demo Login Card -->
-                    <div class="bg-discord-darker p-6 rounded-2xl border border-white/5 flex flex-col justify-between hover:border-discord-green/40 transition relative overflow-hidden group">
-                        <div class="absolute -right-6 -bottom-6 text-discord-green/5 group-hover:text-discord-green/10 transition text-9xl">
-                            <i class="fa-solid fa-user-check"></i>
-                        </div>
-                        <div class="relative z-10 space-y-3">
-                            <div class="w-10 h-10 rounded-xl bg-discord-green/20 text-discord-green flex items-center justify-center font-bold">
-                                <i class="fa-solid fa-flask"></i>
-                            </div>
-                            <h3 class="text-xl font-bold text-white">Mode Demo Instant</h3>
-                            <p class="text-discord-muted text-sm">
-                                Langsung coba aplikasi tanpa perlu membuat aplikasi di Discord Developer Portal. Dilengkapi preset profil populer.
-                            </p>
-                        </div>
-                        <div class="relative z-10 pt-6">
-                            <button onclick="loadDemoProfile('developer')" class="w-full py-3 px-4 bg-discord-green hover:bg-discord-green/90 text-white font-semibold rounded-lg shadow-lg shadow-discord-green/30 transition flex items-center justify-center gap-2">
-                                <i class="fa-solid fa-play"></i>
-                                Masuk Mode Demo
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Quick Presets Demo Selector -->
-                <div class="pt-4 border-t border-discord-darker flex flex-wrap items-center justify-center gap-2 text-sm text-discord-muted">
-                    <span>Atau pilih preset demo:</span>
-                    <button onclick="loadDemoProfile('developer')" class="px-2.5 py-1 rounded bg-discord-dark hover:bg-discord-hover text-white text-xs border border-white/5 transition">
-                        👨‍💻 Active Developer
-                    </button>
-                    <button onclick="loadDemoProfile('nitro')" class="px-2.5 py-1 rounded bg-discord-dark hover:bg-discord-hover text-white text-xs border border-white/5 transition">
-                        💎 Nitro Early Supporter
-                    </button>
-                    <button onclick="loadDemoProfile('hypesquad')" class="px-2.5 py-1 rounded bg-discord-dark hover:bg-discord-hover text-white text-xs border border-white/5 transition">
-                        ⚡ HypeSquad Bravery
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- SECTION 2: DASHBOARD / PROFILE VIEW -->
-        <section id="view-dashboard" class="hidden space-y-6">
-            
-            <!-- Tab Navigation Bar -->
-            <div class="flex items-center justify-between border-b border-discord-darker pb-2">
-                <div class="flex space-x-1 sm:space-x-2 overflow-x-auto">
-                    <button onclick="switchTab('profile')" id="tab-btn-profile" class="tab-btn active px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 bg-discord-dark text-white">
-                        <i class="fa-solid fa-user"></i>
-                        <span>Profil Utama</span>
-                    </button>
-                    <button onclick="switchTab('servers')" id="tab-btn-servers" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 text-discord-muted hover:bg-discord-dark/50 hover:text-white">
-                        <i class="fa-solid fa-server"></i>
-                        <span>Server List (<span id="server-count">0</span>)</span>
-                    </button>
-                    <button onclick="switchTab('json')" id="tab-btn-json" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 text-discord-muted hover:bg-discord-dark/50 hover:text-white">
-                        <i class="fa-solid fa-code"></i>
-                        <span>Raw Payload JSON</span>
-                    </button>
-                </div>
-
-                <!-- Status Indicator Badge -->
-                <div id="auth-status-badge" class="hidden sm:flex items-center gap-2 text-xs bg-discord-darker px-3 py-1.5 rounded-full border border-white/5">
-                    <span class="w-2 h-2 rounded-full bg-discord-green animate-pulse"></span>
-                    <span class="text-discord-muted" id="status-source-text">Mode Demo Active</span>
-                </div>
-            </div>
-
-            <!-- TAB CONTENT 1: PROFILE MAIN CARD -->
-            <div id="tab-content-profile" class="tab-content grid grid-cols-1 lg:grid-cols-12 gap-6">
-                
-                <!-- Left/Center: Discord Card Visual -->
-                <div class="lg:col-span-7 flex justify-center">
-                    <div class="w-full max-w-md bg-discord-card rounded-2xl overflow-hidden shadow-2xl border border-white/5 relative">
-                        
-                        <!-- Banner Header -->
-                        <div id="profile-banner" class="h-32 sm:h-36 w-full bg-discord-blurple relative bg-cover bg-center transition-all duration-300">
-                            <!-- Custom Banner Color/Image Overlay -->
-                            <div class="absolute inset-0 bg-black/10"></div>
-                            <!-- Nitro Badge on Banner (if applicable) -->
-                            <div class="absolute top-3 right-3 bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full text-xs font-semibold text-white flex items-center gap-1.5 border border-white/10">
-                                <i class="fa-solid fa-wand-magic-sparkles text-discord-yellow"></i>
-                                <span>Profil Disertifikasi</span>
-                            </div>
-                        </div>
-
-                        <!-- Avatar & Badges Header Section -->
-                        <div class="px-5 pt-0 pb-4 relative">
-                            <!-- Avatar Container -->
-                            <div class="flex justify-between items-end -mt-16 sm:-mt-20 mb-3">
-                                <div class="relative group cursor-pointer" onclick="openAvatarModal()">
-                                    <!-- Avatar Image -->
-                                    <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-full ring-8 ring-discord-card overflow-hidden bg-discord-darker relative">
-                                        <img id="profile-avatar" src="" alt="Avatar" class="w-full h-full object-cover transition duration-300 group-hover:opacity-80">
-                                        <!-- Hover Eye Overlay -->
-                                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-white">
-                                            <i class="fa-solid fa-magnifying-glass-plus text-xl"></i>
-                                        </div>
-                                    </div>
-                                    <!-- Status Indicator Dot -->
-                                    <div id="profile-status-dot" class="absolute bottom-1 right-1 w-6 h-6 rounded-full ring-4 ring-discord-card bg-discord-green flex items-center justify-center" title="Online">
-                                        <!-- Inner dot icon rendered by JS -->
-                                    </div>
-                                </div>
-
-                                <!-- Badges Container -->
-                                <div id="profile-badges" class="bg-discord-darker/90 backdrop-blur-sm p-1.5 rounded-xl border border-white/5 flex items-center gap-2 flex-wrap max-w-[180px] justify-end">
-                                    <!-- Dynamic Badges Inserted Here -->
-                                </div>
-                            </div>
-
-                            <!-- Name & User Tag -->
-                            <div class="space-y-1 border-b border-discord-darker pb-4">
-                                <h3 id="profile-display-name" class="text-xl sm:text-2xl font-extrabold text-white leading-snug">
-                                    Display Name
-                                </h3>
-                                <div class="flex items-center gap-2">
-                                    <span id="profile-username" class="text-discord-text font-medium text-sm">@username</span>
-                                    <span class="text-discord-muted text-xs">•</span>
-                                    <span id="profile-pronouns" class="text-discord-muted text-xs bg-discord-darker px-2 py-0.5 rounded">he/him</span>
-                                </div>
-                            </div>
-
-                            <!-- Custom Status Quote -->
-                            <div class="py-3 border-b border-discord-darker flex items-center gap-2.5 text-sm text-discord-text">
-                                <span id="profile-status-emoji" class="text-base">💬</span>
-                                <span id="profile-status-text" class="truncate font-normal italic text-discord-muted">Sedang ngoding Discord OAuth2 Bot...</span>
-                            </div>
-
-                            <!-- About Me / Bio -->
-                            <div class="py-3 border-b border-discord-darker space-y-1.5">
-                                <h4 class="text-xs font-bold text-discord-muted uppercase tracking-wider">Mengenai Saya</h4>
-                                <p id="profile-bio" class="text-sm text-discord-text whitespace-pre-line leading-relaxed">
-                                    Fullstack Web Developer & Bot Creator. Suka bereksperimen dengan API Discord, Vercel Serverless, dan TailwindCSS.
-                                </p>
-                            </div>
-
-                            <!-- Member Since & Created Date -->
-                            <div class="py-3 border-b border-discord-darker space-y-2">
-                                <h4 class="text-xs font-bold text-discord-muted uppercase tracking-wider">Anggota Discord Sejak</h4>
-                                <div class="flex items-center gap-2 text-xs text-discord-text">
-                                    <i class="fa-solid fa-discord text-discord-blurple"></i>
-                                    <span id="profile-created-at">24 Oktober 2018</span>
-                                </div>
-                            </div>
-
-                            <!-- Connections Simulation -->
-                            <div class="pt-3 space-y-2">
-                                <h4 class="text-xs font-bold text-discord-muted uppercase tracking-wider">Koneksi Terhubung</h4>
-                                <div id="profile-connections" class="flex flex-wrap gap-2">
-                                    <div class="flex items-center gap-2 bg-discord-darker px-2.5 py-1.5 rounded-lg border border-white/5 text-xs">
-                                        <i class="fa-brands fa-github text-white"></i>
-                                        <span class="text-discord-text font-medium">github_user</span>
-                                    </div>
-                                    <div class="flex items-center gap-2 bg-discord-darker px-2.5 py-1.5 rounded-lg border border-white/5 text-xs">
-                                        <i class="fa-brands fa-spotify text-discord-green"></i>
-                                        <span class="text-discord-text font-medium">Spotify Connected</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Right: Account Details & Control Panel -->
-                <div class="lg:col-span-5 space-y-4">
-                    
-                    <!-- Quick Specs Card -->
-                    <div class="bg-discord-darker p-5 rounded-2xl border border-white/5 space-y-4">
-                        <h3 class="text-base font-bold text-white flex items-center gap-2">
-                            <i class="fa-solid fa-id-card text-discord-blurple"></i>
-                            Detail Akun & Privasi
-                        </h3>
-
-                        <div class="space-y-3 text-sm">
-                            <!-- User ID -->
-                            <div class="bg-discord-dark p-3 rounded-xl flex items-center justify-between border border-white/5">
-                                <div>
-                                    <div class="text-xs text-discord-muted">Discord User ID</div>
-                                    <div id="info-user-id" class="font-mono text-white text-xs sm:text-sm">987654321012345678</div>
-                                </div>
-                                <button onclick="copyToClipboard(document.getElementById('info-user-id').innerText, 'ID disalin!')" class="p-2 hover:bg-discord-hover rounded-lg text-discord-muted hover:text-white transition" title="Copy ID">
-                                    <i class="fa-regular fa-copy"></i>
-                                </button>
-                            </div>
-
-                            <!-- Email with Privacy Toggle -->
-                            <div class="bg-discord-dark p-3 rounded-xl flex items-center justify-between border border-white/5">
-                                <div>
-                                    <div class="text-xs text-discord-muted">Email Terdaftar</div>
-                                    <div id="info-email" class="font-mono text-white text-xs sm:text-sm">••••••••@gmail.com</div>
-                                </div>
-                                <button onclick="toggleEmailPrivacy()" id="btn-toggle-email" class="p-2 hover:bg-discord-hover rounded-lg text-discord-muted hover:text-white transition" title="Sembunyikan/Tampilkan Email">
-                                    <i class="fa-solid fa-eye-slash"></i>
-                                </button>
-                            </div>
-
-                            <!-- MFA/2FA Status -->
-                            <div class="bg-discord-dark p-3 rounded-xl flex items-center justify-between border border-white/5">
-                                <div>
-                                    <div class="text-xs text-discord-muted">Otentikasi Dua-Faktor (2FA)</div>
-                                    <div id="info-mfa" class="text-discord-green font-semibold text-xs flex items-center gap-1.5 mt-0.5">
-                                        <i class="fa-solid fa-shield-halved"></i>
-                                        Aktif & Terproteksi
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Status Selector Controls (Simulate Changing Status) -->
-                    <div class="bg-discord-darker p-5 rounded-2xl border border-white/5 space-y-3">
-                        <h3 class="text-base font-bold text-white flex items-center gap-2">
-                            <i class="fa-solid fa-sliders text-discord-yellow"></i>
-                            Simulasi Status Presence
-                        </h3>
-                        <p class="text-xs text-discord-muted">Ubah status indikator profil di atas secara real-time:</p>
-                        
-                        <div class="grid grid-cols-2 gap-2">
-                            <button onclick="changeStatus('online')" class="p-2.5 bg-discord-dark hover:bg-discord-hover rounded-xl flex items-center gap-2 text-xs font-medium border border-white/5 text-white">
-                                <span class="w-3 h-3 rounded-full bg-discord-green"></span> Online
-                            </button>
-                            <button onclick="changeStatus('idle')" class="p-2.5 bg-discord-dark hover:bg-discord-hover rounded-xl flex items-center gap-2 text-xs font-medium border border-white/5 text-white">
-                                <span class="w-3 h-3 rounded-full bg-discord-yellow"></span> Idle / AFK
-                            </button>
-                            <button onclick="changeStatus('dnd')" class="p-2.5 bg-discord-dark hover:bg-discord-hover rounded-xl flex items-center gap-2 text-xs font-medium border border-white/5 text-white">
-                                <span class="w-3 h-3 rounded-full bg-discord-red"></span> Do Not Disturb
-                            </button>
-                            <button onclick="changeStatus('offline')" class="p-2.5 bg-discord-dark hover:bg-discord-hover rounded-xl flex items-center gap-2 text-xs font-medium border border-white/5 text-white">
-                                <span class="w-3 h-3 rounded-full bg-discord-gray"></span> Invisible
-                            </button>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <!-- TAB CONTENT 2: SERVERS LIST -->
-            <div id="tab-content-servers" class="tab-content hidden">
-                <div class="bg-discord-darker p-6 rounded-2xl border border-white/5 space-y-4">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h3 class="text-lg font-bold text-white">Daftar Server / Guild (OAuth Scope: guilds)</h3>
-                            <p class="text-xs text-discord-muted">Daftar komunitas tempat akun ini terdaftar.</p>
-                        </div>
-                    </div>
-
-                    <div id="servers-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
-                        <!-- Server cards dynamically rendered -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB CONTENT 3: JSON VIEWER -->
-            <div id="tab-content-json" class="tab-content hidden">
-                <div class="bg-discord-darker p-6 rounded-2xl border border-white/5 space-y-4">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h3 class="text-lg font-bold text-white">Payload Data Mentah dari API Discord</h3>
-                            <p class="text-xs text-discord-muted">Respon JSON resmi dari endpoint <code class="bg-black/40 px-1.5 py-0.5 rounded text-discord-blurple">https://discord.com/api/users/@me</code></p>
-                        </div>
-                        <button onclick="copyToClipboard(document.getElementById('json-display').innerText, 'JSON Payload disalin!')" class="px-3 py-1.5 bg-discord-blurple hover:bg-discord-blurple/90 text-white text-xs font-medium rounded-lg transition flex items-center gap-1.5">
-                            <i class="fa-regular fa-copy"></i>
-                            Copy JSON
-                        </button>
-                    </div>
-
-                    <pre class="bg-discord-darkest p-4 rounded-xl border border-white/5 font-mono text-xs text-discord-text overflow-x-auto max-h-[500px]" id="json-display">
-                        <!-- JSON stringified content -->
-                    </pre>
-                </div>
-            </div>
-
-        </section>
-
-        <!-- SECTION 3: VERCEL & GITHUB SETUP GUIDE -->
-        <section id="view-guide" class="hidden space-y-6">
-            <div class="bg-discord-darker p-6 sm:p-8 rounded-2xl border border-white/5 space-y-6 max-w-4xl mx-auto">
-                
-                <div class="border-b border-discord-darker pb-4 flex items-center justify-between">
-                    <div>
-                        <h2 class="text-2xl font-extrabold text-white flex items-center gap-2">
-                            <i class="fa-solid fa-gear text-discord-blurple"></i>
-                            Panduan Integration Vercel & GitHub Environment
-                        </h2>
-                        <p class="text-sm text-discord-muted">Langkah lengkap menghubungkan Discord OAuth2 ke backend Vercel tanpa bocor credentials.</p>
-                    </div>
-                    <button onclick="switchTab('landing')" class="text-xs bg-discord-dark hover:bg-discord-hover text-white px-3 py-1.5 rounded-lg border border-white/5">
-                        <i class="fa-solid fa-arrow-left mr-1"></i> Kembali
-                    </button>
-                </div>
-
-                <!-- Step 1: Discord Dev Portal -->
-                <div class="space-y-3">
-                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
-                        <span class="w-6 h-6 rounded-full bg-discord-blurple text-white text-xs flex items-center justify-center font-bold">1</span>
-                        Buat Aplikasi di Discord Developer Portal
-                    </h3>
-                    <ol class="list-disc list-inside text-sm text-discord-text space-y-2 pl-2">
-                        <li>Buka <a href="https://discord.com/developers/applications" target="_blank" class="text-discord-blurple underline hover:text-white">Discord Developer Portal</a> dan login.</li>
-                        <li>Klik <strong>New Application</strong>, beri nama aplikasi Anda (misal: <code class="bg-black/40 px-1 text-discord-yellow">My Discord Profile Web</code>).</li>
-                        <li>Masuk ke tab <strong>OAuth2</strong> di menu sebelah kiri.</li>
-                        <li>Di bagian <strong>Redirects</strong>, tambahkan URI aplikasi Vercel Anda, misalnya:
-                            <div class="mt-1 font-mono text-xs bg-discord-darkest p-2 rounded border border-white/5 text-discord-green">
-                                https://nama-project-anda.vercel.app/api/auth/callback
-                            </div>
-                        </li>
-                        <li>Salin <strong>Client ID</strong> dan Reset/Salin <strong>Client Secret</strong> Anda.</li>
-                    </ol>
-                </div>
-
-                <!-- Step 2: Vercel Environment Variables -->
-                <div class="space-y-3">
-                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
-                        <span class="w-6 h-6 rounded-full bg-discord-blurple text-white text-xs flex items-center justify-center font-bold">2</span>
-                        Konfigurasi Environment Variables di Vercel
-                    </h3>
-                    <p class="text-sm text-discord-text">
-                        Masuk ke Dashboard Vercel &rarr; Pilih Project Anda &rarr; <strong>Settings</strong> &rarr; <strong>Environment Variables</strong>, lalu tambahkan 3 variabel berikut:
-                    </p>
-                    <div class="bg-discord-darkest p-4 rounded-xl border border-white/5 space-y-3 font-mono text-xs">
-                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
-                            <span class="text-discord-yellow font-bold">DISCORD_CLIENT_ID</span>
-                            <span class="text-discord-muted">Contoh: 1234567890123456789</span>
-                        </div>
-                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
-                            <span class="text-discord-yellow font-bold">DISCORD_CLIENT_SECRET</span>
-                            <span class="text-discord-muted">Contoh: AbCdEfGhIjKlMnOpQrStUvWxYz123456</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-discord-yellow font-bold">DISCORD_REDIRECT_URI</span>
-                            <span class="text-discord-muted">Contoh: https://nama-app.vercel.app/api/auth/callback</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Step 3: Backend API Code Example -->
-                <div class="space-y-3">
-                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
-                        <span class="w-6 h-6 rounded-full bg-discord-blurple text-white text-xs flex items-center justify-center font-bold">3</span>
-                        Contoh Serverless Route (Vercel Node.js / Next.js)
-                    </h3>
-                    <p class="text-sm text-discord-text">
-                        Gunakan kode berikut di file <code class="bg-black/40 px-1 text-discord-blurple">/api/auth/callback.js</code> untuk pertukaran code dengan Token Discord:
-                    </p>
-                    <div class="relative">
-                        <button onclick="copyToClipboard(document.getElementById('code-snippet').innerText, 'Kode Backend disalin!')" class="absolute top-3 right-3 px-2.5 py-1 bg-discord-dark hover:bg-discord-hover text-white text-xs rounded border border-white/10">
-                            <i class="fa-regular fa-copy mr-1"></i> Copy Code
-                        </button>
-                        <pre class="bg-discord-darkest p-4 rounded-xl border border-white/5 font-mono text-xs text-discord-text overflow-x-auto" id="code-snippet">
-// api/auth/callback.js (Vercel Serverless Function)
-export default async function handler(req, res) {
-  const { code } = req.query;
-
-  if (!code) {
-    return res.status(400).json({ error: 'Missing code parameter' });
-  }
-
-  try {
-    // 1. Tukar auth code dengan access token
-    const tokenResponse = await fetch('https://discord.com/api/oauth2/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        client_id: process.env.DISCORD_CLIENT_ID,
-        client_secret: process.env.DISCORD_CLIENT_SECRET,
-        grant_type: 'authorization_code',
-        code: code,
-        redirect_uri: process.env.DISCORD_REDIRECT_URI,
-      }),
-    });
-
-    const tokenData = await tokenResponse.json();
-
-    if (!tokenData.access_token) {
-      return res.status(400).json({ error: 'Failed to retrieve access token', details: tokenData });
+      }
     }
 
-    // 2. Fetch User Profile dari Discord API resmi
-    const userResponse = await fetch('https://discord.com/api/users/@me', {
-      headers: {
-        authorization: `${tokenData.token_type} ${tokenData.access_token}`,
-      },
-    });
+    // Filter pesan warning Tailwind CDN di konsol
+    const originalWarn = console.warn;
+    console.warn = (...args) => {
+      if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) return;
+      originalWarn(...args);
+    };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
 
-    const userData = await userResponse.json();
+  <!-- Font & Icon -->
+  <link href="https://fonts.googleapis.com/css2?family=gg+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'gg Sans', 'Noto Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
 
-    // 3. Return user data ke frontend web Anda
-    res.status(200).json({ user: userData, token: tokenData });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
-                        </pre>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-    </main>
-
-    <!-- AVATAR PREVIEW MODAL (HD View & Download) -->
-    <div id="avatar-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-discord-darker p-6 rounded-2xl border border-white/10 max-w-sm w-full space-y-4 text-center relative shadow-2xl animate-in fade-in zoom-in duration-200">
-            <button onclick="closeAvatarModal()" class="absolute top-3 right-3 text-discord-muted hover:text-white p-2">
-                <i class="fa-solid fa-xmark text-lg"></i>
-            </button>
-            <h3 class="text-lg font-bold text-white">Preview Avatar HD</h3>
-            <div class="w-48 h-48 mx-auto rounded-full overflow-hidden ring-4 ring-discord-blurple shadow-xl">
-                <img id="modal-avatar-img" src="" alt="HD Avatar" class="w-full h-full object-cover">
-            </div>
-            <p id="modal-avatar-dim" class="text-xs text-discord-muted">Resolusi: 1024x1024 PNG</p>
-            <div class="flex gap-2 pt-2">
-                <a id="modal-download-btn" href="#" download="discord_avatar.png" target="_blank" class="flex-1 py-2 px-3 bg-discord-blurple hover:bg-discord-blurple/90 text-white text-xs font-semibold rounded-lg transition flex items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-download"></i> Download HD
-                </a>
-                <button onclick="copyAvatarUrl()" class="py-2 px-3 bg-discord-dark hover:bg-discord-hover text-white text-xs font-semibold rounded-lg transition border border-white/10">
-                    <i class="fa-regular fa-copy"></i> Copy URL
-                </button>
-            </div>
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-600/30">
+          <svg class="w-6 h-6 fill-white" viewBox="0 0 127.14 96.36">
+            <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.69,1.76,1.37,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1,105.25,105.25,0,0,0,32.19-16.14c2.64-27.38-4.51-51.11-18.91-72.15ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,45.92,53.87,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,45.92,96.1,53,91.08,65.69,84.69,65.69Z"/>
+          </svg>
         </div>
+        <div>
+          <h1 class="font-bold text-lg text-white leading-none">Discord Profile Viewer</h1>
+          <span class="text-xs text-slate-400">Simulator OAuth2 & Profile Viewer</span>
+        </div>
+      </div>
+      <span class="px-3 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full text-xs font-semibold">v2.5</span>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <main class="max-w-6xl mx-auto px-4 py-10 w-full flex-grow">
+    
+    <!-- Hero / Login Selector -->
+    <div id="auth-section" class="max-w-2xl mx-auto text-center space-y-6">
+      <div class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-slate-300 text-xs font-medium">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span>Siap Pakai di Vercel & GitHub Pages</span>
+      </div>
+      
+      <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+        Simulasi & Viewer Profil <br><span class="text-indigo-500">Discord Resmi</span>
+      </h2>
+      
+      <p class="text-slate-400 text-sm sm:text-base leading-relaxed">
+        Lihat tampilan profil Discord beserta badge, avatar HD, banner, dan JSON response API. 
+        Dilengkapi simulasi mode offline dan panduan integrasi OAuth2 Vercel.
+      </p>
+
+      <!-- Action Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left pt-4">
+        
+        <!-- Real OAuth Button -->
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col justify-between hover:border-indigo-500/50 transition">
+          <div class="space-y-2 mb-6">
+            <div class="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 0121 9z"></path>
+              </svg>
+            </div>
+            <h3 class="font-bold text-white">OAuth2 Real Discord</h3>
+            <p class="text-xs text-slate-400">Login dengan akun Discord Anda via serverless callback Vercel.</p>
+          </div>
+
+          <!-- LINK OAUTH2 DENGAN CLIENT_ID 1380868700688613416 -->
+          <a href="https://discord.com/api/oauth2/authorize?client_id=1380868700688613416&redirect_uri=https%3A%2F%2Fdemo-profile-dun.vercel.app%2Fapi%2Fcallback&response_type=code&scope=identify%20guilds" 
+             class="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition duration-200 shadow-lg shadow-indigo-600/25">
+             <svg class="w-5 h-5 fill-current" viewBox="0 0 127.14 96.36">
+               <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.69,1.76,1.37,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1,105.25,105.25,0,0,0,32.19-16.14c2.64-27.38-4.51-51.11-18.91-72.15ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,45.92,53.87,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,45.92,96.1,53,91.08,65.69,84.69,65.69Z"/>
+             </svg>
+             <span>Login dengan Discord</span>
+          </a>
+        </div>
+
+        <!-- Demo Button -->
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col justify-between hover:border-emerald-500/50 transition">
+          <div class="space-y-2 mb-6">
+            <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <h3 class="font-bold text-white">Mode Demo Instant</h3>
+            <p class="text-xs text-slate-400">Coba tampilan profil Discord tanpa perlu menyambungkan OAuth.</p>
+          </div>
+
+          <button onclick="loadDemoUser()" class="w-full py-3 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl transition border border-slate-700">
+            Tampilkan Demo Profil
+          </button>
+        </div>
+
+      </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-discord-darkest border-t border-discord-darker py-4 text-center text-xs text-discord-muted">
-        <p>Discord Profile Viewer & OAuth Simulator &bull; Tidak berafiliasi secara resmi dengan Discord Inc.</p>
-    </footer>
+    <!-- Profile Display Area (Hidden by Default) -->
+    <div id="profile-container" class="hidden max-w-sm mx-auto">
+      <div class="bg-[#232428] rounded-2xl overflow-hidden shadow-2xl border border-slate-800">
+        
+        <!-- Banner -->
+        <div class="h-28 bg-gradient-to-r from-indigo-600 to-purple-600 relative">
+          <button onclick="resetProfile()" class="absolute top-3 right-3 p-1.5 bg-black/40 hover:bg-black/60 text-white rounded-full transition" title="Keluar">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
 
-    <!-- JAVASCRIPT LOGIC -->
-    <script>
-        // Preset Demo Users Data
-        const DEMO_PRESETS = {
-            developer: {
-                id: "782194012938401928",
-                username: "alex_dev",
-                global_name: "Alex Vance ⚡",
-                avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80",
-                banner: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1000&auto=format&fit=crop&q=80",
-                banner_color: "#5865f2",
-                accent_color: 5793266,
-                bio: "🚀 Senior Fullstack Engineer\n💻 Building Discord Bots & Next.js Apps\n☕ Coffee & Clean Code enthusiast.",
-                email: "alex.vance.dev@example.com",
-                pronouns: "he/him",
-                status_emoji: "🤖",
-                status_text: "Coding Next.js Serverless Routes...",
-                status_presence: "online",
-                flags: ["STAFF", "ACTIVE_DEVELOPER", "HYPESQUAD_BRAVERY", "NITRO", "EARLY_SUPPORTER"],
-                created_at: "12 Maret 2019",
-                servers: [
-                    { name: "Discord Developers", icon: "💻", members: "185.2k", role: "Active Developer" },
-                    { name: "Vercel Official", icon: "▲", members: "92.4k", role: "Pro Member" },
-                    { name: "Tailwind CSS Community", icon: "🎨", members: "64.1k", role: "Contributor" },
-                    { name: "Indo Tech Lounge", icon: "🇮🇩", members: "12.8k", role: "Server Admin" }
-                ]
-            },
-            nitro: {
-                id: "312940192830192831",
-                username: "clarissa_nitro",
-                global_name: "✨ Clarissa ✨",
-                avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500&auto=format&fit=crop&q=80",
-                banner: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=1000&auto=format&fit=crop&q=80",
-                banner_color: "#f0b232",
-                accent_color: 15774258,
-                bio: "UI/UX Designer & Gamer Girl 🎧\nDiscord Nitro Subscriber since 2020!\nLiving in pastel colors.",
-                email: "clarissa.design@example.com",
-                pronouns: "she/her",
-                status_emoji: "🎧",
-                status_text: "Listening to Lo-Fi Beats",
-                status_presence: "idle",
-                flags: ["NITRO", "BOOSTER_9M", "HYPESQUAD_BRILLIANCE", "EARLY_SUPPORTER"],
-                created_at: "05 Juli 2020",
-                servers: [
-                    { name: "Lo-Fi Gaming Hub", icon: "🎵", members: "45.1k", role: "VIP Nitro" },
-                    { name: "Genshin Impact Lounge", icon: "⚔️", members: "310.5k", role: "Member" }
-                ]
-            },
-            hypesquad: {
-                id: "998120391203912039",
-                username: "ryan_hype",
-                global_name: "Ryan The Hype",
-                avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&auto=format&fit=crop&q=80",
-                banner: "",
-                banner_color: "#23a55a",
-                accent_color: 2336090,
-                bio: "HypeSquad House of Balance!\nESports enthusiast & Valorant player.",
-                email: "ryan.hype@example.com",
-                pronouns: "they/them",
-                status_emoji: "🎮",
-                status_text: "In Match: Valorant Ranked",
-                status_presence: "dnd",
-                flags: ["HYPESQUAD_BALANCE", "ACTIVE_DEVELOPER"],
-                created_at: "18 November 2021",
-                servers: [
-                    { name: "Valorant ID Community", icon: "🎯", members: "28.3k", role: "Radiant Rank" }
-                ]
-            }
-        };
-
-        // Discord Badges Dictionary with SVG/Icons
-        const BADGES_MAP = {
-            STAFF: { name: "Discord Staff", icon: "fa-solid fa-shield-cat text-discord-blurple" },
-            ACTIVE_DEVELOPER: { name: "Active Developer", icon: "fa-solid fa-code text-discord-green" },
-            HYPESQUAD_BRAVERY: { name: "HypeSquad Bravery", icon: "fa-solid fa-shield-halved text-discord-red" },
-            HYPESQUAD_BRILLIANCE: { name: "HypeSquad Brilliance", icon: "fa-solid fa-gem text-discord-yellow" },
-            HYPESQUAD_BALANCE: { name: "HypeSquad Balance", icon: "fa-solid fa-scale-balanced text-discord-green" },
-            NITRO: { name: "Subscriber Nitro", icon: "fa-solid fa-wand-magic-sparkles text-discord-blurple" },
-            BOOSTER_9M: { name: "Server Booster (9 Bulan)", icon: "fa-solid fa-rocket text-pink-500" },
-            EARLY_SUPPORTER: { name: "Early Supporter", icon: "fa-solid fa-piggy-bank text-discord-yellow" }
-        };
-
-        let currentUser = null;
-        let isEmailHidden = true;
-
-        // Initialize Application
-        window.addEventListener('DOMContentLoaded', () => {
-            // Check if returned from Discord OAuth URL params
-            const urlParams = new URLSearchParams(window.location.search);
-            const code = urlParams.get('code');
-
-            if (code) {
-                showToast("OAuth Code terdeteksi! Memproses token...", "info");
-                // In production with Vercel backend, you would fetch /api/auth/callback?code=...
-                setTimeout(() => {
-                    loadDemoProfile('developer');
-                    document.getElementById('status-source-text').innerText = "Live OAuth2 Connected";
-                }, 1000);
-            }
-        });
-
-        // Load Preset Profile
-        function loadDemoProfile(presetKey) {
-            currentUser = DEMO_PRESETS[presetKey] || DEMO_PRESETS.developer;
-            renderUserProfile(currentUser);
-            switchTab('profile');
-            document.getElementById('view-landing').classList.add('hidden');
-            document.getElementById('view-dashboard').classList.remove('hidden');
-            document.getElementById('nav-user-actions').classList.remove('hidden');
-            showToast(`Profil ${currentUser.global_name} berhasil dimuat!`, "success");
-        }
-
-        // Render User Profile into DOM
-        function renderUserProfile(user) {
-            // Avatar & Banner
-            document.getElementById('profile-avatar').src = user.avatar;
-            const bannerEl = document.getElementById('profile-banner');
-            if (user.banner) {
-                bannerEl.style.backgroundImage = `url('${user.banner}')`;
-            } else {
-                bannerEl.style.backgroundImage = 'none';
-                bannerEl.style.backgroundColor = user.banner_color || '#5865F2';
-            }
-
-            // Names & Pronouns
-            document.getElementById('profile-display-name').innerText = user.global_name;
-            document.getElementById('profile-username').innerText = `@${user.username}`;
-            document.getElementById('profile-pronouns').innerText = user.pronouns;
-
-            // Status Quote
-            document.getElementById('profile-status-emoji').innerText = user.status_emoji;
-            document.getElementById('profile-status-text').innerText = user.status_text;
-
-            // Bio & Dates
-            document.getElementById('profile-bio').innerText = user.bio;
-            document.getElementById('profile-created-at').innerText = user.created_at;
-
-            // Account Details Panel
-            document.getElementById('info-user-id').innerText = user.id;
-            updateEmailDisplay();
-
-            // Presence Indicator
-            changeStatus(user.status_presence);
-
-            // Render Badges
-            const badgesContainer = document.getElementById('profile-badges');
-            badgesContainer.innerHTML = '';
-            user.flags.forEach(flag => {
-                const badgeInfo = BADGES_MAP[flag];
-                if (badgeInfo) {
-                    const badgeEl = document.createElement('div');
-                    badgeEl.className = 'has-tooltip relative cursor-pointer badge-glow p-1 bg-discord-dark/80 rounded-md border border-white/5';
-                    badgeEl.innerHTML = `
-                        <i class="${badgeInfo.icon} text-base"></i>
-                        <div class="discord-tooltip absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-black/90 text-white text-[10px] px-2 py-1 rounded shadow-lg whitespace-nowrap z-30">
-                            ${badgeInfo.name}
-                        </div>
-                    `;
-                    badgesContainer.appendChild(badgeEl);
-                }
-            });
-
-            // Render Servers
-            const serversGrid = document.getElementById('servers-grid');
-            document.getElementById('server-count').innerText = user.servers.length;
-            serversGrid.innerHTML = '';
-            user.servers.forEach(server => {
-                const card = document.createElement('div');
-                card.className = 'bg-discord-dark p-4 rounded-xl border border-white/5 flex items-center justify-between hover:border-discord-blurple/30 transition';
-                card.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-2xl bg-discord-darker flex items-center justify-center text-xl font-bold border border-white/5">
-                            ${server.icon}
-                        </div>
-                        <div>
-                            <div class="text-sm font-bold text-white">${server.name}</div>
-                            <div class="text-xs text-discord-muted">${server.members} Anggota</div>
-                        </div>
-                    </div>
-                    <span class="text-[10px] bg-discord-blurple/20 text-discord-blurple px-2 py-0.5 rounded font-semibold border border-discord-blurple/30">${server.role}</span>
-                `;
-                serversGrid.appendChild(card);
-            });
-
-            // JSON Display
-            document.getElementById('json-display').innerText = JSON.stringify(user, null, 2);
-        }
-
-        // Change Online Status Indicator
-        function changeStatus(status) {
-            const dot = document.getElementById('profile-status-dot');
-            dot.className = "absolute bottom-1 right-1 w-6 h-6 rounded-full ring-4 ring-discord-card flex items-center justify-center transition-all";
-
-            if (status === 'online') {
-                dot.classList.add('bg-discord-green');
-                dot.innerHTML = '';
-            } else if (status === 'idle') {
-                dot.classList.add('bg-discord-yellow');
-                dot.innerHTML = '<div class="w-2.5 h-2.5 bg-discord-card rounded-full -mt-1 -ml-1"></div>';
-            } else if (status === 'dnd') {
-                dot.classList.add('bg-discord-red');
-                dot.innerHTML = '<div class="w-3 h-1 bg-discord-card rounded-full"></div>';
-            } else {
-                dot.classList.add('bg-discord-gray');
-                dot.innerHTML = '<div class="w-2 h-2 bg-discord-card rounded-full"></div>';
-            }
-        }
-
-        // Toggle Email Masking
-        function toggleEmailPrivacy() {
-            isEmailHidden = !isEmailHidden;
-            updateEmailDisplay();
-        }
-
-        function updateEmailDisplay() {
-            const emailEl = document.getElementById('info-email');
-            const btnEl = document.getElementById('btn-toggle-email');
-            if (!currentUser) return;
-
-            if (isEmailHidden) {
-                const parts = currentUser.email.split('@');
-                emailEl.innerText = '••••••••@' + parts[1];
-                btnEl.innerHTML = '<i class="fa-solid fa-eye"></i>';
-            } else {
-                emailEl.innerText = currentUser.email;
-                btnEl.innerHTML = '<i class="fa-solid fa-eye-slash"></i>';
-            }
-        }
-
-        // Tab Switching Logic
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.tab-btn').forEach(el => {
-                el.classList.remove('bg-discord-dark', 'text-white');
-                el.classList.add('text-discord-muted');
-            });
-
-            if (tabName === 'guide') {
-                document.getElementById('view-landing').classList.add('hidden');
-                document.getElementById('view-dashboard').classList.add('hidden');
-                document.getElementById('view-guide').classList.remove('hidden');
-                return;
-            }
-
-            document.getElementById('view-guide').classList.add('hidden');
-
-            if (tabName === 'landing') {
-                document.getElementById('view-landing').classList.remove('hidden');
-                document.getElementById('view-dashboard').classList.add('hidden');
-                return;
-            }
-
-            document.getElementById('view-landing').classList.add('hidden');
-            document.getElementById('view-dashboard').classList.remove('hidden');
-
-            const activeTabContent = document.getElementById(`tab-content-${tabName}`);
-            const activeTabBtn = document.getElementById(`tab-btn-${tabName}`);
-
-            if (activeTabContent) activeTabContent.classList.remove('hidden');
-            if (activeTabBtn) {
-                activeTabBtn.classList.add('bg-discord-dark', 'text-white');
-                activeTabBtn.classList.remove('text-discord-muted');
-            }
-        }
-
-        // Real Discord OAuth Redirect Simulation
-        function handleRealDiscordLogin() {
-            showToast("Memeriksa Vercel Environment Variables...", "info");
-            setTimeout(() => {
-                showToast("Mode Browser: Mengalihkan ke OAuth Simulasi...", "warning");
-                loadDemoProfile('developer');
-            }, 1200);
-        }
-
-        // Modal Avatar Controls
-        function openAvatarModal() {
-            if (!currentUser) return;
-            document.getElementById('modal-avatar-img').src = currentUser.avatar;
-            document.getElementById('modal-download-btn').href = currentUser.avatar;
-            document.getElementById('avatar-modal').classList.remove('hidden');
-        }
-
-        function closeAvatarModal() {
-            document.getElementById('avatar-modal').classList.add('hidden');
-        }
-
-        function copyAvatarUrl() {
-            if (!currentUser) return;
-            copyToClipboard(currentUser.avatar, "URL Avatar disalin!");
-        }
-
-        // Logout
-        function logout() {
-            currentUser = null;
-            document.getElementById('nav-user-actions').classList.add('hidden');
-            switchTab('landing');
-            showToast("Anda telah keluar dari aplikasi.", "info");
-        }
-
-        // Clipboard Helper
-        function copyToClipboard(text, message) {
-            const tempInput = document.createElement('textarea');
-            tempInput.value = text;
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            document.execCommand('copy');
-            document.body.removeChild(tempInput);
-            showToast(message || "Disalin ke clipboard!", "success");
-        }
-
-        // Custom Toast Notification System
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
+        <!-- Avatar & Badges -->
+        <div class="px-4 pt-0 pb-4 relative">
+          <div class="flex justify-between items-end -mt-12 mb-3 px-2">
             
-            let bgBg = 'bg-discord-darker';
-            let borderColor = 'border-discord-blurple';
-            let icon = 'fa-solid fa-circle-info text-discord-blurple';
+            <!-- Avatar -->
+            <div class="relative">
+              <img id="user-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Avatar" class="w-20 h-20 rounded-full border-4 border-[#232428] bg-[#232428] object-cover">
+              <span class="w-5 h-5 bg-emerald-500 border-4 border-[#232428] rounded-full absolute bottom-0 right-0" title="Online"></span>
+            </div>
 
-            if (type === 'success') {
-                borderColor = 'border-discord-green';
-                icon = 'fa-solid fa-circle-check text-discord-green';
-            } else if (type === 'warning') {
-                borderColor = 'border-discord-yellow';
-                icon = 'fa-solid fa-triangle-exclamation text-discord-yellow';
-            }
+            <!-- Badges -->
+            <div class="bg-[#111214] px-2 py-1 rounded-lg flex items-center space-x-1.5 border border-slate-800">
+              <span title="Active Developer" class="text-xs">👨‍💻</span>
+              <span title="HypeSquad Bravery" class="text-xs">🛡️</span>
+              <span title="Nitro Subscriber" class="text-xs">🚀</span>
+            </div>
 
-            toast.className = `pointer-events-auto ${bgBg} text-white px-4 py-3 rounded-xl border ${borderColor} shadow-xl text-xs flex items-center gap-2.5 transition-all duration-300 transform translate-y-2 opacity-0`;
-            toast.innerHTML = `<i class="${icon} text-base"></i><span>${message}</span>`;
+          </div>
 
-            container.appendChild(toast);
+          <!-- User Info Card Inner -->
+          <div class="bg-[#111214] rounded-xl p-4 space-y-3">
+            <div>
+              <h3 id="user-global-name" class="text-lg font-bold text-white leading-tight">Discord User</h3>
+              <p id="user-username" class="text-xs text-slate-400">@username</p>
+            </div>
 
-            setTimeout(() => {
-                toast.classList.remove('translate-y-2', 'opacity-0');
-            }, 10);
+            <hr class="border-slate-800">
 
-            setTimeout(() => {
-                toast.classList.add('opacity-0', 'translate-y-[-10px]');
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-    </script>
+            <!-- About Me -->
+            <div>
+              <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Mengenai Saya</h4>
+              <p id="user-bio" class="text-xs text-slate-300">Pengguna Discord aktif.</p>
+            </div>
+
+            <!-- Connected Accounts Mock -->
+            <div>
+              <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Koneksi</h4>
+              <div class="flex space-x-2">
+                <span class="px-2 py-1 bg-[#232428] rounded text-[11px] text-slate-300">GitHub</span>
+                <span class="px-2 py-1 bg-[#232428] rounded text-[11px] text-slate-300">Spotify</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800 py-6 bg-slate-900/40 text-center text-xs text-slate-500">
+    <p>Dikembangkan untuk Vercel & GitHub Deployment</p>
+  </footer>
+
+  <!-- Simple Logic Script -->
+  <script>
+    function loadDemoUser() {
+      document.getElementById('auth-section').classList.add('hidden');
+      document.getElementById('profile-container').classList.remove('hidden');
+
+      document.getElementById('user-global-name').innerText = "Wumpus Developer";
+      document.getElementById('user-username').innerText = "@wumpus_official";
+      document.getElementById('user-bio').innerText = "Halo! Ini adalah contoh tampilan profil resmi Discord.";
+      document.getElementById('user-avatar').src = "https://cdn.discordapp.com/embed/avatars/1.png";
+    }
+
+    function resetProfile() {
+      document.getElementById('profile-container').classList.add('hidden');
+      document.getElementById('auth-section').classList.remove('hidden');
+    }
+  </script>
 </body>
 </html>
