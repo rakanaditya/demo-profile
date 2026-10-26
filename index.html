@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Discord Profile Viewer</title>
 
-  <!-- Konfigurasi Tailwind & Penyembunyi Warning CDN -->
+  <!-- Konfigurasi Tailwind & Suppress Warning CDN -->
   <script>
     tailwind = {
       config: {
@@ -24,9 +24,8 @@
           }
         }
       }
-    }
+    };
 
-    // Filter pesan warning Tailwind CDN di konsol
     const originalWarn = console.warn;
     console.warn = (...args) => {
       if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) return;
@@ -34,8 +33,6 @@
     };
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Font & Icon -->
   <link href="https://fonts.googleapis.com/css2?family=gg+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'gg Sans', 'Noto Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
@@ -54,33 +51,32 @@
         </div>
         <div>
           <h1 class="font-bold text-lg text-white leading-none">Discord Profile Viewer</h1>
-          <span class="text-xs text-slate-400">Simulator OAuth2 & Profile Viewer</span>
+          <span class="text-xs text-slate-400">OAuth2 Integration & Official Viewer</span>
         </div>
       </div>
       <span class="px-3 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full text-xs font-semibold">v2.5</span>
     </div>
   </header>
 
-  <!-- Content -->
+  <!-- Main Content -->
   <main class="max-w-6xl mx-auto px-4 py-10 w-full flex-grow">
     
-    <!-- Hero / Login Selector -->
+    <!-- Hero / Login Card -->
     <div id="auth-section" class="max-w-2xl mx-auto text-center space-y-6">
       <div class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-slate-300 text-xs font-medium">
         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-        <span>Siap Pakai di Vercel & GitHub Pages</span>
+        <span>Terhubung ke demo-profile-dun.vercel.app</span>
       </div>
       
       <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-        Simulasi & Viewer Profil <br><span class="text-indigo-500">Discord Resmi</span>
+        Lihat Profil & Avatar <br><span class="text-indigo-500">Discord Resmi</span>
       </h2>
       
       <p class="text-slate-400 text-sm sm:text-base leading-relaxed">
-        Lihat tampilan profil Discord beserta badge, avatar HD, banner, dan JSON response API. 
-        Dilengkapi simulasi mode offline dan panduan integrasi OAuth2 Vercel.
+        Masuk menggunakan akun Discord Anda untuk menampilkan avatar HD, nama pengguna, badge, serta data akun Anda secara langsung.
       </p>
 
-      <!-- Action Cards -->
+      <!-- Action Box -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left pt-4">
         
         <!-- Real OAuth Button -->
@@ -92,10 +88,9 @@
               </svg>
             </div>
             <h3 class="font-bold text-white">OAuth2 Real Discord</h3>
-            <p class="text-xs text-slate-400">Login dengan akun Discord Anda via serverless callback Vercel.</p>
+            <p class="text-xs text-slate-400">Otentikasi aman menggunakan Discord API via backend Vercel.</p>
           </div>
 
-          <!-- LINK OAUTH2 DENGAN CLIENT_ID 1380868700688613416 -->
           <a href="https://discord.com/api/oauth2/authorize?client_id=1380868700688613416&redirect_uri=https%3A%2F%2Fdemo-profile-dun.vercel.app%2Fapi%2Fcallback&response_type=code&scope=identify%20guilds" 
              class="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition duration-200 shadow-lg shadow-indigo-600/25">
              <svg class="w-5 h-5 fill-current" viewBox="0 0 127.14 96.36">
@@ -105,7 +100,7 @@
           </a>
         </div>
 
-        <!-- Demo Button -->
+        <!-- Mode Demo -->
         <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col justify-between hover:border-emerald-500/50 transition">
           <div class="space-y-2 mb-6">
             <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
@@ -115,7 +110,7 @@
               </svg>
             </div>
             <h3 class="font-bold text-white">Mode Demo Instant</h3>
-            <p class="text-xs text-slate-400">Coba tampilan profil Discord tanpa perlu menyambungkan OAuth.</p>
+            <p class="text-xs text-slate-400">Prinjau tampilan profil tanpa perlu menghubungkan akun.</p>
           </div>
 
           <button onclick="loadDemoUser()" class="w-full py-3 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl transition border border-slate-700">
@@ -126,60 +121,57 @@
       </div>
     </div>
 
-    <!-- Profile Display Area (Hidden by Default) -->
+    <!-- Tampilan Kartu Profil Discord -->
     <div id="profile-container" class="hidden max-w-sm mx-auto">
       <div class="bg-[#232428] rounded-2xl overflow-hidden shadow-2xl border border-slate-800">
         
         <!-- Banner -->
-        <div class="h-28 bg-gradient-to-r from-indigo-600 to-purple-600 relative">
-          <button onclick="resetProfile()" class="absolute top-3 right-3 p-1.5 bg-black/40 hover:bg-black/60 text-white rounded-full transition" title="Keluar">
+        <div id="user-banner" class="h-28 bg-gradient-to-r from-indigo-600 to-purple-600 relative bg-cover bg-center">
+          <button onclick="resetProfile()" class="absolute top-3 right-3 p-1.5 bg-black/40 hover:bg-black/60 text-white rounded-full transition" title="Keluar / Reset">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
           </button>
         </div>
 
-        <!-- Avatar & Badges -->
+        <!-- Detail Profil & Avatar -->
         <div class="px-4 pt-0 pb-4 relative">
           <div class="flex justify-between items-end -mt-12 mb-3 px-2">
             
-            <!-- Avatar -->
+            <!-- Avatar HD/GIF -->
             <div class="relative">
-              <img id="user-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Avatar" class="w-20 h-20 rounded-full border-4 border-[#232428] bg-[#232428] object-cover">
+              <img id="user-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Avatar Discord" class="w-20 h-20 rounded-full border-4 border-[#232428] bg-[#232428] object-cover shadow-lg">
               <span class="w-5 h-5 bg-emerald-500 border-4 border-[#232428] rounded-full absolute bottom-0 right-0" title="Online"></span>
             </div>
 
             <!-- Badges -->
             <div class="bg-[#111214] px-2 py-1 rounded-lg flex items-center space-x-1.5 border border-slate-800">
               <span title="Active Developer" class="text-xs">👨‍💻</span>
-              <span title="HypeSquad Bravery" class="text-xs">🛡️</span>
-              <span title="Nitro Subscriber" class="text-xs">🚀</span>
+              <span title="HypeSquad" class="text-xs">🛡️</span>
+              <span title="Subscriber Nitro" class="text-xs">🚀</span>
             </div>
 
           </div>
 
-          <!-- User Info Card Inner -->
+          <!-- Konten Kartu Pengguna -->
           <div class="bg-[#111214] rounded-xl p-4 space-y-3">
             <div>
-              <h3 id="user-global-name" class="text-lg font-bold text-white leading-tight">Discord User</h3>
+              <h3 id="user-global-name" class="text-lg font-bold text-white leading-tight">Nama Pengguna</h3>
               <p id="user-username" class="text-xs text-slate-400">@username</p>
             </div>
 
             <hr class="border-slate-800">
 
-            <!-- About Me -->
+            <!-- Bio / About Me -->
             <div>
               <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Mengenai Saya</h4>
-              <p id="user-bio" class="text-xs text-slate-300">Pengguna Discord aktif.</p>
+              <p id="user-bio" class="text-xs text-slate-300 leading-relaxed">Pengguna Discord aktif.</p>
             </div>
 
-            <!-- Connected Accounts Mock -->
+            <!-- ID Akun -->
             <div>
-              <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Koneksi</h4>
-              <div class="flex space-x-2">
-                <span class="px-2 py-1 bg-[#232428] rounded text-[11px] text-slate-300">GitHub</span>
-                <span class="px-2 py-1 bg-[#232428] rounded text-[11px] text-slate-300">Spotify</span>
-              </div>
+              <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">ID Pengguna</h4>
+              <p id="user-id" class="text-xs font-mono text-slate-400">000000000000000000</p>
             </div>
           </div>
 
@@ -190,27 +182,67 @@
 
   </main>
 
-  <!-- Footer -->
   <footer class="border-t border-slate-800 py-6 bg-slate-900/40 text-center text-xs text-slate-500">
-    <p>Dikembangkan untuk Vercel & GitHub Deployment</p>
+    <p>Aplikasi Profile Viewer Discord &bull; Hosted on Vercel</p>
   </footer>
 
-  <!-- Simple Logic Script -->
+  <!-- Script Penanganan Callback Auto-Render -->
   <script>
     function loadDemoUser() {
+      renderUserProfile({
+        global_name: "Wumpus Developer",
+        username: "wumpus_official",
+        bio: "Halo! Ini adalah contoh tampilan profil resmi Discord.",
+        avatar: null,
+        id: "1380868700688613416"
+      });
+    }
+
+    function renderUserProfile(user) {
       document.getElementById('auth-section').classList.add('hidden');
       document.getElementById('profile-container').classList.remove('hidden');
 
-      document.getElementById('user-global-name').innerText = "Wumpus Developer";
-      document.getElementById('user-username').innerText = "@wumpus_official";
-      document.getElementById('user-bio').innerText = "Halo! Ini adalah contoh tampilan profil resmi Discord.";
-      document.getElementById('user-avatar').src = "https://cdn.discordapp.com/embed/avatars/1.png";
+      document.getElementById('user-global-name').innerText = user.global_name || user.username;
+      document.getElementById('user-username').innerText = `@${user.username}`;
+      document.getElementById('user-bio').innerText = user.bio || "Pengguna ini tidak menambahkan bio.";
+      document.getElementById('user-id').innerText = user.id;
+
+      // Render Avatar Resmi (Mendukung Animated GIF / PNG)
+      let avatarUrl = "https://cdn.discordapp.com/embed/avatars/0.png";
+      if (user.avatar) {
+        const format = user.avatar.startsWith('a_') ? 'gif' : 'png';
+        avatarUrl = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${format}?size=512`;
+      }
+      document.getElementById('user-avatar').src = avatarUrl;
+
+      // Render Banner jika ada
+      if (user.banner) {
+        const bannerFormat = user.banner.startsWith('a_') ? 'gif' : 'png';
+        const bannerUrl = `https://cdn.discordapp.com/banners/${user.id}/${user.banner}.${bannerFormat}?size=600`;
+        document.getElementById('user-banner').style.backgroundImage = `url('${bannerUrl}')`;
+      }
     }
 
     function resetProfile() {
+      window.history.replaceState({}, document.title, window.location.pathname);
       document.getElementById('profile-container').classList.add('hidden');
       document.getElementById('auth-section').classList.remove('hidden');
     }
+
+    // MEMBACA URL PARAMETER DARI CALLBACK REDIRECT
+    window.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const userParam = urlParams.get('user');
+
+      if (userParam) {
+        try {
+          const userData = JSON.parse(decodeURIComponent(userParam));
+          renderUserProfile(userData);
+        } catch (err) {
+          console.error("Gagal membaca payload profil:", err);
+        }
+      }
+    });
   </script>
 </body>
 </html>
