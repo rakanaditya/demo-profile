@@ -34,8 +34,8 @@ export default async function handler(req, res) {
       return res.status(tokenResponse.status).json(tokenData);
     }
 
-    // 2. Ambil data profil dasar dari API Discord
-    const userResponse = await fetch('https://discord.com/api/users/@me', {
+    // 2. Ambil data profil user dari API Discord v10 (Lengkap dengan Avatar Decoration & Badges)
+    const userResponse = await fetch('https://discord.com/api/v10/users/@me', {
       headers: {
         Authorization: `${tokenData.token_type} ${tokenData.access_token}`,
       },
@@ -43,7 +43,7 @@ export default async function handler(req, res) {
 
     const userData = await userResponse.json();
 
-    // 3. Ambil profil detail (termasuk BIO) via endpoint profile
+    // 3. Ambil Bio detail dari endpoint profile jika tersedia
     try {
       const profileResponse = await fetch(`https://discord.com/api/v10/users/${userData.id}/profile`, {
         headers: {
@@ -53,7 +53,6 @@ export default async function handler(req, res) {
 
       if (profileResponse.ok) {
         const profileData = await profileResponse.json();
-        // Gabungkan bio dari user_profile ke object userData
         if (profileData.user_profile && profileData.user_profile.bio) {
           userData.bio = profileData.user_profile.bio;
         } else if (profileData.bio) {
@@ -61,10 +60,10 @@ export default async function handler(req, res) {
         }
       }
     } catch (profileErr) {
-      console.log("Endpoint profile v10 tidak dapat dijangkau, menggunakan data dasar.");
+      console.log("Endpoint profile v10 tidak dapat dijangkau, menggunakan data standar.");
     }
 
-    // 4. Simpan / Perbarui Data User lengkap ke MongoDB
+    // 4. Simpan / Perbarui Data User ke MongoDB Atlas
     try {
       const { db } = await connectToDatabase();
       const usersCollection = db.collection('users');
@@ -85,7 +84,7 @@ export default async function handler(req, res) {
       console.error("Gagal menyimpan ke MongoDB:", dbError.message);
     }
 
-    // 5. Redirect kembali ke index.html membawa data user (yang sudah berisi bio)
+    // 5. Redirect ke index.html membawa data user lengkap
     const encodedUserData = encodeURIComponent(JSON.stringify(userData));
     return res.redirect(`/?user=${encodedUserData}`);
 
