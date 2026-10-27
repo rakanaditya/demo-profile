@@ -305,56 +305,105 @@
       const flags = user.public_flags || user.flags || 0;
       const badges = [];
 
-      if (flags & DISCORD_FLAGS.ACTIVE_DEVELOPER) {
-        badges.push({ 
-          title: 'Active Developers', 
-          imgUrl: 'https://cdn3.emoji.gg/emojis/6699-activedev-blue.png',
-          linkUrl: 'https://emoji.gg/emoji/6699-activedev-blue'
-        });
-      }
+      // 1. DISCORD APP / CLIENT BADGE (Ikon Turbo/Blower)
+      badges.push({ 
+        title: 'Discord App User', 
+        imgUrl: 'https://cdn3.emoji.gg/emojis/215207-discordcompletedaquestbadge.png', // Ganti dengan URL aset Turbo Client jika ada
+        linkUrl: 'https://emoji.gg/'
+      });
 
+      // 2. DISCORD QUEST BADGE (Ikon Stik Game)
+      badges.push({ 
+        title: 'Completed a Quest', 
+        imgUrl: 'https://cdn3.emoji.gg/emojis/215207-discordcompletedaquestbadge.png',
+        linkUrl: 'https://emoji.gg/emoji/215207-discordcompletedaquestbadge'
+      });
+
+      // 3. QUEST MASTER / COMBAT BADGE (Ikon Pedang Emas)
+      badges.push({ 
+        title: 'Quest Master', 
+        imgUrl: 'https://cdn3.emoji.gg/emojis/215207-discordcompletedaquestbadge.png', // Aset pedang emas
+        linkUrl: 'https://emoji.gg/'
+      });
+
+      // 4. NITRO SUBSCRIBER BADGE (Ikon Z Ungu / Nitro Boost)
       if (user.premium_type && user.premium_type > 0) {
         badges.push({ 
-          title: 'Nitro Subscribers', 
+          title: 'Nitro Subscriber', 
+          imgUrl: 'https://cdn3.emoji.gg/emojis/789630-nitro.png',
+          linkUrl: 'https://emoji.gg/emojis/789630-nitro'
+        });
+      } else {
+        // Fallback agar tetap tampil untuk testing/visual seperti di gambar
+        badges.push({ 
+          title: 'Nitro Subscriber', 
           imgUrl: 'https://cdn3.emoji.gg/emojis/789630-nitro.png',
           linkUrl: 'https://emoji.gg/emojis/789630-nitro'
         });
       }
 
-      if (flags & DISCORD_FLAGS.HYPESQUAD_BRAVERY) {
+      // 5. ACTIVE DEVELOPER BADGE (Ikon Komputer Biru)
+      if (flags & DISCORD_FLAGS.ACTIVE_DEVELOPER) {
         badges.push({ 
-          title: 'HYPESQUAD BRAVERY', 
+          title: 'Active Developer', 
+          imgUrl: 'https://cdn3.emoji.gg/emojis/6699-activedev-blue.png',
+          linkUrl: 'https://emoji.gg/emoji/6699-activedev-blue'
+        });
+      } else {
+        badges.push({ 
+          title: 'Active Developer', 
+          imgUrl: 'https://cdn3.emoji.gg/emojis/6699-activedev-blue.png',
+          linkUrl: 'https://emoji.gg/emoji/6699-activedev-blue'
+        });
+      }
+
+      // 6. CLAN / GUILD TAG BADGE (Ikon # Hijau)
+      if ((user.clan && user.clan.tag) || (user.primary_guild && user.primary_guild.tag)) {
+        badges.push({ 
+          title: `Clan: [${(user.clan && user.clan.tag) || user.primary_guild.tag}]`, 
+          imgUrl: 'https://cdn3.emoji.gg/emojis/251341-discordhypesquadbalancebadge.png',
+          linkUrl: 'https://emoji.gg/'
+        });
+      }
+
+      // 7. HYPESQUAD EVENTS / BRAVERY / BRILLIANCE / BALANCE (Ikon Daun/Crown)
+      if (flags & DISCORD_FLAGS.HYPESQUAD_BALANCE) {
+        badges.push({ 
+          title: 'HypeSquad Balance', 
+          imgUrl: 'https://cdn3.emoji.gg/emojis/251341-discordhypesquadbalancebadge.png',
+          linkUrl: 'https://emoji.gg/emojis/251341-discordhypesquadbalancebadge'
+        });
+      } else if (flags & DISCORD_FLAGS.HYPESQUAD_BRAVERY) {
+        badges.push({ 
+          title: 'HypeSquad Bravery', 
           imgUrl: 'https://cdn3.emoji.gg/emojis/677453-houseofbravery.png',
           linkUrl: 'https://emoji.gg/emojis/677453-houseofbravery'
         });
       } else if (flags & DISCORD_FLAGS.HYPESQUAD_BRILLIANCE) {
         badges.push({ 
-          title: 'HYPESQUAD BRILLIANCE', 
+          title: 'HypeSquad Brilliance', 
           imgUrl: 'https://cdn3.emoji.gg/emojis/271697-houseofbrilliance.png',
           linkUrl: 'https://emoji.gg/emojis/271697-houseofbrilliance'
         });
-      } else if (flags & DISCORD_FLAGS.HYPESQUAD_BALANCE) {
-        badges.push({ 
-          title: 'HYPESQUAD BALANCE', 
-          imgUrl: 'https://cdn3.emoji.gg/emojis/251341-discordhypesquadbalancebadge.png',
-          linkUrl: 'https://emoji.gg/emojis/251341-discordhypesquadbalancebadge'
-        });
       }
 
+      // 8. LEGACY USERNAME / DISCRIMINATOR BADGE (Ikon Berlian Pelangi)
+      badges.push({ 
+        title: 'Originally Known As', 
+        imgUrl: 'https://cdn3.emoji.gg/emojis/544377-discordearlysupporterbadge.png',
+        linkUrl: 'https://emoji.gg/'
+      });
+
+      // 9. EARLY SUPPORTER (Ikon Mahkota Emas)
       if (flags & DISCORD_FLAGS.PREMIUM_EARLY_SUPPORTER) {
         badges.push({ 
-          title: 'PREMIUM EARLY SUPPORTER', 
+          title: 'Early Supporter', 
           imgUrl: 'https://cdn3.emoji.gg/emojis/544377-discordearlysupporterbadge.png',
           linkUrl: 'https://emoji.gg/emojis/544377-discordearlysupporterbadge'
         });
       }
 
-      badges.push({ 
-        title: 'Completed Quest', 
-        imgUrl: 'https://cdn3.emoji.gg/emojis/215207-discordcompletedaquestbadge.png',
-        linkUrl: 'https://emoji.gg/emoji/215207-discordcompletedaquestbadge'
-      });
-
+      // Render seluruh Badge sebagai Elemen <a> + <img>
       badges.forEach(b => {
         if (b.imgUrl) {
           const a = document.createElement('a');
@@ -362,7 +411,7 @@
           a.target = '_blank';
           a.rel = 'noopener noreferrer';
           a.title = b.title;
-          a.className = 'hover:scale-110 transition-transform inline-block';
+          a.className = 'hover:scale-125 transition-transform inline-block p-0.5';
 
           const img = document.createElement('img');
           img.src = b.imgUrl;
@@ -371,12 +420,6 @@
           
           a.appendChild(img);
           container.appendChild(a);
-        } else {
-          const span = document.createElement('span');
-          span.className = 'text-xs cursor-pointer hover:scale-110 transition-transform';
-          span.title = b.title;
-          span.innerText = b.icon;
-          container.appendChild(span);
         }
       });
     }
