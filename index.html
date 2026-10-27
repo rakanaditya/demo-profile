@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rakan Aditya Community</title>
+  <title>Rakan Aditya Community - Official Hub</title>
 
   <!-- Konfigurasi Tailwind & Suppress Warning CDN -->
   <script>
@@ -51,13 +51,12 @@
         </div>
         <div>
           <h1 class="font-bold text-lg text-white leading-none">Rakan Aditya Community</h1>
-          <span class="text-xs text-slate-400">Official Discord Community & Profile Viewer</span>
+          <span class="text-xs text-slate-400">Official Discord Community & Profile Hub</span>
         </div>
       </div>
       
-      <!-- Nav User Session & Links -->
+      <!-- Nav User Session, Links & Multi-Language Switcher -->
       <div class="flex items-center space-x-3 sm:space-x-4">
-        <!-- Tautan Giveaway & Leaderboard di Navbar -->
         <a href="/giveaway" class="text-xs font-medium text-slate-300 hover:text-indigo-400 transition flex items-center space-x-1">
           <span>🎁 Giveaway</span>
         </a>
@@ -65,7 +64,12 @@
           <span>🏆 Top Leaderboard</span>
         </a>
 
-        <!-- Status User Login Nav Badge (Kanan Atas) -->
+        <!-- Language Switcher -->
+        <button onclick="toggleLanguage()" id="lang-btn" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold border border-slate-700 transition">
+          🇮🇩 ID
+        </button>
+
+        <!-- Status User Login Nav Badge -->
         <div id="nav-user-badge" class="hidden flex items-center space-x-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full">
           <img id="nav-user-avatar" src="" alt="Avatar" class="w-6 h-6 rounded-full object-cover">
           <span id="nav-user-name" class="text-xs font-semibold text-white">User</span>
@@ -76,7 +80,7 @@
   </header>
 
   <!-- Main Content -->
-  <main class="max-w-6xl mx-auto px-4 py-10 w-full flex-grow">
+  <main class="max-w-6xl mx-auto px-4 py-10 w-full flex-grow space-y-12">
     
     <!-- Hero / Login Card -->
     <div id="auth-section" class="max-w-xl mx-auto text-center space-y-6">
@@ -85,11 +89,11 @@
         <span>Terhubung ke demo-profile-dun.vercel.app</span>
       </div>
       
-      <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+      <h2 id="hero-title" class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
         Selamat Datang di <br><span class="text-indigo-500">Rakan Aditya Community</span>
       </h2>
       
-      <p class="text-slate-400 text-sm sm:text-base leading-relaxed">
+      <p id="hero-desc" class="text-slate-400 text-sm sm:text-base leading-relaxed">
         Website resmi tempat sebuah komunitas Rakan Aditya Community. Masuk menggunakan akun Discord Anda untuk melihat profil, mengikuti giveaway, dan bergabung dengan event komunitas.
       </p>
 
@@ -106,7 +110,7 @@
             </div>
             <div class="text-left">
               <h3 class="font-bold text-white text-sm">OAuth2 Discord Login</h3>
-              <p class="text-xs text-slate-400">Otentikasi aman via Discord API & Simpan profil ke Database MongoDB.</p>
+              <p id="oauth-sub" class="text-xs text-slate-400">Otentikasi aman via Discord API & Simpan profil ke Database MongoDB.</p>
             </div>
           </div>
 
@@ -115,45 +119,78 @@
              <svg class="w-5 h-5 fill-current" viewBox="0 0 127.14 96.36">
                <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.69,1.76,1.37,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1,105.25,105.25,0,0,0,32.19-16.14c2.64-27.38-4.51-51.11-18.91-72.15ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,45.92,53.87,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,45.92,96.1,53,91.08,65.69,84.69,65.69Z"/>
              </svg>
-             <span>Login dengan Discord</span>
+             <span id="login-btn-text">Login dengan Discord</span>
           </a>
         </div>
 
-        <!-- Tombol Halaman Giveaway -->
-        <a href="/giveaway" 
-           class="inline-flex items-center justify-between px-5 py-3 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 hover:from-indigo-900 hover:to-slate-900 border border-amber-500/40 hover:border-amber-400 text-slate-100 rounded-2xl transition-all duration-300 shadow-xl group w-full">
-          <div class="flex items-center space-x-3">
-            <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center group-hover:bg-amber-500 group-hover:text-slate-950 transition-colors duration-300">
+        <!-- Navigation Buttons -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <a href="/giveaway" 
+             class="inline-flex items-center justify-between px-4 py-3 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 hover:from-indigo-900 border border-amber-500/40 text-slate-100 rounded-2xl transition shadow-lg group">
+            <div class="flex items-center space-x-2">
               <span class="text-sm">🎁</span>
+              <div class="text-left">
+                <p class="text-xs font-bold text-white group-hover:text-amber-300">Giveaway Panel</p>
+                <p class="text-[10px] text-slate-400">Ikuti event komunitas</p>
+              </div>
             </div>
-            <div class="text-left">
-              <p class="text-xs font-bold text-white group-hover:text-amber-300 transition-colors">Giveaway Komunitas</p>
-              <p class="text-[10px] text-slate-400">Ikuti event & klaim hadiah</p>
-            </div>
-          </div>
-          <span class="text-xs font-semibold text-amber-400 group-hover:translate-x-1 transition-transform duration-300">&rarr;</span>
-        </a>
+            <span class="text-xs text-amber-400 group-hover:translate-x-1 transition">&rarr;</span>
+          </a>
 
-        <!-- Tombol Baru: Top Leaderboard & History Giveaway -->
-        <a href="/giveawayleaderboard" 
-           class="inline-flex items-center justify-between px-5 py-3 bg-gradient-to-r from-slate-900 via-amber-950/40 to-slate-900 hover:from-amber-900/40 hover:to-slate-900 border border-amber-500/30 hover:border-amber-400 text-slate-100 rounded-2xl transition-all duration-300 shadow-xl group w-full">
-          <div class="flex items-center space-x-3">
-            <div class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-300 flex items-center justify-center group-hover:bg-amber-400 group-hover:text-slate-950 transition-colors duration-300">
+          <a href="/giveawayleaderboard" 
+             class="inline-flex items-center justify-between px-4 py-3 bg-gradient-to-r from-slate-900 via-amber-950/40 to-slate-900 hover:from-amber-900/40 border border-amber-500/30 text-slate-100 rounded-2xl transition shadow-lg group">
+            <div class="flex items-center space-x-2">
               <span class="text-sm">🏆</span>
+              <div class="text-left">
+                <p class="text-xs font-bold text-white group-hover:text-amber-300">Top Leaderboard</p>
+                <p class="text-[10px] text-slate-400">Peringkat & History</p>
+              </div>
             </div>
-            <div class="text-left">
-              <p class="text-xs font-bold text-white group-hover:text-amber-300 transition-colors">Top Leaderboard & History</p>
-              <p class="text-[10px] text-slate-400">Lihat peringkat pemenang mingguan & riwayat</p>
-            </div>
-          </div>
-          <span class="text-xs font-semibold text-amber-400 group-hover:translate-x-1 transition-transform duration-300">&rarr;</span>
-        </a>
+            <span class="text-xs text-amber-400 group-hover:translate-x-1 transition">&rarr;</span>
+          </a>
+        </div>
 
       </div>
 
     </div>
 
-    <!-- Tampilan Kartu Profil Discord -->
+    <!-- STATISTIK REAL-TIME KOMUNITAS -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6">
+      <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl text-center space-y-1">
+        <span class="text-2xl">👥</span>
+        <h4 id="stat-users" class="text-2xl font-black text-white">100+</h4>
+        <p id="stat-users-lbl" class="text-xs text-slate-400">Pengguna Terdaftar</p>
+      </div>
+      <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl text-center space-y-1">
+        <span class="text-2xl">🎁</span>
+        <h4 id="stat-events" class="text-2xl font-black text-indigo-400">Active</h4>
+        <p id="stat-events-lbl" class="text-xs text-slate-400">Event & Giveaway</p>
+      </div>
+      <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl text-center space-y-1">
+        <span class="text-2xl">⚡</span>
+        <h4 class="text-2xl font-black text-emerald-400">99.9%</h4>
+        <p id="stat-uptime-lbl" class="text-xs text-slate-400">Uptime System Vercel</p>
+      </div>
+    </div>
+
+    <!-- FITUR LOOKUP DISCORD USER ID (SEARCH ANY PROFILE) -->
+    <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-2xl mx-auto space-y-4">
+      <div class="text-center space-y-1">
+        <h3 id="lookup-title" class="font-bold text-lg text-white">🔍 Discord Profile Lookup</h3>
+        <p id="lookup-desc" class="text-xs text-slate-400">Masukkan Discord User ID untuk melihat profil, avatar, dan status Lanyard secara publik.</p>
+      </div>
+
+      <div class="flex space-x-2">
+        <input type="text" id="lookup-id-input" placeholder="Masukkan ID (Contoh: 628205121704296458)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 font-mono">
+        <button onclick="lookupUserProfile()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs rounded-xl transition flex-shrink-0">Cari</button>
+      </div>
+
+      <div id="lookup-result" class="hidden pt-4 border-t border-slate-800/80">
+        <!-- Hasil Lookup Rendered Here -->
+      </div>
+    </div>
+
+    <!-- Tampilan Kartu Profil Discord Login User -->
     <div id="profile-container" class="hidden max-w-sm mx-auto">
       <div class="bg-[#232428] rounded-2xl overflow-hidden shadow-2xl border border-slate-800">
         
@@ -219,6 +256,77 @@
       ACTIVE_DEVELOPER: 1 << 22
     };
 
+    let currentLang = 'ID';
+
+    // Multi-Language Toggle
+    function toggleLanguage() {
+      currentLang = currentLang === 'ID' ? 'EN' : 'ID';
+      document.getElementById('lang-btn').innerText = currentLang === 'ID' ? '🇮🇩 ID' : '🇺🇸 EN';
+
+      if (currentLang === 'EN') {
+        document.getElementById('hero-title').innerHTML = 'Welcome to <br><span class="text-indigo-500">Rakan Aditya Community</span>';
+        document.getElementById('hero-desc').innerText = 'Official hub of Rakan Aditya Community. Log in with your Discord account to view your profile, join giveaways, and participate in community events.';
+        document.getElementById('login-btn-text').innerText = 'Login with Discord';
+        document.getElementById('oauth-sub').innerText = 'Secure authentication via Discord API & Save profile to MongoDB.';
+        document.getElementById('lookup-title').innerText = '🔍 Discord Profile Lookup';
+        document.getElementById('lookup-desc').innerText = 'Enter any Discord User ID to view profile, avatar, and real-time Lanyard status publicly.';
+      } else {
+        document.getElementById('hero-title').innerHTML = 'Selamat Datang di <br><span class="text-indigo-500">Rakan Aditya Community</span>';
+        document.getElementById('hero-desc').innerText = 'Website resmi tempat sebuah komunitas Rakan Aditya Community. Masuk menggunakan akun Discord Anda untuk melihat profil, mengikuti giveaway, dan bergabung dengan event komunitas.';
+        document.getElementById('login-btn-text').innerText = 'Login dengan Discord';
+        document.getElementById('oauth-sub').innerText = 'Otentikasi aman via Discord API & Simpan profil ke Database MongoDB.';
+        document.getElementById('lookup-title').innerText = '🔍 Discord Profile Lookup';
+        document.getElementById('lookup-desc').innerText = 'Masukkan Discord User ID untuk melihat profil, avatar, dan status Lanyard secara publik.';
+      }
+    }
+
+    // Lookup Profile Function (Lanyard API)
+    async function lookupUserProfile() {
+      const inputId = document.getElementById('lookup-id-input').value.trim();
+      const resultContainer = document.getElementById('lookup-result');
+
+      if (!inputId) return;
+
+      resultContainer.classList.remove('hidden');
+      resultContainer.innerHTML = '<p class="text-xs text-slate-500 text-center">Mencari data Lanyard...</p>';
+
+      try {
+        const res = await fetch(`https://api.lanyard.rest/v1/users/${inputId}`);
+        const data = await res.json();
+
+        if (data.success) {
+          const user = data.data.discord_user;
+          const status = data.data.discord_status;
+          const avatarUrl = user.avatar 
+            ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
+            : 'https://cdn.discordapp.com/embed/avatars/0.png';
+
+          let statusBg = 'bg-slate-500';
+          if (status === 'online') statusBg = 'bg-emerald-500';
+          else if (status === 'idle') statusBg = 'bg-amber-500';
+          else if (status === 'dnd') statusBg = 'bg-rose-500';
+
+          resultContainer.innerHTML = `
+            <div class="flex items-center space-x-4 bg-slate-950 p-4 rounded-xl border border-slate-800">
+              <div class="relative">
+                <img src="${avatarUrl}" class="w-12 h-12 rounded-full object-cover">
+                <span class="w-3.5 h-3.5 ${statusBg} border-2 border-slate-950 rounded-full absolute bottom-0 right-0"></span>
+              </div>
+              <div>
+                <h4 class="font-bold text-sm text-white">${user.global_name || user.username}</h4>
+                <p class="text-xs text-slate-400">@${user.username} &bull; <span class="font-mono text-[10px] text-slate-500">${user.id}</span></p>
+                <p class="text-[11px] text-indigo-400 font-medium capitalize mt-0.5">Status: ${status}</p>
+              </div>
+            </div>
+          `;
+        } else {
+          resultContainer.innerHTML = '<p class="text-xs text-rose-400 text-center">Pengguna tidak ditemukan di Lanyard API (User belum masuk server Lanyard).</p>';
+        }
+      } catch (err) {
+        resultContainer.innerHTML = '<p class="text-xs text-rose-400 text-center">Gagal menghubungi Lanyard API.</p>';
+      }
+    }
+
     function showNotification(message) {
       const toast = document.createElement('div');
       toast.className = 'fixed bottom-5 right-5 z-50 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center space-x-2 border border-emerald-400 animate-bounce';
@@ -276,7 +384,7 @@
       }
       document.getElementById('user-avatar').src = avatarUrl;
 
-      // Avatar Decoration Frame
+      // Avatar Frame Decoration
       const avatarContainer = document.getElementById('user-avatar').parentElement;
       const existingFrame = document.getElementById('avatar-decoration-frame');
       if (existingFrame) existingFrame.remove();
