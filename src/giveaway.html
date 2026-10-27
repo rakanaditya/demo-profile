@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Giveaway - Rakan Aditya Community</title>
+  <script>
+    tailwind = {
+      config: {
+        theme: {
+          extend: {
+            colors: {
+              discord: { bg: '#313338', card: '#2b2d31', inner: '#1e1f22', accent: '#5865f2' }
+            }
+          }
+        }
+      }
+    };
+
+    const originalWarn = console.warn;
+    console.warn = (...args) => {
+      if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) return;
+      originalWarn(...args);
+    };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=gg+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style> body { font-family: 'gg Sans', sans-serif; } </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between">
+
+  <!-- Header Navigation -->
+  <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-600/30">
+          <svg class="w-6 h-6 fill-white" viewBox="0 0 127.14 96.36">
+            <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.69,1.76,1.37,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1,105.25,105.25,0,0,0,32.19-16.14c2.64-27.38-4.51-51.11-18.91-72.15ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,45.92,53.87,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,45.92,96.1,53,91.08,65.69,84.69,65.69Z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg text-white leading-none">Rakan Aditya Community</h1>
+          <span class="text-xs text-slate-400">Giveaway & Event Panel</span>
+        </div>
+      </div>
+      
+      <div class="flex items-center space-x-3">
+        <a href="/" class="text-xs text-slate-400 hover:text-white transition">Halaman Utama</a>
+        <div id="user-badge" class="hidden flex items-center space-x-2 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700">
+          <img id="nav-avatar" class="w-5 h-5 rounded-full" src="" alt="Avatar">
+          <span id="nav-name" class="text-xs font-semibold text-white">User</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Area -->
+  <main class="max-w-4xl mx-auto px-4 py-10 w-full flex-grow space-y-8">
+    
+    <!-- Title Section -->
+    <div class="text-center space-y-2">
+      <h2 class="text-3xl font-extrabold text-white">🎁 Event & Giveaway Komunitas</h2>
+      <p class="text-sm text-slate-400">Ikuti giveaway resmi dari Rakan Aditya Community dan dapatkan hadiah menarik!</p>
+    </div>
+
+    <!-- Login Warning Alert (Jika belum login) -->
+    <div id="login-alert" class="bg-indigo-950/60 border border-indigo-800 p-6 rounded-2xl text-center space-y-4">
+      <p class="text-sm text-indigo-200">Anda harus masuk dengan akun Discord terlebih dahulu untuk mengikuti giveaway.</p>
+      <a href="https://discord.com/api/oauth2/authorize?client_id=1380868700688613416&redirect_uri=https%3A%2F%2Fdemo-profile-dun.vercel.app%2Fapi%2Fcallback&response_type=code&scope=identify%20guilds" 
+         class="inline-flex items-center space-x-2 py-2.5 px-6 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition text-sm">
+         <span>Login dengan Discord</span>
+      </a>
+    </div>
+
+    <!-- OWNER PANEL (Khusus ID 628205121704296458) -->
+    <div id="owner-panel" class="hidden bg-slate-900 border border-amber-500/40 p-6 rounded-2xl space-y-4">
+      <div class="flex items-center space-x-2 text-amber-400">
+        <span class="text-lg">👑</span>
+        <h3 class="font-bold text-lg text-white">Owner Management Panel</h3>
+      </div>
+      
+      <form id="create-giveaway-form" class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Judul Event</label>
+            <input type="text" id="gw-title" required placeholder="Contoh: Nitro Basic 1 Bulan" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Hadiah (Prize)</label>
+            <input type="text" id="gw-prize" required placeholder="Contoh: 1x Discord Nitro" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Jumlah Pemenang</label>
+          <input type="number" id="gw-winners" value="1" min="1" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Deskripsi / Syarat</label>
+          <textarea id="gw-desc" rows="2" placeholder="Deskripsi singkat..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"></textarea>
+        </div>
+        <button type="submit" class="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-xl text-sm transition">Buat Giveaway Baru</button>
+      </form>
+    </div>
+
+    <!-- LIST GIVEAWAY -->
+    <div class="space-y-4">
+      <h3 class="font-bold text-lg text-white">Daftar Giveaway Aktif</h3>
+      <div id="giveaway-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <p class="text-slate-500 text-sm">Memuat daftar giveaway...</p>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="border-t border-slate-800 py-6 bg-slate-900/40 text-center text-xs text-slate-500">
+    <p>Rakan Aditya Community &bull; Hosted on Vercel</p>
+  </footer>
+
+  <script>
+    const OWNER_ID = '628205121704296458';
+    let currentUser = null;
+
+    // Toast Notification
+    function showToast(msg, error = false) {
+      const toast = document.createElement('div');
+      toast.className = `fixed bottom-5 right-5 z-50 ${error ? 'bg-rose-600 border-rose-400' : 'bg-emerald-600 border-emerald-400'} text-white px-5 py-3 rounded-xl shadow-2xl border text-xs sm:text-sm font-medium animate-bounce`;
+      toast.innerText = msg;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
+    }
+
+    // Load Data User dari URL / LocalStorage
+    function initAuth() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const userParam = urlParams.get('user');
+
+      if (userParam) {
+        try {
+          currentUser = JSON.parse(decodeURIComponent(userParam));
+          localStorage.setItem('discord_user', JSON.stringify(currentUser));
+        } catch (e) {}
+      } else {
+        const saved = localStorage.getItem('discord_user');
+        if (saved) currentUser = JSON.parse(saved);
+      }
+
+      if (currentUser) {
+        document.getElementById('login-alert').classList.add('hidden');
+        document.getElementById('user-badge').classList.remove('hidden');
+        document.getElementById('nav-name').innerText = currentUser.global_name || currentUser.username;
+        document.getElementById('nav-avatar').src = currentUser.avatar 
+          ? `https://cdn.discordapp.com/avatars/${currentUser.id}/${currentUser.avatar}.png`
+          : 'https://cdn.discordapp.com/embed/avatars/0.png';
+
+        // Cek Pengecekan Owner 628205121704296458
+        if (currentUser.id === OWNER_ID) {
+          document.getElementById('owner-panel').classList.remove('hidden');
+          console.log("👑 Owner Management Panel Aktif!");
+        }
+      }
+    }
+
+    // Fetch Giveaways
+    async function loadGiveaways() {
+      const container = document.getElementById('giveaway-list');
+      try {
+        const res = await fetch('/api/giveaway');
+        const data = await res.json();
+
+        if (data.success && data.data.length > 0) {
+          container.innerHTML = '';
+          data.data.forEach(gw => {
+            const isOwner = currentUser && currentUser.id === OWNER_ID;
+            const isJoined = currentUser && gw.participants.some(p => p.id === currentUser.id);
+            const isEnded = gw.status === 'ended';
+
+            const card = document.createElement('div');
+            card.className = 'bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between space-y-4';
+            
+            let winnersHTML = '';
+            if (isEnded && gw.winners.length > 0) {
+              winnersHTML = `
+                <div class="bg-emerald-950/50 border border-emerald-800/60 p-3 rounded-xl text-xs space-y-1">
+                  <span class="font-bold text-emerald-400">🎉 Pemenang:</span>
+                  <p class="text-white">${gw.winners.map(w => `@${w.username}`).join(', ')}</p>
+                </div>
+              `;
+            }
+
+            card.innerHTML = `
+              <div class="space-y-2">
+                <div class="flex justify-between items-start">
+                  <h4 class="font-bold text-lg text-white leading-tight">${gw.title}</h4>
+                  <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${isEnded ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}">
+                    ${isEnded ? 'Selesai' : 'Aktif'}
+                  </span>
+                </div>
+                <p class="text-xs text-indigo-400 font-medium">🎁 Hadiah: ${gw.prize}</p>
+                <p class="text-xs text-slate-400">${gw.description || 'Tidak ada deskripsi.'}</p>
+                <p class="text-[11px] text-slate-500">👥 Total Peserta: ${gw.participants.length} Orang</p>
+                ${winnersHTML}
+              </div>
+
+              <div class="space-y-2 pt-2 border-t border-slate-800/60">
+                ${!isEnded ? `
+                  <button onclick="joinGiveaway('${gw._id}')" ${isJoined ? 'disabled' : ''} class="w-full py-2 px-4 ${isJoined ? 'bg-slate-800 text-slate-500 border border-slate-700' : 'bg-indigo-600 hover:bg-indigo-500 text-white'} rounded-xl text-xs font-semibold transition">
+                    ${isJoined ? '✓ Sudah Mengikuti' : '🎉 Ikuti Giveaway'}
+                  </button>
+                ` : ''}
+
+                ${isOwner ? `
+                  <div class="flex space-x-2">
+                    ${!isEnded ? `<button onclick="rollGiveaway('${gw._id}')" class="flex-1 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-medium transition">🎲 Roll Start</button>` : ''}
+                    <button onclick="deleteGiveaway('${gw._id}')" class="flex-1 py-1.5 bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white rounded-lg text-xs font-medium transition border border-rose-500/30">🗑️ Hapus</button>
+                  </div>
+                ` : ''}
+              </div>
+            `;
+
+            container.appendChild(card);
+          });
+        } else {
+          container.innerHTML = '<p class="text-slate-500 text-sm col-span-2">Belum ada giveaway yang dibuat.</p>';
+        }
+      } catch (err) {
+        container.innerHTML = '<p class="text-rose-400 text-sm col-span-2">Gagal memuat data giveaway.</p>';
+      }
+    }
+
+    // Handlers
+    document.getElementById('create-giveaway-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const res = await fetch('/api/giveaway', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: document.getElementById('gw-title').value,
+          prize: document.getElementById('gw-prize').value,
+          winnersCount: document.getElementById('gw-winners').value,
+          description: document.getElementById('gw-desc').value,
+          userId: currentUser.id
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast('Giveaway berhasil dibuat!');
+        document.getElementById('create-giveaway-form').reset();
+        loadGiveaways();
+      } else {
+        showToast(data.error, true);
+      }
+    });
+
+    async function joinGiveaway(id) {
+      if (!currentUser) return showToast('Silakan login terlebih dahulu!', true);
+      const res = await fetch('/api/giveaway', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'join', giveawayId: id, user: currentUser })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast('Berhasil mendaftar giveaway!');
+        loadGiveaways();
+      } else {
+        showToast(data.error, true);
+      }
+    }
+
+    async function rollGiveaway(id) {
+      const res = await fetch('/api/giveaway', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'roll', giveawayId: id, userId: currentUser.id })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast('Pemenang berhasil dikocok!');
+        loadGiveaways();
+      } else {
+        showToast(data.error, true);
+      }
+    }
+
+    async function deleteGiveaway(id) {
+      if (!confirm('Yakin ingin menghapus giveaway ini?')) return;
+      const res = await fetch('/api/giveaway', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ giveawayId: id, userId: currentUser.id })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast('Giveaway berhasil dihapus!');
+        loadGiveaways();
+      } else {
+        showToast(data.error, true);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initAuth();
+      loadGiveaways();
+    });
+  </script>
+</body>
+</html>
