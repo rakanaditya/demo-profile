@@ -34,7 +34,7 @@ export default async function handler(req, res) {
       return res.status(tokenResponse.status).json(tokenData);
     }
 
-    // 2. Ambil data profil user dari API Discord v10
+    // 2. Ambil data profil user dari API Discord v10 (Lengkap dengan Avatar Decoration & Badges)
     const userResponse = await fetch('https://discord.com/api/v10/users/@me', {
       headers: {
         Authorization: `${tokenData.token_type} ${tokenData.access_token}`,
@@ -43,7 +43,7 @@ export default async function handler(req, res) {
 
     const userData = await userResponse.json();
 
-    // 3. TARIK BIO RESMI dari Endpoint Profile Discord
+    // 3. Ambil Bio detail dari endpoint profile jika tersedia
     try {
       const profileResponse = await fetch(`https://discord.com/api/v10/users/${userData.id}/profile`, {
         headers: {
@@ -53,7 +53,6 @@ export default async function handler(req, res) {
 
       if (profileResponse.ok) {
         const profileData = await profileResponse.json();
-        // Ekstrak data bio jika tersedia
         if (profileData.user_profile && profileData.user_profile.bio) {
           userData.bio = profileData.user_profile.bio;
         } else if (profileData.bio) {
@@ -61,7 +60,7 @@ export default async function handler(req, res) {
         }
       }
     } catch (profileErr) {
-      console.log("Endpoint profile v10 tidak dapat dijangkau, menggunakan fallback.");
+      console.log("Endpoint profile v10 tidak dapat dijangkau, menggunakan data standar.");
     }
 
     // 4. Simpan / Perbarui Data User ke MongoDB Atlas
@@ -85,7 +84,7 @@ export default async function handler(req, res) {
       console.error("Gagal menyimpan ke MongoDB:", dbError.message);
     }
 
-    // 5. Redirect ke index.html membawa data user (Termasuk BIO)
+    // 5. Redirect ke index.html membawa data user lengkap
     const encodedUserData = encodeURIComponent(JSON.stringify(userData));
     return res.redirect(`/?user=${encodedUserData}`);
 
