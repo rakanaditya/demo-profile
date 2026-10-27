@@ -2,7 +2,7 @@
 import { connectToDatabase } from './db.js';
 
 export default async function handler(req, res) {
-  const { code } = req.query;
+  const { code, state } = req.query;
 
   if (!code) {
     return res.redirect('/');
@@ -34,7 +34,7 @@ export default async function handler(req, res) {
       return res.status(tokenResponse.status).json(tokenData);
     }
 
-    // 2. Ambil data profil user dari API Discord v10
+    // 2. Ambil data profil user dari API Discord
     const userResponse = await fetch('https://discord.com/api/v10/users/@me', {
       headers: {
         Authorization: `${tokenData.token_type} ${tokenData.access_token}`,
@@ -43,28 +43,7 @@ export default async function handler(req, res) {
 
     const userData = await userResponse.json();
 
-    // 3. TARIK BIO RESMI dari Endpoint Profile Discord
-    try {
-      const profileResponse = await fetch(`https://discord.com/api/v10/users/${userData.id}/profile`, {
-        headers: {
-          Authorization: `${tokenData.token_type} ${tokenData.access_token}`,
-        },
-      });
-
-      if (profileResponse.ok) {
-        const profileData = await profileResponse.json();
-        // Ekstrak data bio jika tersedia
-        if (profileData.user_profile && profileData.user_profile.bio) {
-          userData.bio = profileData.user_profile.bio;
-        } else if (profileData.bio) {
-          userData.bio = profileData.bio;
-        }
-      }
-    } catch (profileErr) {
-      console.log("Endpoint profile v10 tidak dapat dijangkau, menggunakan fallback.");
-    }
-
-    // 4. Simpan / Perbarui Data User ke MongoDB Atlas
+    // 3. Simpan / Perbarui Data User di MongoDB
     try {
       const { db } = await connectToDatabase();
       const usersCollection = db.collection('users');
@@ -85,9 +64,10 @@ export default async function handler(req, res) {
       console.error("Gagal menyimpan ke MongoDB:", dbError.message);
     }
 
-    // 5. Redirect ke index.html membawa data user (Termasuk BIO)
+    // 4. Redirect kembali ke halaman tujuan (Index atau Giveaway)
     const encodedUserData = encodeURIComponent(JSON.stringify(userData));
-    return res.redirect(`/?user=${encodedUserData}`);
+    const targetPath = state === 'giveaway' ? '/giveaway' : '/';
+    return res.redirect(`${targetPath}?user=${encodedUserData}`);
 
   } catch (error) {
     return res.status(500).json({ error: error.message });
