@@ -64,9 +64,9 @@
 
       <div class="max-w-md mx-auto bg-[#232428] rounded-2xl overflow-hidden shadow-2xl border border-slate-800">
         
-        <!-- Banner -->
-        <div id="owner-banner" class="h-28 bg-gradient-to-r from-indigo-600 to-purple-600 relative bg-cover bg-center">
-          <div class="absolute top-3 right-3 px-2 py-1 bg-black/50 backdrop-blur rounded-full text-[10px] font-mono text-slate-300 border border-white/10">
+        <!-- Dynamic User Banner (Fetched Realtime via Lanyard API) -->
+        <div id="owner-banner" class="h-32 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 relative bg-cover bg-center transition-all duration-300">
+          <div class="absolute top-3 right-3 px-2 py-1 bg-black/60 backdrop-blur rounded-full text-[10px] font-mono text-slate-300 border border-white/10 shadow-md">
             ID: 628205121704296458
           </div>
         </div>
@@ -245,6 +245,20 @@
             : 'https://cdn.discordapp.com/embed/avatars/0.png';
           document.getElementById('owner-avatar').src = avatarUrl;
 
+          // 2. Fetch Realtime User Banner (GIF / PNG CDN)
+          const bannerElem = document.getElementById('owner-banner');
+          if (user.banner) {
+            const isGif = user.banner.startsWith('a_');
+            const format = isGif ? 'gif' : 'png';
+            const bannerUrl = `https://cdn.discordapp.com/banners/${user.id}/${user.banner}.${format}?size=600`;
+            bannerElem.style.backgroundImage = `url('${bannerUrl}')`;
+          } else if (lData.kv && lData.kv.banner_url) {
+            bannerElem.style.backgroundImage = `url('${lData.kv.banner_url}')`;
+          } else {
+            // Default Animated Gradient jika tidak ada custom banner
+            bannerElem.style.backgroundImage = '';
+          }
+
           // Clan / Guild Tag
           if (lData.kv && lData.kv.clan) {
             document.getElementById('owner-clan-tag').innerText = `[${lData.kv.clan}]`;
@@ -288,7 +302,7 @@
             statusLabel.innerText = '⚪ Offline / Invisible';
           }
 
-          // 2. Custom Status
+          // 3. Custom Status Text
           const customActivity = lData.activities.find(a => a.type === 4);
           const customStatusBox = document.getElementById('owner-custom-status-box');
           if (customActivity && (customActivity.state || customActivity.emoji)) {
@@ -301,8 +315,8 @@
             customStatusBox.classList.add('hidden');
           }
 
-          // 3. Rich Presence / Activity (Game, Spotify, VSCode)
-          const primaryActivity = lData.activities.find(a => a.type !== 4); // Bukan status teks biasa
+          // 4. Rich Presence / Activity (Game, Spotify, VSCode)
+          const primaryActivity = lData.activities.find(a => a.type !== 4);
           const activityBox = document.getElementById('owner-activity-box');
 
           if (primaryActivity) {
@@ -347,7 +361,7 @@
       }
     }
 
-    // Interval Timer Countdown
+    // Interval Timer Countdown Loop
     function startTimerLoop() {
       if (presenceTimerInterval) clearInterval(presenceTimerInterval);
 
