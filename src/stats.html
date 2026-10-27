@@ -335,15 +335,19 @@
             avatarContainer.appendChild(frameImg);
           }
 
-          // Banner (Animasi GIF atau PNG persis index.html)
-          const bannerElem = document.getElementById('owner-banner');
-          if (user.banner) {
-            const bannerFormat = user.banner.startsWith('a_') ? 'gif' : 'png';
-            const bannerUrl = `https://cdn.discordapp.com/banners/${user.id}/${user.banner}.${bannerFormat}?size=600`;
-            bannerElem.style.backgroundImage = `url('${bannerUrl}')`;
-          } else if (lData.kv && lData.kv.banner_url) {
-            bannerElem.style.backgroundImage = `url('${lData.kv.banner_url}')`;
-          }
+         // Ganti bagian penanganan banner di fetchOwnerPresence() dengan kode ini:
+const bannerElem = document.getElementById('owner-banner');
+
+if (user.banner) {
+  const isGif = user.banner.startsWith('a_');
+  const format = isGif ? 'gif' : 'png';
+  const bannerUrl = `https://cdn.discordapp.com/banners/${user.id}/${user.banner}.${format}?size=600`;
+  bannerElem.style.backgroundImage = `url('${bannerUrl}')`;
+} else {
+  // Jika Lanyard tidak mengembalikan hash banner, gunakan URL banner dari Discord CDN secara langsung:
+  const fallbackBannerUrl = `https://cdn.discordapp.com/banners/628205121704296458/a_8639d45a6370dbd1a3e5f003e47097e7.gif?size=600`;
+  bannerElem.style.backgroundImage = `url('${fallbackBannerUrl}')`;
+}
 
           // Status Dot Indicator
           const statusDot = document.getElementById('owner-status-dot');
