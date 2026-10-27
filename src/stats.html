@@ -386,47 +386,44 @@
           const activityBox = document.getElementById('owner-activity-box');
 
           if (primaryActivity) {
-            activityBox.classList.remove('hidden');
-            const actName = primaryActivity.name || 'Game / Application';
-            document.getElementById('activity-name').innerText = actName;
-            document.getElementById('activity-details').innerText = primaryActivity.details || '';
-            document.getElementById('activity-state').innerText = primaryActivity.state || '';
+  activityBox.classList.remove('hidden');
+  const actName = primaryActivity.name || 'Game / Application';
+  document.getElementById('activity-name').innerText = actName;
+  document.getElementById('activity-details').innerText = primaryActivity.details || '';
+  document.getElementById('activity-state').innerText = primaryActivity.state || '';
 
-            const iconImg = document.getElementById('activity-icon');
-            
-            // CEK DAN LOAD GAMBAR DARI ASSETS LOKAL jika YouTube atau Spotify
-            if (actName.toLowerCase().includes('youtube') || (primaryActivity.details && primaryActivity.details.toLowerCase().includes('youtube'))) {
-              iconImg.src = '/Assets/youtube.png';
-              document.getElementById('activity-header-title').innerText = '📺 WATCHING YOUTUBE';
-            } else if (actName.toLowerCase().includes('spotify') || lData.listening_to_spotify) {
-              iconImg.src = '/Assets/spotify.png';
-              document.getElementById('activity-header-title').innerText = '🎵 LISTENING TO SPOTIFY';
-            } else {
-              document.getElementById('activity-header-title').innerText = '🎮 PLAYING A GAME';
-              
-              // Standard Asset Fallback dari Discord CDN
-              let iconUrl = 'https://cdn.discordapp.com/embed/avatars/0.png';
-              if (primaryActivity.assets && primaryActivity.assets.large_image) {
-                const imgKey = primaryActivity.assets.large_image;
-                if (imgKey.startsWith('spotify:')) {
-                  iconUrl = `https://i.scdn.co/image/${imgKey.replace('spotify:', '')}`;
-                } else {
-                  iconUrl = `https://cdn.discordapp.com/app-assets/${primaryActivity.application_id}/${imgKey}.png`;
-                }
-              }
-              iconImg.src = iconUrl;
-            }
+  const iconImg = document.getElementById('activity-icon');
 
-            if (primaryActivity.timestamps && primaryActivity.timestamps.start) {
-              activityStartTime = primaryActivity.timestamps.start;
-            } else {
-              activityStartTime = Date.now();
-            }
+  // Cek apakah ada file khusus di folder Assets lokal Anda
+  if (actName.toLowerCase().includes('youtube') || (primaryActivity.details && primaryActivity.details.toLowerCase().includes('youtube'))) {
+    iconImg.src = '/Assets/youtube.png';
+    document.getElementById('activity-header-title').innerText = '📺 WATCHING YOUTUBE';
+  } else if (actName.toLowerCase().includes('spotify') || lData.listening_to_spotify) {
+    iconImg.src = '/Assets/spotify.png';
+    document.getElementById('activity-header-title').innerText = '🎵 LISTENING TO SPOTIFY';
+  } else {
+    document.getElementById('activity-header-title').innerText = '🎮 PLAYING A GAME';
+    
+    // Otomatis convert URL image eksternal/Lanyard agar tidak broken
+    iconImg.src = getLanyardImageUrl(primaryActivity);
+  }
 
-          } else {
-            activityBox.classList.add('hidden');
-            activityStartTime = null;
-          }
+  // Fallback jika gambar tetap gagal di-load
+  iconImg.onerror = function() {
+    this.onerror = null;
+    this.src = 'https://cdn.discordapp.com/embed/avatars/0.png';
+  };
+
+  if (primaryActivity.timestamps && primaryActivity.timestamps.start) {
+    activityStartTime = primaryActivity.timestamps.start;
+  } else {
+    activityStartTime = Date.now();
+  }
+
+} else {
+  activityBox.classList.add('hidden');
+  activityStartTime = null;
+}
 
         }
       } catch (err) {
