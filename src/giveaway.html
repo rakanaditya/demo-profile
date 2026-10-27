@@ -116,17 +116,40 @@
   <footer class="border-t border-slate-800 py-6 bg-slate-900/40 text-center text-xs text-slate-500">
     <p>Rakan Aditya Community &bull; Hosted on Vercel</p>
   </footer>
-
-  <script>
+<script>
     const OWNER_ID = '628205121704296458';
     let currentUser = null;
 
-    function showToast(msg, error = false) {
+    // Fungsi Pop-Up Alert Notifikasi Toast (Sukses & Gagal)
+    function showToast(msg, isError = false) {
+      const existingToast = document.getElementById('custom-toast');
+      if (existingToast) existingToast.remove();
+
       const toast = document.createElement('div');
-      toast.className = `fixed bottom-5 right-5 z-50 ${error ? 'bg-rose-600 border-rose-400' : 'bg-emerald-600 border-emerald-400'} text-white px-5 py-3 rounded-xl shadow-2xl border text-xs sm:text-sm font-medium animate-bounce`;
-      toast.innerText = msg;
+      toast.id = 'custom-toast';
+      toast.className = `fixed bottom-5 right-5 z-50 ${isError ? 'bg-rose-600 border-rose-400' : 'bg-emerald-600 border-emerald-400'} text-white px-5 py-3 rounded-xl shadow-2xl border text-xs sm:text-sm font-medium flex items-center space-x-2 animate-bounce`;
+      toast.innerHTML = `
+        <span>${isError ? '❌' : '✅'}</span>
+        <span>${msg}</span>
+      `;
       document.body.appendChild(toast);
       setTimeout(() => toast.remove(), 4000);
+    }
+
+    // Fungsi Penanganan Respon JSON Aman
+    async function safeFetchJson(url, options = {}) {
+      try {
+        const res = await fetch(url, options);
+        const text = await res.text();
+        try {
+          return JSON.parse(text);
+        } catch (e) {
+          console.error("Response bukan JSON valid:", text);
+          return { success: false, error: `Server Error (${res.status}): Terjadi kesalahan pada Vercel.` };
+        }
+      } catch (err) {
+        return { success: false, error: "Gagal terhubung ke jaringan." };
+      }
     }
 
     function initAuth() {
@@ -164,101 +187,105 @@
 
     async function loadGiveaways() {
       const container = document.getElementById('giveaway-list');
-      try {
-        const res = await fetch('/api/giveaway');
-        const data = await res.json();
+      const data = await safeFetchJson('/api/giveaway');
 
-        if (data.success && data.data.length > 0) {
-          container.innerHTML = '';
-          data.data.forEach(gw => {
-            const isOwner = currentUser && currentUser.id === OWNER_ID;
-            const isJoined = currentUser && gw.participants.some(p => p.id === currentUser.id);
-            const isEnded = gw.status === 'ended';
+      if (data.success && data.data && data.data.length > 0) {
+        container.innerHTML = '';
+        data.data.forEach(gw => {
+          const isOwner = currentUser && currentUser.id === OWNER_ID;
+          const isJoined = currentUser && gw.participants && gw.participants.some(p => p.id === currentUser.id);
+          const isEnded = gw.status === 'ended';
 
-            const card = document.createElement('div');
-            card.className = 'bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between space-y-4';
-            
-            let winnersHTML = '';
-            if (isEnded && gw.winners.length > 0) {
-              winnersHTML = `
-                <div class="bg-emerald-950/50 border border-emerald-800/60 p-3 rounded-xl text-xs space-y-1">
-                  <span class="font-bold text-emerald-400">🎉 Pemenang:</span>
-                  <p class="text-white">${gw.winners.map(w => `@${w.username}`).join(', ')}</p>
-                </div>
-              `;
-            }
-
-            card.innerHTML = `
-              <div class="space-y-2">
-                <div class="flex justify-between items-start">
-                  <h4 class="font-bold text-lg text-white leading-tight">${gw.title}</h4>
-                  <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${isEnded ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}">
-                    ${isEnded ? 'Selesai' : 'Aktif'}
-                  </span>
-                </div>
-                <p class="text-xs text-indigo-400 font-medium">🎁 Hadiah: ${gw.prize}</p>
-                <p class="text-xs text-slate-400">${gw.description || 'Tidak ada deskripsi.'}</p>
-                <p class="text-[11px] text-slate-500">👥 Total Peserta: ${gw.participants.length} Orang</p>
-                ${winnersHTML}
-              </div>
-
-              <div class="space-y-2 pt-2 border-t border-slate-800/60">
-                ${!isEnded ? `
-                  <button onclick="joinGiveaway('${gw._id}')" ${isJoined ? 'disabled' : ''} class="w-full py-2 px-4 ${isJoined ? 'bg-slate-800 text-slate-500 border border-slate-700' : 'bg-indigo-600 hover:bg-indigo-500 text-white'} rounded-xl text-xs font-semibold transition">
-                    ${isJoined ? '✓ Sudah Mengikuti' : '🎉 Ikuti Giveaway'}
-                  </button>
-                ` : ''}
-
-                ${isOwner ? `
-                  <div class="flex space-x-2">
-                    ${!isEnded ? `<button onclick="rollGiveaway('${gw._id}')" class="flex-1 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-medium transition">🎲 Roll Start</button>` : ''}
-                    <button onclick="deleteGiveaway('${gw._id}')" class="flex-1 py-1.5 bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white rounded-lg text-xs font-medium transition border border-rose-500/30">🗑️ Hapus</button>
-                  </div>
-                ` : ''}
+          const card = document.createElement('div');
+          card.className = 'bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between space-y-4';
+          
+          let winnersHTML = '';
+          if (isEnded && gw.winners && gw.winners.length > 0) {
+            winnersHTML = `
+              <div class="bg-emerald-950/50 border border-emerald-800/60 p-3 rounded-xl text-xs space-y-1">
+                <span class="font-bold text-emerald-400">🎉 Pemenang:</span>
+                <p class="text-white">${gw.winners.map(w => `@${w.username}`).join(', ')}</p>
               </div>
             `;
+          }
 
-            container.appendChild(card);
-          });
-        } else {
-          container.innerHTML = '<p class="text-slate-500 text-sm col-span-2">Belum ada giveaway yang dibuat.</p>';
-        }
-      } catch (err) {
-        container.innerHTML = '<p class="text-rose-400 text-sm col-span-2">Gagal memuat data giveaway.</p>';
+          card.innerHTML = `
+            <div class="space-y-2">
+              <div class="flex justify-between items-start">
+                <h4 class="font-bold text-lg text-white leading-tight">${gw.title}</h4>
+                <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${isEnded ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}">
+                  ${isEnded ? 'Selesai' : 'Aktif'}
+                </span>
+              </div>
+              <p class="text-xs text-indigo-400 font-medium">🎁 Hadiah: ${gw.prize}</p>
+              <p class="text-xs text-slate-400">${gw.description || 'Tidak ada deskripsi.'}</p>
+              <p class="text-[11px] text-slate-500">👥 Total Peserta: ${gw.participants ? gw.participants.length : 0} Orang</p>
+              ${winnersHTML}
+            </div>
+
+            <div class="space-y-2 pt-2 border-t border-slate-800/60">
+              ${!isEnded ? `
+                <button onclick="joinGiveaway('${gw._id}')" ${isJoined ? 'disabled' : ''} class="w-full py-2 px-4 ${isJoined ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-500 text-white'} rounded-xl text-xs font-semibold transition">
+                  ${isJoined ? '✓ Sudah Mengikuti' : '🎉 Ikuti Giveaway'}
+                </button>
+              ` : ''}
+
+              ${isOwner ? `
+                <div class="flex space-x-2">
+                  ${!isEnded ? `<button onclick="rollGiveaway('${gw._id}')" class="flex-1 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-medium transition">🎲 Roll Start</button>` : ''}
+                  <button onclick="deleteGiveaway('${gw._id}')" class="flex-1 py-1.5 bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white rounded-lg text-xs font-medium transition border border-rose-500/30">🗑️ Hapus</button>
+                </div>
+              ` : ''}
+            </div>
+          `;
+
+          container.appendChild(card);
+        });
+      } else if (data.success && data.data.length === 0) {
+        container.innerHTML = '<p class="text-slate-500 text-sm col-span-2">Belum ada giveaway yang dibuat.</p>';
+      } else {
+        container.innerHTML = `<p class="text-rose-400 text-sm col-span-2">Gagal memuat data giveaway: ${data.error || 'Terjadi kesalahan.'}</p>`;
       }
     }
 
+    // Submit Buat Giveaway
     document.getElementById('create-giveaway-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const res = await fetch('/api/giveaway', {
+      if (!currentUser || currentUser.id !== OWNER_ID) {
+        return showToast("Hanya owner yang dapat membuat giveaway!", true);
+      }
+
+      const payload = {
+        title: document.getElementById('gw-title').value,
+        prize: document.getElementById('gw-prize').value,
+        winnersCount: document.getElementById('gw-winners').value,
+        description: document.getElementById('gw-desc').value,
+        userId: currentUser.id
+      };
+
+      const data = await safeFetchJson('/api/giveaway', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: document.getElementById('gw-title').value,
-          prize: document.getElementById('gw-prize').value,
-          winnersCount: document.getElementById('gw-winners').value,
-          description: document.getElementById('gw-desc').value,
-          userId: currentUser.id
-        })
+        body: JSON.stringify(payload)
       });
-      const data = await res.json();
+
       if (data.success) {
-        showToast('Giveaway berhasil dibuat!');
+        showToast(data.message || 'Giveaway berhasil dibuat dan tersimpan ke MongoDB!');
         document.getElementById('create-giveaway-form').reset();
         loadGiveaways();
       } else {
-        showToast(data.error, true);
+        showToast(data.error || 'Gagal membuat giveaway.', true);
       }
     });
 
     async function joinGiveaway(id) {
       if (!currentUser) return showToast('Silakan login terlebih dahulu!', true);
-      const res = await fetch('/api/giveaway', {
+      const data = await safeFetchJson('/api/giveaway', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'join', giveawayId: id, user: currentUser })
       });
-      const data = await res.json();
+
       if (data.success) {
         showToast('Berhasil mendaftar giveaway!');
         loadGiveaways();
@@ -268,12 +295,12 @@
     }
 
     async function rollGiveaway(id) {
-      const res = await fetch('/api/giveaway', {
+      const data = await safeFetchJson('/api/giveaway', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'roll', giveawayId: id, userId: currentUser.id })
       });
-      const data = await res.json();
+
       if (data.success) {
         showToast('Pemenang berhasil dikocok!');
         loadGiveaways();
@@ -283,13 +310,13 @@
     }
 
     async function deleteGiveaway(id) {
-      if (!confirm('Yakin ingin menghapus giveaway me ini?')) return;
-      const res = await fetch('/api/giveaway', {
+      if (!confirm('Yakin ingin menghapus giveaway ini?')) return;
+      const data = await safeFetchJson('/api/giveaway', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ giveawayId: id, userId: currentUser.id })
       });
-      const data = await res.json();
+
       if (data.success) {
         showToast('Giveaway berhasil dihapus!');
         loadGiveaways();
@@ -303,5 +330,6 @@
       loadGiveaways();
     });
   </script>
+ 
 </body>
 </html>
