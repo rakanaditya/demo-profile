@@ -1,0 +1,23 @@
+{
+  "name": "discord-profile-app",
+  "version": "1.0.0",
+  "description": "Discord Profile Viewer & OAuth2 Integration dengan MongoDB Atlas & Tailwind CSS",
+  "main": "index.html",
+  "type": "module",
+  "scripts": {
+    "start": "serve .",
+    "build:css": "tailwindcss -i ./src/input.css -o ./dist/output.css --minify",
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "mongodb": "^6.3.0"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.17",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
