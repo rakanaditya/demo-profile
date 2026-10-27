@@ -66,8 +66,10 @@
       <div class="max-w-sm mx-auto">
         <div class="bg-[#232428] rounded-2xl overflow-hidden shadow-2xl border border-slate-800">
           
-          <!-- Banner (Diambil dari Object Discord User CDN) -->
-          <div id="owner-banner" class="h-28 bg-gradient-to-r from-indigo-600 to-purple-600 relative bg-cover bg-center transition-all duration-300">
+          <!-- Banner Animasi GIF Asli Owner dari CDN Discord -->
+          <div id="owner-banner" 
+               style="background-image: url('https://cdn.discordapp.com/banners/628205121704296458/a_8639d45a6370dbd1a3e5f003e47097e7.gif?size=600');"
+               class="h-28 bg-cover bg-center relative transition-all duration-300">
             <div class="absolute top-3 right-3 px-2 py-1 bg-black/50 backdrop-blur rounded-full text-[10px] font-mono text-slate-300 border border-white/10">
               ID: 628205121704296458
             </div>
@@ -90,10 +92,10 @@
             <div class="bg-[#111214] rounded-xl p-4 space-y-3">
               <div>
                 <div class="flex items-center space-x-2 flex-wrap">
-                  <h3 id="owner-global-name" class="text-lg font-bold text-white leading-tight">Rakan Aditya</h3>
+                  <h3 id="owner-global-name" class="text-lg font-bold text-white leading-tight">! Lufas Maphaahl</h3>
                   <span id="owner-clan-tag" class="hidden px-1.5 py-0.5 bg-slate-800 border border-slate-700 text-slate-300 font-semibold text-[11px] rounded tracking-wide"></span>
                 </div>
-                <p id="owner-username" class="text-xs text-slate-400 mt-0.5">@aditya_rb</p>
+                <p id="owner-username" class="text-xs text-slate-400 mt-0.5">@rakanaditya</p>
               </div>
 
               <hr class="border-slate-800">
@@ -289,29 +291,6 @@
       });
     }
 
-    // Function Pengambil Object Discord User Resmi (Mendapatkan Hash Banner GIF/PNG)
-    async function fetchDiscordUserObject() {
-      try {
-        const res = await fetch(`https://discord.com/api/v9/users/${OWNER_ID}`, {
-          headers: { 'Accept': 'application/json' }
-        });
-        if (res.ok) {
-          const userObj = await res.json();
-          const bannerElem = document.getElementById('owner-banner');
-          
-          if (userObj.banner) {
-            const format = userObj.banner.startsWith('a_') ? 'gif' : 'png';
-            const bannerUrl = `https://cdn.discordapp.com/banners/${userObj.id}/${userObj.banner}.${format}?size=600`;
-            bannerElem.style.backgroundImage = `url('${bannerUrl}')`;
-          }
-        }
-      } catch (err) {
-        // Fallback jika API Discord dibatasi (CORS)
-        const bannerElem = document.getElementById('owner-banner');
-        bannerElem.style.backgroundImage = `url('https://cdn.discordapp.com/banners/628205121704296458/a_8639d45a6370dbd1a3e5f003e47097e7.gif?size=600')`;
-      }
-    }
-
     async function fetchOwnerPresence() {
       try {
         const res = await fetch(`https://api.lanyard.rest/v1/users/${OWNER_ID}`);
@@ -358,13 +337,12 @@
             avatarContainer.appendChild(frameImg);
           }
 
-          // Banner dari Lanyard jika ada Hash
-          const bannerElem = document.getElementById('owner-banner');
+          // Jika Lanyard mengembalikan hash banner baru dari user, update banner
           if (user.banner) {
             const isGif = user.banner.startsWith('a_');
             const format = isGif ? 'gif' : 'png';
             const bannerUrl = `https://cdn.discordapp.com/banners/${user.id}/${user.banner}.${format}?size=600`;
-            bannerElem.style.backgroundImage = `url('${bannerUrl}')`;
+            document.getElementById('owner-banner').style.backgroundImage = `url('${bannerUrl}')`;
           }
 
           // Status Dot Indicator
@@ -470,7 +448,6 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      fetchDiscordUserObject();
       fetchOwnerPresence();
       startTimerLoop();
       setInterval(fetchOwnerPresence, 10000);
