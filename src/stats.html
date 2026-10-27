@@ -66,18 +66,18 @@
       <div class="max-w-sm mx-auto">
         <div class="bg-[#232428] rounded-2xl overflow-hidden shadow-2xl border border-slate-800">
           
-        <!-- Custom GIF Banner Owner -->
-<div id="owner-banner" class="h-32 sm:h-36 w-full relative overflow-hidden bg-slate-900">
-  <img 
-    src="https://static2.klipy.com/ii/2f34308bfc69e8c858753b83566e3ab4/94/e9/33CSaeSh7LuRD.gif" 
-    alt="Owner Banner GIF" 
-    class="w-full h-full object-cover object-center"
-    loading="lazy"
-  >
-  <div class="absolute top-3 right-3 px-2 py-1 bg-black/60 backdrop-blur rounded-full text-[10px] font-mono text-slate-300 border border-white/10 z-10">
-    ID: 628205121704296458
-  </div>
-</div>
+          <!-- Custom GIF Banner Owner -->
+          <div id="owner-banner" class="h-32 sm:h-36 w-full relative overflow-hidden bg-slate-900">
+            <img 
+              src="https://static2.klipy.com/ii/2f34308bfc69e8c858753b83566e3ab4/94/e9/33CSaeSh7LuRD.gif" 
+              alt="Owner Banner GIF" 
+              class="w-full h-full object-cover object-center"
+              loading="lazy"
+            >
+            <div class="absolute top-3 right-3 px-2 py-1 bg-black/60 backdrop-blur rounded-full text-[10px] font-mono text-slate-300 border border-white/10 z-10">
+              ID: 628205121704296458
+            </div>
+          </div>
 
           <!-- Detail Profil & Avatar -->
           <div class="px-4 pt-0 pb-4 relative">
@@ -219,6 +219,35 @@
         return `${hrs}:${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
       }
       return `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    // Helper untuk mengolah URL gambar dari Lanyard (PreMid / Ext / Discord Asset)
+    function getLanyardImageUrl(activity) {
+      if (!activity || !activity.assets || !activity.assets.large_image) {
+        return 'https://cdn.discordapp.com/embed/avatars/0.png';
+      }
+
+      const imgKey = activity.assets.large_image;
+
+      // 1. Link kustom Spotify
+      if (imgKey.startsWith('spotify:')) {
+        return `https://i.scdn.co/image/${imgKey.replace('spotify:', '')}`;
+      }
+
+      // 2. Format PreMid / External Discord Proxy (misal Otakudesu, Web Extension)
+      if (imgKey.startsWith('mp:external/')) {
+        const match = imgKey.match(/https?:\/\/.*/);
+        if (match) return match[0];
+        return `https://media.discordapp.net/${imgKey.replace('mp:', '')}`;
+      }
+
+      // 3. Link HTTP/HTTPS langsung
+      if (imgKey.startsWith('http://') || imgKey.startsWith('https://')) {
+        return imgKey;
+      }
+
+      // 4. Standard Discord Application Asset
+      return `https://cdn.discordapp.com/app-assets/${activity.application_id}/${imgKey}.png`;
     }
 
     function renderBadges(user) {
@@ -381,49 +410,62 @@
             customStatusBox.classList.add('hidden');
           }
 
-          // Rich Presence Activity (Game, YouTube, Spotify, Software)
+          // Rich Presence Activity (YouTube, Spotify, Otakudesu, Facebook, Instagram, DLL)
           const primaryActivity = lData.activities.find(a => a.type !== 4);
           const activityBox = document.getElementById('owner-activity-box');
 
           if (primaryActivity) {
-  activityBox.classList.remove('hidden');
-  const actName = primaryActivity.name || 'Game / Application';
-  document.getElementById('activity-name').innerText = actName;
-  document.getElementById('activity-details').innerText = primaryActivity.details || '';
-  document.getElementById('activity-state').innerText = primaryActivity.state || '';
+            activityBox.classList.remove('hidden');
+            const actName = primaryActivity.name || 'Game / Application';
+            const actDetails = primaryActivity.details || '';
+            const actState = primaryActivity.state || '';
 
-  const iconImg = document.getElementById('activity-icon');
+            document.getElementById('activity-name').innerText = actName;
+            document.getElementById('activity-details').innerText = actDetails;
+            document.getElementById('activity-state').innerText = actState;
 
-  // Cek apakah ada file khusus di folder Assets lokal Anda
-  if (actName.toLowerCase().includes('youtube') || (primaryActivity.details && primaryActivity.details.toLowerCase().includes('youtube'))) {
-    iconImg.src = '/Assets/youtube.png';
-    document.getElementById('activity-header-title').innerText = '📺 WATCHING YOUTUBE';
-  } else if (actName.toLowerCase().includes('spotify') || lData.listening_to_spotify) {
-    iconImg.src = '/Assets/spotify.png';
-    document.getElementById('activity-header-title').innerText = '🎵 LISTENING TO SPOTIFY';
-  } else {
-    document.getElementById('activity-header-title').innerText = '🎮 PLAYING A GAME';
-    
-    // Otomatis convert URL image eksternal/Lanyard agar tidak broken
-    iconImg.src = getLanyardImageUrl(primaryActivity);
-  }
+            const iconImg = document.getElementById('activity-icon');
+            const fullTextSearch = `${actName} ${actDetails} ${actState}`.toLowerCase();
 
-  // Fallback jika gambar tetap gagal di-load
-  iconImg.onerror = function() {
-    this.onerror = null;
-    this.src = 'https://cdn.discordapp.com/embed/avatars/0.png';
-  };
+            // SINKRONISASI DENGAN ASET LOKAL FOLDER /Assets/
+            if (fullTextSearch.includes('youtube')) {
+              iconImg.src = '/Assets/youtube.png';
+              document.getElementById('activity-header-title').innerText = '📺 WATCHING YOUTUBE';
+            } else if (fullTextSearch.includes('spotify') || lData.listening_to_spotify) {
+              iconImg.src = '/Assets/spotify.png';
+              document.getElementById('activity-header-title').innerText = '🎵 LISTENING TO SPOTIFY';
+            } else if (fullTextSearch.includes('otakudesu')) {
+              iconImg.src = '/Assets/otakudesu.jpg';
+              document.getElementById('activity-header-title').innerText = '🍿 WATCHING ANIME';
+            } else if (fullTextSearch.includes('facebook')) {
+              iconImg.src = '/Assets/facebook.png';
+              document.getElementById('activity-header-title').innerText = '🌐 BROWSING FACEBOOK';
+            } else if (fullTextSearch.includes('instagram')) {
+              iconImg.src = '/Assets/instagram.jpg';
+              document.getElementById('activity-header-title').innerText = '📸 BROWSING INSTAGRAM';
+            } else {
+              document.getElementById('activity-header-title').innerText = '🎮 PLAYING A GAME';
+              
+              // Jika tidak cocok dengan aset lokal, otomatis olah URL eksternal Lanyard
+              iconImg.src = getLanyardImageUrl(primaryActivity);
+            }
 
-  if (primaryActivity.timestamps && primaryActivity.timestamps.start) {
-    activityStartTime = primaryActivity.timestamps.start;
-  } else {
-    activityStartTime = Date.now();
-  }
+            // Fallback otomatis jika gambar gagal dimuat
+            iconImg.onerror = function() {
+              this.onerror = null;
+              this.src = 'https://cdn.discordapp.com/embed/avatars/0.png';
+            };
 
-} else {
-  activityBox.classList.add('hidden');
-  activityStartTime = null;
-}
+            if (primaryActivity.timestamps && primaryActivity.timestamps.start) {
+              activityStartTime = primaryActivity.timestamps.start;
+            } else {
+              activityStartTime = Date.now();
+            }
+
+          } else {
+            activityBox.classList.add('hidden');
+            activityStartTime = null;
+          }
 
         }
       } catch (err) {
