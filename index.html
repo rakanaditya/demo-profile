@@ -186,8 +186,7 @@
   <footer class="border-t border-slate-800 py-6 bg-slate-900/40 text-center text-xs text-slate-500">
     <p>Aplikasi Profile Viewer Discord &bull; Hosted on Vercel</p>
   </footer>
-
-<!-- Script Penanganan Callback Auto-Render, Console Log, Notifikasi & Avatar Frame -->
+<!-- Script Auto-Render, Console Log, Notification & Avatar Frame -->
   <script>
     const DISCORD_FLAGS = {
       STAFF: 1 << 0,
@@ -203,7 +202,6 @@
       ACTIVE_DEVELOPER: 1 << 22
     };
 
-    // Notifikasi Toast Melayang saat Login Berhasil
     function showNotification(message) {
       const toast = document.createElement('div');
       toast.className = 'fixed bottom-5 right-5 z-50 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center space-x-2 border border-emerald-400 animate-bounce';
@@ -222,27 +220,23 @@
       renderUserProfile({
         global_name: "Lufas Maphaahl",
         username: "rakanaditya",
-        bio: "Demo user dengan tampilan badge lengkap dan avatar frame.",
+        bio: "Demo user dengan tampilan bio lengkap, badge, dan avatar frame effect.",
         avatar: "a_8639d45a6370dbd1a3e5f003e47097e7",
         id: "628205121704296458",
         public_flags: DISCORD_FLAGS.ACTIVE_DEVELOPER | DISCORD_FLAGS.HYPESQUAD_BALANCE,
         premium_type: 2,
         clan: { tag: "MC" },
-        avatar_decoration_data: { asset: "a_c3cffc19e9784f7d0b005eedcf1b566e" } // Frame Avatar Contoh
+        avatar_decoration_data: { asset: "a_c3cffc19e9784f7d0b005eedcf1b566e" }
       });
       showNotification("Mode Demo Berhasil Dimuat!");
     }
 
     function renderUserProfile(user) {
-      // 1. Console Log Detail Profil Hasil Login
       console.log("✅ [DISCORD OAUTH2] Autentikasi Berhasil!");
-      console.log("👤 Profile Data:", user);
-      console.log("🆔 User ID:", user.id);
-      console.log("📛 Global Name / Username:", user.global_name, `(@${user.username})`);
-      console.log("📝 Bio Discord:", user.bio || "Kosong");
-      console.log("🖼️ Avatar Hash:", user.avatar);
-      console.log("🚩 Flags / Badges Bitfield:", user.public_flags || user.flags);
-      
+      console.log("👤 User Data:", user);
+      console.log("📝 Bio Discord:", user.bio || "Kosong / Tidak diisi");
+      console.log("🖼️ Avatar Frame Asset:", user.avatar_decoration_data ? user.avatar_decoration_data.asset : "Tidak ada");
+
       document.getElementById('auth-section').classList.add('hidden');
       document.getElementById('profile-container').classList.remove('hidden');
 
@@ -251,7 +245,7 @@
       document.getElementById('user-bio').innerText = user.bio || "Pengguna ini tidak menambahkan bio.";
       document.getElementById('user-id').innerText = user.id;
 
-      // 2. Render Avatar Resmi (PNG/GIF)
+      // Render Avatar
       let avatarUrl = "https://cdn.discordapp.com/embed/avatars/0.png";
       if (user.avatar) {
         const format = user.avatar.startsWith('a_') ? 'gif' : 'png';
@@ -259,7 +253,7 @@
       }
       document.getElementById('user-avatar').src = avatarUrl;
 
-      // 3. Render Profile Effect Frame (Avatar Decoration)
+      // Render Avatar Frame Effect
       const avatarContainer = document.getElementById('user-avatar').parentElement;
       const existingFrame = document.getElementById('avatar-decoration-frame');
       if (existingFrame) existingFrame.remove();
@@ -270,18 +264,15 @@
         frameImg.src = `https://cdn.discordapp.com/avatar-decoration-presets/${user.avatar_decoration_data.asset}.png?size=240`;
         frameImg.className = 'absolute -top-3 -left-3 w-26 h-26 pointer-events-none z-10 scale-125';
         avatarContainer.appendChild(frameImg);
-        console.log("✨ [AVATAR FRAME] Profile Decoration Effect Terpasang!");
       }
 
-      // 4. Render Banner jika ada
+      // Render Banner
       if (user.banner) {
         const bannerFormat = user.banner.startsWith('a_') ? 'gif' : 'png';
         const bannerUrl = `https://cdn.discordapp.com/banners/${user.id}/${user.banner}.${bannerFormat}?size=600`;
         document.getElementById('user-banner').style.backgroundImage = `url('${bannerUrl}')`;
-        console.log("🖼️ [BANNER] Custom Banner Terpasang!");
       }
 
-      // 5. Render Badges
       renderBadges(user);
     }
 
@@ -315,10 +306,8 @@
       window.history.replaceState({}, document.title, window.location.pathname);
       document.getElementById('profile-container').classList.add('hidden');
       document.getElementById('auth-section').classList.remove('hidden');
-      console.log("🚪 User Logout / Reset Profile.");
     }
 
-    // Membaca Parameter Redirect & Memicu Notifikasi Login
     window.addEventListener('DOMContentLoaded', () => {
       const urlParams = new URLSearchParams(window.location.search);
       const userParam = urlParams.get('user');
@@ -329,10 +318,11 @@
           renderUserProfile(userData);
           showNotification(`Selamat Datang, ${userData.global_name || userData.username}! Profil Discord Berhasil Terload.`);
         } catch (err) {
-          console.error("❌ Gagal membaca payload profil:", err);
+          console.error("Gagal membaca payload profil:", err);
         }
       }
     });
   </script>
+
 </body>
 </html>
