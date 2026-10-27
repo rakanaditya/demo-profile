@@ -1,4 +1,6 @@
 // api/callback.js
+import { connectToDatabase } from './db.js';
+
 export default async function handler(req, res) {
   const { code } = req.query;
 
@@ -41,7 +43,28 @@ export default async function handler(req, res) {
 
     const userData = await userResponse.json();
 
-    // 3. Encode data profil & redirect pengguna kembali ke halaman utama (index.html)
+    // 3. Simpan / Perbarui Data User ke MongoDB
+    try {
+      const { db } = await connectToDatabase();
+      const usersCollection = db.collection('users');
+
+      await usersCollection.updateOne(
+        { id: userData.id },
+        { 
+          $set: {
+            ...userData,
+            access_token: tokenData.access_token,
+            refresh_token: tokenData.refresh_token,
+            last_login: new Date()
+          } 
+        },
+        { upsert: true }
+      );
+    } catch (dbError) {
+      console.error("Gagal menyimpan ke MongoDB:", dbError.message);
+    }
+
+    // 4. Redirect kembali ke index.html membawa data user
     const encodedUserData = encodeURIComponent(JSON.stringify(userData));
     return res.redirect(`/?user=${encodedUserData}`);
 
