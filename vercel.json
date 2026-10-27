@@ -1,6 +1,8 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/api/callback", "destination": "/api/callback.js" }
+    { "source": "/api/callback", "destination": "/api/callback.js" },
+    { "source": "/api/giveaway", "destination": "/api/giveaway.js" },
+    { "source": "/giveaway", "destination": "/src/giveaway.html" }
   ]
 }
