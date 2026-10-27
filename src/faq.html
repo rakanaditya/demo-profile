@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAQ & Privacy Policy - Rakan Aditya Community</title>
+  <script>
+    tailwind = {
+      config: {
+        theme: {
+          extend: {
+            colors: {
+              discord: { bg: '#313338', card: '#2b2d31', inner: '#1e1f22', accent: '#5865f2' }
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=gg+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style> body { font-family: 'gg Sans', sans-serif; } </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-600/30">
+          <span class="text-xl">❓</span>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg text-white leading-none">Rakan Aditya Community</h1>
+          <span class="text-xs text-slate-400">FAQ, Terms of Service & Privacy Policy</span>
+        </div>
+      </div>
+      <a href="/" class="text-xs text-slate-400 hover:text-white transition">← Beranda</a>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-10 w-full flex-grow space-y-12">
+    
+    <!-- Title -->
+    <div class="text-center space-y-2">
+      <h2 class="text-3xl font-extrabold text-white">Pertanyaan Umum & Kebijakan</h2>
+      <p class="text-sm text-slate-400">Informasi seputar penggunaan website, keamanan akun, serta aturan event komunitas.</p>
+    </div>
+
+    <!-- SECTION 1: FAQ -->
+    <div class="space-y-4">
+      <h3 class="text-xl font-bold text-indigo-400 border-b border-slate-800 pb-2 flex items-center space-x-2">
+        <span>❓ Frequently Asked Questions (FAQ)</span>
+      </h3>
+      
+      <div class="space-y-3">
+        <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-2">
+          <h4 class="font-bold text-white text-sm">Bagaimana cara ikutan giveaway?</h4>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Anda cukup melakukan login menggunakan akun Discord resmi Anda di halaman utama. Setelah login, masuk ke halaman <strong>Giveaway Panel</strong> dan klik tombol <strong>"🎉 Ikuti Giveaway"</strong> pada event yang sedang aktif.
+          </p>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-2">
+          <h4 class="font-bold text-white text-sm">Apakah login via Discord di website ini aman?</h4>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Sangat aman! Website kami menggunakan sistem otentikasi resmi <strong>Discord OAuth2</strong>. Kami <u>tidak pernah meminta atau menyimpan kata sandi (password)</u> Anda. OAuth2 hanya memberikan izin akses identitas dasar (User ID, Username, Avatar, dan Guilds) untuk verifikasi partisipasi event.
+          </p>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-2">
+          <h4 class="font-bold text-white text-sm">Bagaimana cara klaim hadiah jika menang?</h4>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Jika nama Anda terpilih saat pengocokan giveaway selesai, pengelola/owner akan menghubungi Anda langsung melalui Direct Message (DM) Discord atau melalui kanal pengumuman resmi di server Discord Rakan Aditya Community.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2: TERMS OF SERVICE -->
+    <div class="space-y-4">
+      <h3 class="text-xl font-bold text-amber-400 border-b border-slate-800 pb-2 flex items-center space-x-2">
+        <span>📜 Terms of Service (ToS)</span>
+      </h3>
+      <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-3 text-xs text-slate-400 leading-relaxed">
+        <p>1. <strong>Penggunaan Akun:</strong> Setiap pengguna dilarang menggunakan akun bot, akun palsu (alt account), atau memanipulasi sistem untuk mendaftar giveaway lebih dari satu kali.</p>
+        <p>2. <strong>Hak Keputusan:</strong> Keputusan pemenang giveaway yang dikocok secara otomatis oleh sistem serverless bersifat mutlak dan tidak dapat diganggu gugat.</p>
+        <p>3. <strong>Pelanggaran:</strong> Pengguna yang terbukti melakukan eksploitasi pada website akan di-blacklist secara permanen dari seluruh event komunitas.</p>
+      </div>
+    </div>
+
+    <!-- SECTION 3: PRIVACY POLICY -->
+    <div class="space-y-4">
+      <h3 class="text-xl font-bold text-emerald-400 border-b border-slate-800 pb-2 flex items-center space-x-2">
+        <span>🔒 Privacy Policy (Kebijakan Privasi)</span>
+      </h3>
+      <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-3 text-xs text-slate-400 leading-relaxed">
+        <p>Website Rakan Aditya Community menghormati privasi Anda. Berikut adalah rincian data yang kami kelola:</p>
+        <ul class="list-disc pl-5 space-y-1">
+          <li><strong>Data yang Disimpan:</strong> Discord User ID, Username, Global Name, Avatar Hash, dan riwayat keikutsertaan event.</li>
+          <li><strong>Tujuan Penyimpanan:</strong> Mengelola data peserta giveaway, leaderboard mingguan, dan menampilkan profil Discord Anda pada website.</li>
+          <li><strong>Keamanan Data:</strong> Seluruh data disimpan secara aman pada database MongoDB Atlas terenkripsi dan tidak akan pernah dijual atau dibagikan ke pihak ketiga.</li>
+        </ul>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="border-t border-slate-800 py-6 bg-slate-900/40 text-center text-xs text-slate-500">
+    <p>Rakan Aditya Community &bull; Hosted on Vercel</p>
+  </footer>
+
+</body>
+</html>
