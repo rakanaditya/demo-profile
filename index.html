@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Discord Rakan Aditya Community</title>
+  <title>Rakan Aditya Community</title>
 
   <!-- Konfigurasi Tailwind & Suppress Warning CDN -->
   <script>
@@ -40,7 +40,7 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
 
-  <!-- Header -->
+  <!-- Header Navigation -->
   <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-40">
     <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
       <div class="flex items-center space-x-3">
@@ -50,11 +50,24 @@
           </svg>
         </div>
         <div>
-  <h1 class="font-bold text-lg text-white leading-none">Rakan Aditya Community</h1>
-  <span class="text-xs text-slate-400">Official Discord Community & Profile Viewer</span>
-</div>
+          <h1 class="font-bold text-lg text-white leading-none">Rakan Aditya Community</h1>
+          <span class="text-xs text-slate-400">Official Discord Community & Profile Viewer</span>
+        </div>
       </div>
-      <span class="px-3 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full text-xs font-semibold">v3.2</span>
+      
+      <!-- Nav User Session & Links -->
+      <div class="flex items-center space-x-4">
+        <a href="/giveaway" class="text-xs font-medium text-slate-300 hover:text-indigo-400 transition flex items-center space-x-1">
+          <span>🎁 Giveaway</span>
+        </a>
+
+        <!-- Status User Login Nav Badge (Kanan Atas) -->
+        <div id="nav-user-badge" class="hidden flex items-center space-x-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full">
+          <img id="nav-user-avatar" src="" alt="Avatar" class="w-6 h-6 rounded-full object-cover">
+          <span id="nav-user-name" class="text-xs font-semibold text-white">User</span>
+          <button onclick="logoutSession()" class="text-slate-500 hover:text-rose-400 text-xs ml-1" title="Logout">✕</button>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -68,13 +81,13 @@
         <span>Terhubung ke demo-profile-dun.vercel.app</span>
       </div>
       
-     <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-  Selamat Datang di <br><span class="text-indigo-500">Rakan Aditya Community</span>
-</h2>
-
-<p class="text-slate-400 text-sm sm:text-base leading-relaxed">
-  Website resmi tempat sebuah komunitas Rakan Aditya Community. Masuk menggunakan akun Discord Anda untuk melihat profil, mengikuti giveaway, dan bergabung dengan event komunitas.
-</p>
+      <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+        Selamat Datang di <br><span class="text-indigo-500">Rakan Aditya Community</span>
+      </h2>
+      
+      <p class="text-slate-400 text-sm sm:text-base leading-relaxed">
+        Website resmi tempat sebuah komunitas Rakan Aditya Community. Masuk menggunakan akun Discord Anda untuk melihat profil, mengikuti giveaway, dan bergabung dengan event komunitas.
+      </p>
 
       <!-- Action Box -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left pt-4">
@@ -109,7 +122,6 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
             </div>
-            
             <h3 class="font-bold text-white">Mode Demo Instant</h3>
             <p class="text-xs text-slate-400">Pratinjau contoh badge dan status real-time secara offline.</p>
           </div>
@@ -118,22 +130,26 @@
             Tampilkan Demo Profil
           </button>
         </div>
+
       </div>
 
-<a href="/giveaway" 
-   class="mt-6 inline-flex items-center justify-between px-5 py-3 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 hover:from-indigo-900 hover:to-slate-900 border border-amber-500/40 hover:border-amber-400 text-slate-100 rounded-2xl transition-all duration-300 shadow-xl group max-w-sm mx-auto">
-  <div class="flex items-center space-x-3">
-    <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center group-hover:bg-amber-500 group-hover:text-slate-950 transition-colors duration-300">
-      <span class="text-sm">🎁</span>
-    </div>
-    <div class="text-left">
-      <p class="text-xs font-bold text-white group-hover:text-amber-300 transition-colors">Giveaway Komunitas</p>
-      <p class="text-[10px] text-slate-400">Ikuti event & klaim hadiah</p>
-    </div>
-  </div>
-  <span class="text-xs font-semibold text-amber-400 group-hover:translate-x-1 transition-transform duration-300">&rarr;</span>
-</a>
-      
+      <!-- Tombol Unik Halaman Giveaway -->
+      <div class="pt-4 flex justify-center">
+        <a href="/giveaway" 
+           class="inline-flex items-center justify-between px-5 py-3 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 hover:from-indigo-900 hover:to-slate-900 border border-amber-500/40 hover:border-amber-400 text-slate-100 rounded-2xl transition-all duration-300 shadow-xl group max-w-sm w-full">
+          <div class="flex items-center space-x-3">
+            <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center group-hover:bg-amber-500 group-hover:text-slate-950 transition-colors duration-300">
+              <span class="text-sm">🎁</span>
+            </div>
+            <div class="text-left">
+              <p class="text-xs font-bold text-white group-hover:text-amber-300 transition-colors">Giveaway Komunitas</p>
+              <p class="text-[10px] text-slate-400">Ikuti event & klaim hadiah</p>
+            </div>
+          </div>
+          <span class="text-xs font-semibold text-amber-400 group-hover:translate-x-1 transition-transform duration-300">&rarr;</span>
+        </a>
+      </div>
+
     </div>
 
     <!-- Tampilan Kartu Profil Discord -->
@@ -153,37 +169,27 @@
         <div class="px-4 pt-0 pb-4 relative">
           <div class="flex justify-between items-end -mt-12 mb-3 px-2">
             
-            <!-- Avatar Container dengan Real-Time Status & Frame Support -->
             <div class="relative w-20 h-20 flex items-center justify-center">
               <img id="user-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Avatar Discord" class="w-20 h-20 rounded-full border-4 border-[#232428] bg-[#232428] object-cover shadow-lg relative z-0">
-              
-              <!-- Indikator Status Real-Time -->
               <span id="user-status-dot" class="w-5 h-5 bg-slate-500 border-4 border-[#232428] rounded-full absolute bottom-0 right-0 z-20" title="Offline"></span>
             </div>
 
-            <!-- Custom Badges Container -->
             <div id="badges-container" class="bg-[#111214] px-2.5 py-1.5 rounded-lg flex items-center space-x-2 border border-slate-800 flex-wrap gap-y-1">
-              <!-- Rendered Badges -->
             </div>
 
           </div>
 
-          <!-- Konten Kartu Pengguna -->
           <div class="bg-[#111214] rounded-xl p-4 space-y-3">
             <div>
-              <!-- Global Name + Clan Tag di Sebelah Kanan -->
               <div class="flex items-center space-x-2 flex-wrap">
                 <h3 id="user-global-name" class="text-lg font-bold text-white leading-tight">Nama Pengguna</h3>
-                <span id="user-clan-tag" class="hidden px-1.5 py-0.5 bg-slate-800 border border-slate-700 text-slate-300 font-semibold text-[11px] rounded tracking-wide">
-                  <!-- Tag Clan -->
-                </span>
+                <span id="user-clan-tag" class="hidden px-1.5 py-0.5 bg-slate-800 border border-slate-700 text-slate-300 font-semibold text-[11px] rounded tracking-wide"></span>
               </div>
               <p id="user-username" class="text-xs text-slate-400 mt-0.5">@username</p>
             </div>
 
             <hr class="border-slate-800">
 
-            <!-- ID Akun & Database Status -->
             <div class="flex justify-between items-center text-xs">
               <div>
                 <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">ID Pengguna</h4>
@@ -201,22 +207,14 @@
   </main>
 
   <footer class="border-t border-slate-800 py-6 bg-slate-900/40 text-center text-xs text-slate-500">
-    <p>Aplikasi Profile Viewer Discord &bull; Hosted on Vercel</p>
+    <p>Rakan Aditya Community &bull; Hosted on Vercel</p>
   </footer>
 
-  <!-- Script Penanganan Callback Auto-Render & Lanyard Real-Time API -->
   <script>
     const DISCORD_FLAGS = {
-      STAFF: 1 << 0,
-      PARTNER: 1 << 1,
-      HYPESQUAD: 1 << 2,
-      BUG_HUNTER_LEVEL_1: 1 << 3,
-      HYPESQUAD_BRAVERY: 1 << 6,
-      HYPESQUAD_BRILLIANCE: 1 << 7,
-      HYPESQUAD_BALANCE: 1 << 8,
-      PREMIUM_EARLY_SUPPORTER: 1 << 9,
-      BUG_HUNTER_LEVEL_2: 1 << 14,
-      VERIFIED_DEVELOPER: 1 << 17,
+      STAFF: 1 << 0, PARTNER: 1 << 1, HYPESQUAD: 1 << 2, BUG_HUNTER_LEVEL_1: 1 << 3,
+      HYPESQUAD_BRAVERY: 1 << 6, HYPESQUAD_BRILLIANCE: 1 << 7, HYPESQUAD_BALANCE: 1 << 8,
+      PREMIUM_EARLY_SUPPORTER: 1 << 9, BUG_HUNTER_LEVEL_2: 1 << 14, VERIFIED_DEVELOPER: 1 << 17,
       ACTIVE_DEVELOPER: 1 << 22
     };
 
@@ -233,26 +231,23 @@
       setTimeout(() => toast.remove(), 4000);
     }
 
-    function loadDemoUser() {
-      console.log("🟢 [DEMO MODE] Memuat profil demo Discord...");
-      renderUserProfile({
-        global_name: "Lufas Maphaahl",
-        username: "rakanaditya",
-        avatar: "a_8639d45a6370dbd1a3e5f003e47097e7",
-        id: "628205121704296458",
-        public_flags: DISCORD_FLAGS.ACTIVE_DEVELOPER | DISCORD_FLAGS.HYPESQUAD_BALANCE,
-        premium_type: 2,
-        clan: { tag: "MC" },
-        primary_guild: { tag: "MC" },
-        avatar_decoration_data: { asset: "a_c3cffc19e9784f7d0b005eedcf1b566e" }
-      });
-      showNotification("Mode Demo Berhasil Dimuat!");
+    function updateNavUser(user) {
+      const navBadge = document.getElementById('nav-user-badge');
+      const navName = document.getElementById('nav-user-name');
+      const navAvatar = document.getElementById('nav-user-avatar');
+
+      if (user && user.id) {
+        navBadge.classList.remove('hidden');
+        navName.innerText = user.global_name || user.username;
+        navAvatar.src = user.avatar 
+          ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` 
+          : 'https://cdn.discordapp.com/embed/avatars/0.png';
+      } else {
+        navBadge.classList.add('hidden');
+      }
     }
 
     function renderUserProfile(user) {
-      console.log("✅ [DISCORD OAUTH2] Autentikasi Berhasil!");
-      console.log("👤 User Data:", user);
-
       document.getElementById('auth-section').classList.add('hidden');
       document.getElementById('profile-container').classList.remove('hidden');
 
@@ -260,7 +255,10 @@
       document.getElementById('user-username').innerText = `@${user.username}`;
       document.getElementById('user-id').innerText = user.id;
 
-      // 1. Render Clan Tag di Sebelah Kanan Nama
+      // Update Header Navbar
+      updateNavUser(user);
+
+      // Clan Tag
       const clanTagElem = document.getElementById('user-clan-tag');
       const clanTag = (user.clan && user.clan.tag) || (user.primary_guild && user.primary_guild.tag);
       if (clanTag) {
@@ -270,7 +268,7 @@
         clanTagElem.classList.add('hidden');
       }
 
-      // 2. Render Avatar Resmi
+      // Avatar
       let avatarUrl = "https://cdn.discordapp.com/embed/avatars/0.png";
       if (user.avatar) {
         const format = user.avatar.startsWith('a_') ? 'gif' : 'png';
@@ -278,7 +276,7 @@
       }
       document.getElementById('user-avatar').src = avatarUrl;
 
-      // 3. Render Avatar Frame Decoration
+      // Avatar Decoration Frame
       const avatarContainer = document.getElementById('user-avatar').parentElement;
       const existingFrame = document.getElementById('avatar-decoration-frame');
       if (existingFrame) existingFrame.remove();
@@ -291,7 +289,7 @@
         avatarContainer.appendChild(frameImg);
       }
 
-      // 4. Render Banner
+      // Banner
       if (user.banner) {
         const bannerFormat = user.banner.startsWith('a_') ? 'gif' : 'png';
         const bannerUrl = `https://cdn.discordapp.com/banners/${user.id}/${user.banner}.${bannerFormat}?size=600`;
@@ -299,43 +297,25 @@
       }
 
       renderBadges(user);
-
-      // 5. PANGGIL LANYARD API UNTUK REAL-TIME STATUS
       fetchRealtimeStatus(user.id);
     }
 
-    // FUNGSI UTAMA INTEGRASI LANYARD API
     async function fetchRealtimeStatus(userId) {
       try {
         const res = await fetch(`https://api.lanyard.rest/v1/users/${userId}`);
         const data = await res.json();
-
         if (data.success) {
-          const status = data.data.discord_status; // 'online', 'idle', 'dnd', atau 'offline'
+          const status = data.data.discord_status;
           const statusDot = document.getElementById('user-status-dot');
-          
           if (statusDot) {
             statusDot.className = 'w-5 h-5 border-4 border-[#232428] rounded-full absolute bottom-0 right-0 z-20 ';
-            
-            if (status === 'online') {
-              statusDot.className += 'bg-emerald-500';
-              statusDot.title = 'Status: ONLINE';
-            } else if (status === 'idle') {
-              statusDot.className += 'bg-amber-500';
-              statusDot.title = 'Status: IDLE';
-            } else if (status === 'dnd') {
-              statusDot.className += 'bg-rose-500';
-              statusDot.title = 'Status: DO NOT DISTURB';
-            } else {
-              statusDot.className += 'bg-slate-500';
-              statusDot.title = 'Status: OFFLINE / INVISIBLE';
-            }
+            if (status === 'online') statusDot.className += 'bg-emerald-500';
+            else if (status === 'idle') statusDot.className += 'bg-amber-500';
+            else if (status === 'dnd') statusDot.className += 'bg-rose-500';
+            else statusDot.className += 'bg-slate-500';
           }
-          console.log(`🟢 [LANYARD API] Real-time Status User (${userId}):`, status);
         }
-      } catch (err) {
-        console.warn("⚠️ [LANYARD API] Gagal mengambil status real-time:", err);
-      }
+      } catch (err) {}
     }
 
     function renderBadges(user) {
@@ -364,11 +344,19 @@
     }
 
     function resetProfile() {
+      localStorage.removeItem('discord_user');
       window.history.replaceState({}, document.title, window.location.pathname);
       document.getElementById('profile-container').classList.add('hidden');
       document.getElementById('auth-section').classList.remove('hidden');
+      updateNavUser(null);
     }
 
+    function logoutSession() {
+      resetProfile();
+      showNotification("Anda telah keluar dari akun.");
+    }
+
+    // MEKANISME SIMPAN & BACA LOCAL STORAGE SESI LOGIN
     window.addEventListener('DOMContentLoaded', () => {
       const urlParams = new URLSearchParams(window.location.search);
       const userParam = urlParams.get('user');
@@ -376,10 +364,18 @@
       if (userParam) {
         try {
           const userData = JSON.parse(decodeURIComponent(userParam));
+          localStorage.setItem('discord_user', JSON.stringify(userData));
           renderUserProfile(userData);
-          showNotification(`Selamat Datang, ${userData.global_name || userData.username}! Profil Discord Berhasil Terload.`);
-        } catch (err) {
-          console.error("Gagal membaca payload profil:", err);
+          showNotification(`Selamat Datang, ${userData.global_name || userData.username}!`);
+        } catch (err) {}
+      } else {
+        // Cek apakah ada sesi tersimpan di browser
+        const savedUser = localStorage.getItem('discord_user');
+        if (savedUser) {
+          try {
+            const userData = JSON.parse(savedUser);
+            renderUserProfile(userData);
+          } catch(e) {}
         }
       }
     });
