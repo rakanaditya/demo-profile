@@ -3,7 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>System Status & Stats - Rakan Aditya Community</title>
+  <title>System Status & Owner Presence - Rakan Aditya Community</title>
+  
+  <!-- Primary Meta Tags -->
+  <meta name="title" content="System Status & Owner Presence - Rakan Aditya Community">
+  <meta name="description" content="Status sistem backend Vercel, MongoDB, serta pemantauan aktivitas Discord Presence Owner secara real-time.">
+  <meta name="theme-color" content="#5865F2">
+
   <script>
     tailwind = {
       config: {
@@ -27,23 +33,108 @@
   <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-40">
     <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
       <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-2xl bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-600/30">
+        <a href="/" class="w-10 h-10 rounded-2xl bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-600/30 hover:scale-105 transition">
           <span class="text-xl">📊</span>
-        </div>
+        </a>
         <div>
           <h1 class="font-bold text-lg text-white leading-none">Rakan Aditya Community</h1>
-          <span class="text-xs text-slate-400">System Status & Analytics Dashboard</span>
+          <span class="text-xs text-slate-400">System Status & Live Presence Monitor</span>
         </div>
       </div>
       <a href="/" class="text-xs text-slate-400 hover:text-white transition">← Beranda</a>
     </div>
   </header>
 
-  <main class="max-w-5xl mx-auto px-4 py-10 w-full flex-grow space-y-8">
+  <main class="max-w-5xl mx-auto px-4 py-10 w-full flex-grow space-y-10">
     
     <div class="text-center space-y-2">
-      <h2 class="text-3xl font-extrabold text-white">Status Sistem & Analistik</h2>
-      <p class="text-sm text-slate-400">Pemantauan performa serverless backend, koneksi database, dan Lanyard API secara real-time.</p>
+      <h2 class="text-3xl font-extrabold text-white">Status Sistem & Live Presence</h2>
+      <p class="text-sm text-slate-400">Pemantauan performa infrastruktur serverless serta status aktivitas Discord Owner secara real-time.</p>
+    </div>
+
+    <!-- SECTION 1: DISCORD OWNER LIVE PRESENCE CARD (NATIVE LOOK) -->
+    <div class="space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+        <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+          <span>👑 Community Owner Presence</span>
+          <span class="text-[10px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded-full font-mono">Realtime WebSocket</span>
+        </h3>
+        <span id="presence-uptime-counter" class="text-xs font-mono text-emerald-400">Loading counter...</span>
+      </div>
+
+      <div class="max-w-md mx-auto bg-[#232428] rounded-2xl overflow-hidden shadow-2xl border border-slate-800">
+        
+        <!-- Banner -->
+        <div id="owner-banner" class="h-28 bg-gradient-to-r from-indigo-600 to-purple-600 relative bg-cover bg-center">
+          <div class="absolute top-3 right-3 px-2 py-1 bg-black/50 backdrop-blur rounded-full text-[10px] font-mono text-slate-300 border border-white/10">
+            ID: 628205121704296458
+          </div>
+        </div>
+
+        <!-- Profil Details -->
+        <div class="px-4 pt-0 pb-4 relative">
+          <div class="flex justify-between items-end -mt-12 mb-3 px-2">
+            
+            <div class="relative w-20 h-20 flex items-center justify-center">
+              <img id="owner-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Avatar Owner" class="w-20 h-20 rounded-full border-4 border-[#232428] bg-[#232428] object-cover shadow-lg relative z-0">
+              <span id="owner-status-dot" class="w-5 h-5 bg-slate-500 border-4 border-[#232428] rounded-full absolute bottom-0 right-0 z-20" title="Offline / Invisible"></span>
+            </div>
+
+            <!-- Badges -->
+            <div id="owner-badges" class="bg-[#111214] px-2.5 py-1.5 rounded-lg flex items-center space-x-2 border border-slate-800 flex-wrap gap-y-1">
+              <span class="text-[10px] text-slate-500">Loading Badges...</span>
+            </div>
+
+          </div>
+
+          <!-- User Info Box -->
+          <div class="bg-[#111214] rounded-xl p-4 space-y-3">
+            <div>
+              <div class="flex items-center space-x-2 flex-wrap">
+                <h3 id="owner-global-name" class="text-lg font-bold text-white leading-tight">Rakan Aditya</h3>
+                <span id="owner-clan-tag" class="hidden px-1.5 py-0.5 bg-slate-800 border border-slate-700 text-slate-300 font-semibold text-[11px] rounded tracking-wide"></span>
+              </div>
+              <p id="owner-username" class="text-xs text-slate-400 mt-0.5">@aditya_rb</p>
+            </div>
+
+            <hr class="border-slate-800">
+
+            <!-- Custom Status Text -->
+            <div id="owner-custom-status-box" class="hidden text-xs text-slate-300 bg-[#1e1f22] p-2.5 rounded-lg border border-slate-800 flex items-center space-x-2">
+              <span id="owner-custom-emoji" class="text-sm">💬</span>
+              <span id="owner-custom-text" class="italic truncate">...</span>
+            </div>
+
+            <!-- Rich Presence Activity Section (Game / Spotify / Software) -->
+            <div id="owner-activity-box" class="hidden bg-[#1e1f22] p-3 rounded-xl border border-slate-800 space-y-2">
+              <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                <span id="activity-header-title">PLAYING A GAME</span>
+                <span id="activity-timer-badge" class="font-mono text-emerald-400 font-normal">00:00 elapsed</span>
+              </div>
+
+              <div class="flex items-center space-x-3">
+                <div class="relative flex-shrink-0">
+                  <img id="activity-icon" src="https://cdn.discordapp.com/embed/avatars/0.png" class="w-12 h-12 rounded-lg object-cover bg-slate-900 border border-slate-700">
+                  <img id="activity-small-icon" class="hidden w-4 h-4 rounded-full absolute -bottom-1 -right-1 border-2 border-[#1e1f22]">
+                </div>
+                <div class="overflow-hidden">
+                  <h4 id="activity-name" class="font-bold text-xs text-white truncate">Activity Name</h4>
+                  <p id="activity-details" class="text-[11px] text-slate-300 truncate">Details...</p>
+                  <p id="activity-state" class="text-[11px] text-slate-400 truncate">State...</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Status Badges Text -->
+            <div class="flex justify-between items-center text-xs pt-1">
+              <span class="text-[10px] text-slate-400">Discord Status:</span>
+              <span id="owner-status-label" class="px-2 py-0.5 bg-slate-800 text-slate-400 border border-slate-700 rounded text-[10px] font-medium capitalize">Checking...</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
     </div>
 
     <!-- OVERALL STATUS BANNER -->
@@ -100,5 +191,189 @@
     <p>Rakan Aditya Community &bull; Hosted on Vercel</p>
   </footer>
 
+  <script>
+    const OWNER_ID = '628205121704296458';
+    let activityStartTime = null;
+    let presenceTimerInterval = null;
+
+    function formatTime(seconds) {
+      const hrs = Math.floor(seconds / 3600);
+      const mins = Math.floor((seconds % 3600) / 60);
+      const secs = Math.floor(seconds % 60);
+      if (hrs > 0) {
+        return `${hrs}:${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+      }
+      return `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    function renderBadges() {
+      const container = document.getElementById('owner-badges');
+      container.innerHTML = '';
+      
+      const defaultBadges = [
+        { title: 'Active Developer', imgUrl: 'https://cdn3.emoji.gg/emojis/6699-activedev-blue.png' },
+        { title: 'Nitro Subscriber', imgUrl: 'https://cdn3.emoji.gg/emojis/789630-nitro.png' },
+        { title: 'HypeSquad Balance', imgUrl: 'https://cdn3.emoji.gg/emojis/251341-discordhypesquadbalancebadge.png' },
+        { title: 'Completed Quest', imgUrl: 'https://cdn3.emoji.gg/emojis/215207-discordcompletedaquestbadge.png' }
+      ];
+
+      defaultBadges.forEach(b => {
+        const img = document.createElement('img');
+        img.src = b.imgUrl;
+        img.title = b.title;
+        img.className = 'w-5 h-5 object-contain hover:scale-110 transition-transform';
+        container.appendChild(img);
+      });
+    }
+
+    async function fetchOwnerPresence() {
+      try {
+        const res = await fetch(`https://api.lanyard.rest/v1/users/${OWNER_ID}`);
+        const data = await res.json();
+
+        if (data.success && data.data) {
+          const lData = data.data;
+          const user = lData.discord_user;
+          const status = lData.discord_status; // 'online', 'idle', 'dnd', 'offline'
+
+          // 1. User Profil Header
+          document.getElementById('owner-global-name').innerText = user.global_name || user.username;
+          document.getElementById('owner-username').innerText = `@${user.username}`;
+          
+          let avatarUrl = user.avatar 
+            ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=512` 
+            : 'https://cdn.discordapp.com/embed/avatars/0.png';
+          document.getElementById('owner-avatar').src = avatarUrl;
+
+          // Clan / Guild Tag
+          if (lData.kv && lData.kv.clan) {
+            document.getElementById('owner-clan-tag').innerText = `[${lData.kv.clan}]`;
+            document.getElementById('owner-clan-tag').classList.remove('hidden');
+          }
+
+          // Avatar Decoration Frame
+          const avatarContainer = document.getElementById('owner-avatar').parentElement;
+          const existingFrame = document.getElementById('owner-decoration-frame');
+          if (existingFrame) existingFrame.remove();
+
+          if (user.avatar_decoration_data && user.avatar_decoration_data.asset) {
+            const frameImg = document.createElement('img');
+            frameImg.id = 'owner-decoration-frame';
+            frameImg.src = `https://cdn.discordapp.com/avatar-decoration-presets/${user.avatar_decoration_data.asset}.png?size=240`;
+            frameImg.className = 'absolute -top-[10%] -left-[10%] w-[120%] h-[120%] max-w-none pointer-events-none z-10 object-contain';
+            avatarContainer.appendChild(frameImg);
+          }
+
+          // Status Dot Indicator
+          const statusDot = document.getElementById('owner-status-dot');
+          const statusLabel = document.getElementById('owner-status-label');
+          
+          statusDot.className = 'w-5 h-5 border-4 border-[#232428] rounded-full absolute bottom-0 right-0 z-20 ';
+          
+          if (status === 'online') {
+            statusDot.className += 'bg-emerald-500';
+            statusLabel.className = 'px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-[10px] font-medium capitalize';
+            statusLabel.innerText = '🟢 Online';
+          } else if (status === 'idle') {
+            statusDot.className += 'bg-amber-500';
+            statusLabel.className = 'px-2 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded text-[10px] font-medium capitalize';
+            statusLabel.innerText = '🌙 Idle';
+          } else if (status === 'dnd') {
+            statusDot.className += 'bg-rose-500';
+            statusLabel.className = 'px-2 py-0.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded text-[10px] font-medium capitalize';
+            statusLabel.innerText = '⛔ Do Not Disturb';
+          } else {
+            statusDot.className += 'bg-slate-500';
+            statusLabel.className = 'px-2 py-0.5 bg-slate-800 text-slate-400 border border-slate-700 rounded text-[10px] font-medium capitalize';
+            statusLabel.innerText = '⚪ Offline / Invisible';
+          }
+
+          // 2. Custom Status
+          const customActivity = lData.activities.find(a => a.type === 4);
+          const customStatusBox = document.getElementById('owner-custom-status-box');
+          if (customActivity && (customActivity.state || customActivity.emoji)) {
+            customStatusBox.classList.remove('hidden');
+            document.getElementById('owner-custom-text').innerText = customActivity.state || '';
+            if (customActivity.emoji) {
+              document.getElementById('owner-custom-emoji').innerText = customActivity.emoji.name || '💬';
+            }
+          } else {
+            customStatusBox.classList.add('hidden');
+          }
+
+          // 3. Rich Presence / Activity (Game, Spotify, VSCode)
+          const primaryActivity = lData.activities.find(a => a.type !== 4); // Bukan status teks biasa
+          const activityBox = document.getElementById('owner-activity-box');
+
+          if (primaryActivity) {
+            activityBox.classList.remove('hidden');
+            document.getElementById('activity-name').innerText = primaryActivity.name || 'Game / Application';
+            document.getElementById('activity-details').innerText = primaryActivity.details || '';
+            document.getElementById('activity-state').innerText = primaryActivity.state || '';
+
+            // Icon Activity
+            let iconUrl = 'https://cdn.discordapp.com/embed/avatars/0.png';
+            if (primaryActivity.assets && primaryActivity.assets.large_image) {
+              const imgKey = primaryActivity.assets.large_image;
+              if (imgKey.startsWith('spotify:')) {
+                iconUrl = `https://i.scdn.co/image/${imgKey.replace('spotify:', '')}`;
+              } else {
+                iconUrl = `https://cdn.discordapp.com/app-assets/${primaryActivity.application_id}/${imgKey}.png`;
+              }
+            }
+            document.getElementById('activity-icon').src = iconUrl;
+
+            // Activity Start Time Countdown / Elapsed
+            if (primaryActivity.timestamps && primaryActivity.timestamps.start) {
+              activityStartTime = primaryActivity.timestamps.start;
+            } else {
+              activityStartTime = Date.now();
+            }
+
+            if (primaryActivity.name === 'Spotify' || lData.listening_to_spotify) {
+              document.getElementById('activity-header-title').innerText = '🎵 LISTENING TO SPOTIFY';
+            } else {
+              document.getElementById('activity-header-title').innerText = '🎮 PLAYING A GAME';
+            }
+
+          } else {
+            activityBox.classList.add('hidden');
+            activityStartTime = null;
+          }
+
+        }
+      } catch (err) {
+        console.error("Gagal mengambil Lanyard presence:", err);
+      }
+    }
+
+    // Interval Timer Countdown
+    function startTimerLoop() {
+      if (presenceTimerInterval) clearInterval(presenceTimerInterval);
+
+      let elapsedSeconds = 0;
+      presenceTimerInterval = setInterval(() => {
+        elapsedSeconds++;
+        document.getElementById('presence-uptime-counter').innerText = `🔄 Live Monitor Active (${elapsedSeconds}s)`;
+
+        if (activityStartTime) {
+          const currentElapsed = Math.floor((Date.now() - activityStartTime) / 1000);
+          const timerBadge = document.getElementById('activity-timer-badge');
+          if (timerBadge) {
+            timerBadge.innerText = `${formatTime(currentElapsed)} elapsed`;
+          }
+        }
+      }, 1000);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderBadges();
+      fetchOwnerPresence();
+      startTimerLoop();
+
+      // Auto Refresh data Lanyard setiap 10 detik
+      setInterval(fetchOwnerPresence, 10000);
+    });
+  </script>
 </body>
 </html>
