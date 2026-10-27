@@ -52,7 +52,7 @@
       <p class="text-sm text-slate-400">Pemantauan performa infrastruktur serverless serta status aktivitas Discord Owner secara real-time.</p>
     </div>
 
-    <!-- SECTION 1: DISCORD OWNER LIVE PRESENCE CARD (NATIVE LOOK) -->
+    <!-- SECTION 1: DISCORD OWNER LIVE PRESENCE CARD -->
     <div class="space-y-4">
       <div class="flex items-center justify-between border-b border-slate-800 pb-2">
         <h3 class="text-lg font-bold text-white flex items-center space-x-2">
@@ -62,15 +62,21 @@
         <span id="presence-uptime-counter" class="text-xs font-mono text-emerald-400">Loading counter...</span>
       </div>
 
-      <!-- Tampilan Kartu Profil Discord Persis Seperti index.html -->
+      <!-- Kartu Profil Discord Native -->
       <div class="max-w-sm mx-auto">
         <div class="bg-[#232428] rounded-2xl overflow-hidden shadow-2xl border border-slate-800">
           
-          <!-- Banner Animasi GIF Asli Owner dari CDN Discord -->
-          <div id="owner-banner" 
-               style="background-image: url('https://cdn.discordapp.com/banners/628205121704296458/a_8639d45a6370dbd1a3e5f003e47097e7.gif?size=600');"
-               class="h-28 bg-cover bg-center relative transition-all duration-300">
-            <div class="absolute top-3 right-3 px-2 py-1 bg-black/50 backdrop-blur rounded-full text-[10px] font-mono text-slate-300 border border-white/10">
+          <!-- Custom Embed Banner (Klipy GIF Player) -->
+          <div id="owner-banner" class="h-28 relative overflow-hidden bg-slate-900 flex items-center justify-center">
+            <iframe 
+              src="https://klipy.com/gifs/pov-getting-smashed/player" 
+              class="w-full h-full object-cover border-0 pointer-events-none scale-125" 
+              title="Pov: Getting smashed" 
+              frameborder="0" 
+              allowfullscreen 
+              loading="lazy">
+            </iframe>
+            <div class="absolute top-3 right-3 px-2 py-1 bg-black/60 backdrop-blur rounded-full text-[10px] font-mono text-slate-300 border border-white/10 z-10">
               ID: 628205121704296458
             </div>
           </div>
@@ -84,7 +90,7 @@
                 <span id="owner-status-dot" class="w-5 h-5 bg-slate-500 border-4 border-[#232428] rounded-full absolute bottom-0 right-0 z-20" title="Offline / Invisible"></span>
               </div>
 
-              <div id="owner-badges-container" class="bg-[#111214] px-2.5 py-1.5 rounded-lg flex items-center space-x-2 border border-slate-800 flex-wrap gap-y-1">
+              <div id="owner-badges-container" class="bg-[#111214] px-2.5 py-1.5 rounded-lg flex items-center space-x-2 border border-slate-800 flex-wrap gap-y-1 z-10">
               </div>
 
             </div>
@@ -106,7 +112,7 @@
                 <span id="owner-custom-text" class="italic truncate">...</span>
               </div>
 
-              <!-- Rich Presence Activity Section (Game / Spotify / Software) -->
+              <!-- Rich Presence Activity Section (Custom Assets Support) -->
               <div id="owner-activity-box" class="hidden bg-[#1e1f22] p-3 rounded-xl border border-slate-800 space-y-2">
                 <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   <span id="activity-header-title">PLAYING A GAME</span>
@@ -316,7 +322,7 @@
             clanTagElem.classList.add('hidden');
           }
 
-          // Avatar (Animasi GIF atau PNG persis index.html)
+          // Avatar (Animasi GIF atau PNG)
           let avatarUrl = "https://cdn.discordapp.com/embed/avatars/0.png";
           if (user.avatar) {
             const format = user.avatar.startsWith('a_') ? 'gif' : 'png';
@@ -335,14 +341,6 @@
             frameImg.src = `https://cdn.discordapp.com/avatar-decoration-presets/${user.avatar_decoration_data.asset}.png?size=240`;
             frameImg.className = 'absolute -top-[10%] -left-[10%] w-[120%] h-[120%] max-w-none pointer-events-none z-10 object-contain';
             avatarContainer.appendChild(frameImg);
-          }
-
-          // Jika Lanyard mengembalikan hash banner baru dari user, update banner
-          if (user.banner) {
-            const isGif = user.banner.startsWith('a_');
-            const format = isGif ? 'gif' : 'png';
-            const bannerUrl = `https://cdn.discordapp.com/banners/${user.id}/${user.banner}.${format}?size=600`;
-            document.getElementById('owner-banner').style.backgroundImage = `url('${bannerUrl}')`;
           }
 
           // Status Dot Indicator
@@ -385,37 +383,46 @@
             customStatusBox.classList.add('hidden');
           }
 
-          // Rich Presence Activity (Game, Spotify, VSCode)
+          // Rich Presence Activity (Game, YouTube, Spotify, Software)
           const primaryActivity = lData.activities.find(a => a.type !== 4);
           const activityBox = document.getElementById('owner-activity-box');
 
           if (primaryActivity) {
             activityBox.classList.remove('hidden');
-            document.getElementById('activity-name').innerText = primaryActivity.name || 'Game / Application';
+            const actName = primaryActivity.name || 'Game / Application';
+            document.getElementById('activity-name').innerText = actName;
             document.getElementById('activity-details').innerText = primaryActivity.details || '';
             document.getElementById('activity-state').innerText = primaryActivity.state || '';
 
-            let iconUrl = 'https://cdn.discordapp.com/embed/avatars/0.png';
-            if (primaryActivity.assets && primaryActivity.assets.large_image) {
-              const imgKey = primaryActivity.assets.large_image;
-              if (imgKey.startsWith('spotify:')) {
-                iconUrl = `https://i.scdn.co/image/${imgKey.replace('spotify:', '')}`;
-              } else {
-                iconUrl = `https://cdn.discordapp.com/app-assets/${primaryActivity.application_id}/${imgKey}.png`;
+            const iconImg = document.getElementById('activity-icon');
+            
+            // CEK DAN LOAD GAMBAR DARI ASSETS LOKAL jika YouTube atau Spotify
+            if (actName.toLowerCase().includes('youtube') || (primaryActivity.details && primaryActivity.details.toLowerCase().includes('youtube'))) {
+              iconImg.src = '/Assets/youtube.png';
+              document.getElementById('activity-header-title').innerText = '📺 WATCHING YOUTUBE';
+            } else if (actName.toLowerCase().includes('spotify') || lData.listening_to_spotify) {
+              iconImg.src = '/Assets/spotify.png';
+              document.getElementById('activity-header-title').innerText = '🎵 LISTENING TO SPOTIFY';
+            } else {
+              document.getElementById('activity-header-title').innerText = '🎮 PLAYING A GAME';
+              
+              // Standard Asset Fallback dari Discord CDN
+              let iconUrl = 'https://cdn.discordapp.com/embed/avatars/0.png';
+              if (primaryActivity.assets && primaryActivity.assets.large_image) {
+                const imgKey = primaryActivity.assets.large_image;
+                if (imgKey.startsWith('spotify:')) {
+                  iconUrl = `https://i.scdn.co/image/${imgKey.replace('spotify:', '')}`;
+                } else {
+                  iconUrl = `https://cdn.discordapp.com/app-assets/${primaryActivity.application_id}/${imgKey}.png`;
+                }
               }
+              iconImg.src = iconUrl;
             }
-            document.getElementById('activity-icon').src = iconUrl;
 
             if (primaryActivity.timestamps && primaryActivity.timestamps.start) {
               activityStartTime = primaryActivity.timestamps.start;
             } else {
               activityStartTime = Date.now();
-            }
-
-            if (primaryActivity.name === 'Spotify' || lData.listening_to_spotify) {
-              document.getElementById('activity-header-title').innerText = '🎵 LISTENING TO SPOTIFY';
-            } else {
-              document.getElementById('activity-header-title').innerText = '🎮 PLAYING A GAME';
             }
 
           } else {
