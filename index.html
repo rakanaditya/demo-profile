@@ -54,7 +54,7 @@
           <span class="text-xs text-slate-400">OAuth2 Integration & Official Viewer</span>
         </div>
       </div>
-      <span class="px-3 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full text-xs font-semibold">v3.0</span>
+      <span class="px-3 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full text-xs font-semibold">v3.2</span>
     </div>
   </header>
 
@@ -73,7 +73,7 @@
       </h2>
       
       <p class="text-slate-400 text-sm sm:text-base leading-relaxed">
-        Masuk menggunakan akun Discord Anda untuk menampilkan avatar HD, nama pengguna, badge resmi, serta menyimpan profil ke database MongoDB.
+        Masuk menggunakan akun Discord Anda untuk menampilkan avatar HD, status real-time, nama pengguna, clan tag, badge resmi, serta menyimpan profil ke database MongoDB.
       </p>
 
       <!-- Action Box -->
@@ -110,7 +110,7 @@
               </svg>
             </div>
             <h3 class="font-bold text-white">Mode Demo Instant</h3>
-            <p class="text-xs text-slate-400">Pratinjau contoh badge dan profil lengkap secara offline.</p>
+            <p class="text-xs text-slate-400">Pratinjau contoh badge dan status real-time secara offline.</p>
           </div>
 
           <button onclick="loadDemoUser()" class="w-full py-3 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl transition border border-slate-700">
@@ -138,10 +138,12 @@
         <div class="px-4 pt-0 pb-4 relative">
           <div class="flex justify-between items-end -mt-12 mb-3 px-2">
             
-            <!-- Avatar HD/GIF -->
-            <div class="relative">
-              <img id="user-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Avatar Discord" class="w-20 h-20 rounded-full border-4 border-[#232428] bg-[#232428] object-cover shadow-lg">
-              <span class="w-5 h-5 bg-emerald-500 border-4 border-[#232428] rounded-full absolute bottom-0 right-0" title="Online"></span>
+            <!-- Avatar Container dengan Real-Time Status & Frame Support -->
+            <div class="relative w-20 h-20 flex items-center justify-center">
+              <img id="user-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Avatar Discord" class="w-20 h-20 rounded-full border-4 border-[#232428] bg-[#232428] object-cover shadow-lg relative z-0">
+              
+              <!-- Indikator Status Real-Time -->
+              <span id="user-status-dot" class="w-5 h-5 bg-slate-500 border-4 border-[#232428] rounded-full absolute bottom-0 right-0 z-20" title="Offline"></span>
             </div>
 
             <!-- Custom Badges Container -->
@@ -154,17 +156,17 @@
           <!-- Konten Kartu Pengguna -->
           <div class="bg-[#111214] rounded-xl p-4 space-y-3">
             <div>
-              <h3 id="user-global-name" class="text-lg font-bold text-white leading-tight">Nama Pengguna</h3>
-              <p id="user-username" class="text-xs text-slate-400">@username</p>
+              <!-- Global Name + Clan Tag di Sebelah Kanan -->
+              <div class="flex items-center space-x-2 flex-wrap">
+                <h3 id="user-global-name" class="text-lg font-bold text-white leading-tight">Nama Pengguna</h3>
+                <span id="user-clan-tag" class="hidden px-1.5 py-0.5 bg-slate-800 border border-slate-700 text-slate-300 font-semibold text-[11px] rounded tracking-wide">
+                  <!-- Tag Clan -->
+                </span>
+              </div>
+              <p id="user-username" class="text-xs text-slate-400 mt-0.5">@username</p>
             </div>
 
             <hr class="border-slate-800">
-
-            <!-- Bio / About Me -->
-            <div>
-              <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Mengenai Saya</h4>
-              <p id="user-bio" class="text-xs text-slate-300 leading-relaxed">Pengguna Discord aktif.</p>
-            </div>
 
             <!-- ID Akun & Database Status -->
             <div class="flex justify-between items-center text-xs">
@@ -186,7 +188,8 @@
   <footer class="border-t border-slate-800 py-6 bg-slate-900/40 text-center text-xs text-slate-500">
     <p>Aplikasi Profile Viewer Discord &bull; Hosted on Vercel</p>
   </footer>
-<!-- Script Auto-Render, Console Log, Notification & Avatar Frame -->
+
+  <!-- Script Penanganan Callback Auto-Render & Lanyard Real-Time API -->
   <script>
     const DISCORD_FLAGS = {
       STAFF: 1 << 0,
@@ -220,12 +223,12 @@
       renderUserProfile({
         global_name: "Lufas Maphaahl",
         username: "rakanaditya",
-        bio: "Demo user dengan tampilan bio lengkap, badge, dan avatar frame effect.",
         avatar: "a_8639d45a6370dbd1a3e5f003e47097e7",
         id: "628205121704296458",
         public_flags: DISCORD_FLAGS.ACTIVE_DEVELOPER | DISCORD_FLAGS.HYPESQUAD_BALANCE,
         premium_type: 2,
         clan: { tag: "MC" },
+        primary_guild: { tag: "MC" },
         avatar_decoration_data: { asset: "a_c3cffc19e9784f7d0b005eedcf1b566e" }
       });
       showNotification("Mode Demo Berhasil Dimuat!");
@@ -234,18 +237,25 @@
     function renderUserProfile(user) {
       console.log("✅ [DISCORD OAUTH2] Autentikasi Berhasil!");
       console.log("👤 User Data:", user);
-      console.log("📝 Bio Discord:", user.bio || "Kosong / Tidak diisi");
-      console.log("🖼️ Avatar Frame Asset:", user.avatar_decoration_data ? user.avatar_decoration_data.asset : "Tidak ada");
 
       document.getElementById('auth-section').classList.add('hidden');
       document.getElementById('profile-container').classList.remove('hidden');
 
       document.getElementById('user-global-name').innerText = user.global_name || user.username;
       document.getElementById('user-username').innerText = `@${user.username}`;
-      document.getElementById('user-bio').innerText = user.bio || "Pengguna ini tidak menambahkan bio.";
       document.getElementById('user-id').innerText = user.id;
 
-      // Render Avatar
+      // 1. Render Clan Tag di Sebelah Kanan Nama
+      const clanTagElem = document.getElementById('user-clan-tag');
+      const clanTag = (user.clan && user.clan.tag) || (user.primary_guild && user.primary_guild.tag);
+      if (clanTag) {
+        clanTagElem.innerText = `[${clanTag}]`;
+        clanTagElem.classList.remove('hidden');
+      } else {
+        clanTagElem.classList.add('hidden');
+      }
+
+      // 2. Render Avatar Resmi
       let avatarUrl = "https://cdn.discordapp.com/embed/avatars/0.png";
       if (user.avatar) {
         const format = user.avatar.startsWith('a_') ? 'gif' : 'png';
@@ -253,7 +263,7 @@
       }
       document.getElementById('user-avatar').src = avatarUrl;
 
-      // Render Avatar Frame Effect
+      // 3. Render Avatar Frame Decoration
       const avatarContainer = document.getElementById('user-avatar').parentElement;
       const existingFrame = document.getElementById('avatar-decoration-frame');
       if (existingFrame) existingFrame.remove();
@@ -262,11 +272,11 @@
         const frameImg = document.createElement('img');
         frameImg.id = 'avatar-decoration-frame';
         frameImg.src = `https://cdn.discordapp.com/avatar-decoration-presets/${user.avatar_decoration_data.asset}.png?size=240`;
-        frameImg.className = 'absolute -top-3 -left-3 w-26 h-26 pointer-events-none z-10 scale-125';
+        frameImg.className = 'absolute -top-[10%] -left-[10%] w-[120%] h-[120%] max-w-none pointer-events-none z-10 object-contain';
         avatarContainer.appendChild(frameImg);
       }
 
-      // Render Banner
+      // 4. Render Banner
       if (user.banner) {
         const bannerFormat = user.banner.startsWith('a_') ? 'gif' : 'png';
         const bannerUrl = `https://cdn.discordapp.com/banners/${user.id}/${user.banner}.${bannerFormat}?size=600`;
@@ -274,6 +284,43 @@
       }
 
       renderBadges(user);
+
+      // 5. PANGGIL LANYARD API UNTUK REAL-TIME STATUS
+      fetchRealtimeStatus(user.id);
+    }
+
+    // FUNGSI UTAMA INTEGRASI LANYARD API
+    async function fetchRealtimeStatus(userId) {
+      try {
+        const res = await fetch(`https://api.lanyard.rest/v1/users/${userId}`);
+        const data = await res.json();
+
+        if (data.success) {
+          const status = data.data.discord_status; // 'online', 'idle', 'dnd', atau 'offline'
+          const statusDot = document.getElementById('user-status-dot');
+          
+          if (statusDot) {
+            statusDot.className = 'w-5 h-5 border-4 border-[#232428] rounded-full absolute bottom-0 right-0 z-20 ';
+            
+            if (status === 'online') {
+              statusDot.className += 'bg-emerald-500';
+              statusDot.title = 'Status: ONLINE';
+            } else if (status === 'idle') {
+              statusDot.className += 'bg-amber-500';
+              statusDot.title = 'Status: IDLE';
+            } else if (status === 'dnd') {
+              statusDot.className += 'bg-rose-500';
+              statusDot.title = 'Status: DO NOT DISTURB';
+            } else {
+              statusDot.className += 'bg-slate-500';
+              statusDot.title = 'Status: OFFLINE / INVISIBLE';
+            }
+          }
+          console.log(`🟢 [LANYARD API] Real-time Status User (${userId}):`, status);
+        }
+      } catch (err) {
+        console.warn("⚠️ [LANYARD API] Gagal mengambil status real-time:", err);
+      }
     }
 
     function renderBadges(user) {
@@ -288,7 +335,6 @@
       else if (flags & DISCORD_FLAGS.HYPESQUAD_BRILLIANCE) badges.push({ title: 'HypeSquad Brilliance', icon: '🛡️' });
       else if (flags & DISCORD_FLAGS.HYPESQUAD_BALANCE) badges.push({ title: 'HypeSquad Balance', icon: '⚖️' });
       if (flags & DISCORD_FLAGS.PREMIUM_EARLY_SUPPORTER) badges.push({ title: 'Early Supporter', icon: '👑' });
-      if (user.clan && user.clan.tag) badges.push({ title: `Clan: [${user.clan.tag}]`, icon: '🏷️' });
       
       badges.push({ title: 'Completed Quest', icon: '🎮' });
       badges.push({ title: 'Quest Master', icon: '⚔️' });
@@ -323,6 +369,5 @@
       }
     });
   </script>
-
 </body>
 </html>
