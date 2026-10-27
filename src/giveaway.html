@@ -16,7 +16,6 @@
         }
       }
     };
-
     const originalWarn = console.warn;
     console.warn = (...args) => {
       if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) return;
@@ -44,35 +43,37 @@
         </div>
       </div>
       
+      <!-- Nav User Badge (Kanan Atas) -->
       <div class="flex items-center space-x-3">
-        <a href="/" class="text-xs text-slate-400 hover:text-white transition">Halaman Utama</a>
-        <div id="user-badge" class="hidden flex items-center space-x-2 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700">
-          <img id="nav-avatar" class="w-5 h-5 rounded-full" src="" alt="Avatar">
+        <a href="/" class="text-xs text-slate-400 hover:text-white transition">← Beranda</a>
+        
+        <div id="user-badge" class="hidden flex items-center space-x-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full">
+          <img id="nav-avatar" class="w-5 h-5 rounded-full object-cover" src="" alt="Avatar">
           <span id="nav-name" class="text-xs font-semibold text-white">User</span>
+          <button onclick="logoutSession()" class="text-slate-500 hover:text-rose-400 text-xs ml-1" title="Logout">✕</button>
         </div>
       </div>
     </div>
   </header>
 
-  <!-- Main Area -->
+  <!-- Main Content -->
   <main class="max-w-4xl mx-auto px-4 py-10 w-full flex-grow space-y-8">
     
-    <!-- Title Section -->
     <div class="text-center space-y-2">
       <h2 class="text-3xl font-extrabold text-white">🎁 Event & Giveaway Komunitas</h2>
       <p class="text-sm text-slate-400">Ikuti giveaway resmi dari Rakan Aditya Community dan dapatkan hadiah menarik!</p>
     </div>
 
-    <!-- Login Warning Alert (Jika belum login) -->
+    <!-- Login Warning Alert -->
     <div id="login-alert" class="bg-indigo-950/60 border border-indigo-800 p-6 rounded-2xl text-center space-y-4">
       <p class="text-sm text-indigo-200">Anda harus masuk dengan akun Discord terlebih dahulu untuk mengikuti giveaway.</p>
-      <a href="https://discord.com/api/oauth2/authorize?client_id=1380868700688613416&redirect_uri=https%3A%2F%2Fdemo-profile-dun.vercel.app%2Fapi%2Fcallback&response_type=code&scope=identify%20guilds" 
+      <a href="https://discord.com/api/oauth2/authorize?client_id=1380868700688613416&redirect_uri=https%3A%2F%2Fdemo-profile-dun.vercel.app%2Fapi%2Fcallback&response_type=code&scope=identify%20guilds&state=giveaway" 
          class="inline-flex items-center space-x-2 py-2.5 px-6 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition text-sm">
          <span>Login dengan Discord</span>
       </a>
     </div>
 
-    <!-- OWNER PANEL (Khusus ID 628205121704296458) -->
+    <!-- OWNER PANEL (ID 628205121704296458) -->
     <div id="owner-panel" class="hidden bg-slate-900 border border-amber-500/40 p-6 rounded-2xl space-y-4">
       <div class="flex items-center space-x-2 text-amber-400">
         <span class="text-lg">👑</span>
@@ -120,7 +121,6 @@
     const OWNER_ID = '628205121704296458';
     let currentUser = null;
 
-    // Toast Notification
     function showToast(msg, error = false) {
       const toast = document.createElement('div');
       toast.className = `fixed bottom-5 right-5 z-50 ${error ? 'bg-rose-600 border-rose-400' : 'bg-emerald-600 border-emerald-400'} text-white px-5 py-3 rounded-xl shadow-2xl border text-xs sm:text-sm font-medium animate-bounce`;
@@ -129,7 +129,6 @@
       setTimeout(() => toast.remove(), 4000);
     }
 
-    // Load Data User dari URL / LocalStorage
     function initAuth() {
       const urlParams = new URLSearchParams(window.location.search);
       const userParam = urlParams.get('user');
@@ -144,7 +143,7 @@
         if (saved) currentUser = JSON.parse(saved);
       }
 
-      if (currentUser) {
+      if (currentUser && currentUser.id) {
         document.getElementById('login-alert').classList.add('hidden');
         document.getElementById('user-badge').classList.remove('hidden');
         document.getElementById('nav-name').innerText = currentUser.global_name || currentUser.username;
@@ -152,15 +151,17 @@
           ? `https://cdn.discordapp.com/avatars/${currentUser.id}/${currentUser.avatar}.png`
           : 'https://cdn.discordapp.com/embed/avatars/0.png';
 
-        // Cek Pengecekan Owner 628205121704296458
         if (currentUser.id === OWNER_ID) {
           document.getElementById('owner-panel').classList.remove('hidden');
-          console.log("👑 Owner Management Panel Aktif!");
         }
       }
     }
 
-    // Fetch Giveaways
+    function logoutSession() {
+      localStorage.removeItem('discord_user');
+      window.location.reload();
+    }
+
     async function loadGiveaways() {
       const container = document.getElementById('giveaway-list');
       try {
@@ -227,7 +228,6 @@
       }
     }
 
-    // Handlers
     document.getElementById('create-giveaway-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const res = await fetch('/api/giveaway', {
@@ -283,7 +283,7 @@
     }
 
     async function deleteGiveaway(id) {
-      if (!confirm('Yakin ingin menghapus giveaway ini?')) return;
+      if (!confirm('Yakin ingin menghapus giveaway me ini?')) return;
       const res = await fetch('/api/giveaway', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
