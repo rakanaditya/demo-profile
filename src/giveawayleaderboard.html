@@ -37,8 +37,17 @@
       </div>
       
       <div class="flex items-center space-x-3">
-        <a href="/giveaway" class="text-xs text-indigo-400 hover:text-indigo-300 font-medium transition">🎁 Giveaway Panel</a>
+        <!-- Tombol Panel Giveaway (Hanya tampil jika akun adalah Owner 628205121704296458) -->
+        <a id="nav-giveaway-panel" href="/giveaway" class="hidden text-xs text-indigo-400 hover:text-indigo-300 font-medium transition">🎁 Giveaway Panel</a>
+        
         <a href="/" class="text-xs text-slate-400 hover:text-white transition">← Beranda</a>
+
+        <!-- Nav User Badge (Menampilkan Avatar & Username) -->
+        <div id="nav-user-badge" class="hidden flex items-center space-x-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full">
+          <img id="nav-user-avatar" src="" alt="Avatar" class="w-6 h-6 rounded-full object-cover">
+          <span id="nav-user-name" class="text-xs font-semibold text-white">User</span>
+          <button onclick="logoutSession()" class="text-slate-500 hover:text-rose-400 text-xs ml-1" title="Logout">✕</button>
+        </div>
       </div>
     </div>
   </header>
@@ -92,10 +101,52 @@
   </footer>
 
   <script>
+    const OWNER_ID = '628205121704296458';
+    let currentUser = null;
+
     function getAvatarUrl(user) {
       return user.avatar 
         ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` 
         : 'https://cdn.discordapp.com/embed/avatars/0.png';
+    }
+
+    // Pengecekan Sesi Authentikasi & Hak Akses Owner
+    function initAuthCheck() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const userParam = urlParams.get('user');
+
+      if (userParam) {
+        try {
+          currentUser = JSON.parse(decodeURIComponent(userParam));
+          localStorage.setItem('discord_user', JSON.stringify(currentUser));
+        } catch (e) {}
+      } else {
+        const saved = localStorage.getItem('discord_user');
+        if (saved) currentUser = JSON.parse(saved);
+      }
+
+      if (currentUser && currentUser.id) {
+        // Tampilkan Badge Navigasi User
+        document.getElementById('nav-user-badge').classList.remove('hidden');
+        document.getElementById('nav-user-name').innerText = currentUser.global_name || currentUser.username;
+        document.getElementById('nav-user-avatar').src = getAvatarUrl(currentUser);
+
+        // Hanya Tampilkan Tombol 'Giveaway Panel' Jika User Adalah OWNER
+        if (currentUser.id === OWNER_ID) {
+          document.getElementById('nav-giveaway-panel').classList.remove('hidden');
+        } else {
+          document.getElementById('nav-giveaway-panel').classList.add('hidden');
+        }
+      } else {
+        // Jika belum login, sembunyikan tombol Giveaway Panel
+        document.getElementById('nav-giveaway-panel').classList.add('hidden');
+        document.getElementById('nav-user-badge').classList.add('hidden');
+      }
+    }
+
+    function logoutSession() {
+      localStorage.removeItem('discord_user');
+      window.location.reload();
     }
 
     async function loadLeaderboardData() {
@@ -190,7 +241,10 @@
       }
     }
 
-    window.addEventListener('DOMContentLoaded', loadLeaderboardData);
+    window.addEventListener('DOMContentLoaded', () => {
+      initAuthCheck();
+      loadLeaderboardData();
+    });
   </script>
 </body>
 </html>
