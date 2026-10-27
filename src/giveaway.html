@@ -28,7 +28,7 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between">
 
-  <!-- Header Navigation -->
+  <!-- Header -->
   <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-40">
     <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
       <div class="flex items-center space-x-3">
@@ -43,10 +43,8 @@
         </div>
       </div>
       
-      <!-- Nav User Badge (Kanan Atas) -->
       <div class="flex items-center space-x-3">
         <a href="/" class="text-xs text-slate-400 hover:text-white transition">← Beranda</a>
-        
         <div id="user-badge" class="hidden flex items-center space-x-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full">
           <img id="nav-avatar" class="w-5 h-5 rounded-full object-cover" src="" alt="Avatar">
           <span id="nav-name" class="text-xs font-semibold text-white">User</span>
@@ -64,7 +62,7 @@
       <p class="text-sm text-slate-400">Ikuti giveaway resmi dari Rakan Aditya Community dan dapatkan hadiah menarik!</p>
     </div>
 
-    <!-- Login Warning Alert -->
+    <!-- Login Alert -->
     <div id="login-alert" class="bg-indigo-950/60 border border-indigo-800 p-6 rounded-2xl text-center space-y-4">
       <p class="text-sm text-indigo-200">Anda harus masuk dengan akun Discord terlebih dahulu untuk mengikuti giveaway.</p>
       <a href="https://discord.com/api/oauth2/authorize?client_id=1380868700688613416&redirect_uri=https%3A%2F%2Fdemo-profile-dun.vercel.app%2Fapi%2Fcallback&response_type=code&scope=identify%20guilds&state=giveaway" 
@@ -73,8 +71,8 @@
       </a>
     </div>
 
-    <!-- OWNER PANEL (ID 628205121704296458) -->
-    <div id="owner-panel" class="hidden bg-slate-900 border border-amber-500/40 p-6 rounded-2xl space-y-4">
+    <!-- OWNER PANEL dengan Custom Timer -->
+    <div id="owner-panel" class="hidden bg-slate-900 border border-amber-500/40 p-6 rounded-2xl space-y-4 shadow-xl">
       <div class="flex items-center space-x-2 text-amber-400">
         <span class="text-lg">👑</span>
         <h3 class="font-bold text-lg text-white">Owner Management Panel</h3>
@@ -91,19 +89,38 @@
             <input type="text" id="gw-prize" required placeholder="Contoh: 1x Discord Nitro" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
           </div>
         </div>
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">Jumlah Pemenang</label>
-          <input type="number" id="gw-winners" value="1" min="1" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Jumlah Pemenang</label>
+            <input type="number" id="gw-winners" value="1" min="1" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+          </div>
+
+          <!-- Input Custom Timer -->
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Durasi Timer (Hitung Mundur)</label>
+            <div class="flex space-x-2">
+              <input type="number" id="gw-duration-val" min="1" placeholder="Durasi" class="w-1/2 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+              <select id="gw-duration-unit" class="w-1/2 bg-slate-950 border border-slate-800 rounded-xl px-2 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+                <option value="minutes">Menit</option>
+                <option value="hours">Jam</option>
+                <option value="days" selected>Hari</option>
+                <option value="weeks">Minggu</option>
+              </select>
+            </div>
+          </div>
         </div>
+
         <div>
           <label class="block text-xs text-slate-400 mb-1">Deskripsi / Syarat</label>
           <textarea id="gw-desc" rows="2" placeholder="Deskripsi singkat..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"></textarea>
         </div>
-        <button type="submit" class="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-xl text-sm transition">Buat Giveaway Baru</button>
+
+        <button type="submit" class="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-xl text-sm transition shadow-lg shadow-amber-600/20">Buat Giveaway Baru</button>
       </form>
     </div>
 
-    <!-- LIST GIVEAWAY -->
+    <!-- List Giveaway -->
     <div class="space-y-4">
       <h3 class="font-bold text-lg text-white">Daftar Giveaway Aktif</h3>
       <div id="giveaway-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -113,14 +130,28 @@
 
   </main>
 
+  <!-- MODAL PARTICIPANTS -->
+  <div id="participants-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl p-6 space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h4 class="font-bold text-white text-base">👥 Daftar Peserta Giveaway</h4>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-white text-sm">✕</button>
+      </div>
+      <div id="modal-participants-list" class="max-h-60 overflow-y-auto space-y-2 pr-1">
+        <!-- List Peserta via Script -->
+      </div>
+    </div>
+  </div>
+
   <footer class="border-t border-slate-800 py-6 bg-slate-900/40 text-center text-xs text-slate-500">
     <p>Rakan Aditya Community &bull; Hosted on Vercel</p>
   </footer>
-<script>
+
+  <script>
     const OWNER_ID = '628205121704296458';
     let currentUser = null;
+    let timerIntervals = [];
 
-    // Fungsi Pop-Up Alert Notifikasi Toast (Sukses & Gagal)
     function showToast(msg, isError = false) {
       const existingToast = document.getElementById('custom-toast');
       if (existingToast) existingToast.remove();
@@ -128,28 +159,18 @@
       const toast = document.createElement('div');
       toast.id = 'custom-toast';
       toast.className = `fixed bottom-5 right-5 z-50 ${isError ? 'bg-rose-600 border-rose-400' : 'bg-emerald-600 border-emerald-400'} text-white px-5 py-3 rounded-xl shadow-2xl border text-xs sm:text-sm font-medium flex items-center space-x-2 animate-bounce`;
-      toast.innerHTML = `
-        <span>${isError ? '❌' : '✅'}</span>
-        <span>${msg}</span>
-      `;
+      toast.innerHTML = `<span>${isError ? '❌' : '✅'}</span><span>${msg}</span>`;
       document.body.appendChild(toast);
       setTimeout(() => toast.remove(), 4000);
     }
 
-    // Fungsi Penanganan Respon JSON Aman
     async function safeFetchJson(url, options = {}) {
       try {
         const res = await fetch(url, options);
         const text = await res.text();
-        try {
-          return JSON.parse(text);
-        } catch (e) {
-          console.error("Response bukan JSON valid:", text);
-          return { success: false, error: `Server Error (${res.status}): Terjadi kesalahan pada Vercel.` };
-        }
-      } catch (err) {
-        return { success: false, error: "Gagal terhubung ke jaringan." };
-      }
+        try { return JSON.parse(text); } 
+        catch (e) { return { success: false, error: `Server Error (${res.status}).` }; }
+      } catch (err) { return { success: false, error: "Gagal jaringan." }; }
     }
 
     function initAuth() {
@@ -185,7 +206,16 @@
       window.location.reload();
     }
 
+    function getAvatarUrl(p) {
+      return p.avatar 
+        ? `https://cdn.discordapp.com/avatars/${p.id}/${p.avatar}.png` 
+        : 'https://cdn.discordapp.com/embed/avatars/0.png';
+    }
+
     async function loadGiveaways() {
+      timerIntervals.forEach(clearInterval);
+      timerIntervals = [];
+
       const container = document.getElementById('giveaway-list');
       const data = await safeFetchJson('/api/giveaway');
 
@@ -193,24 +223,50 @@
         container.innerHTML = '';
         data.data.forEach(gw => {
           const isOwner = currentUser && currentUser.id === OWNER_ID;
-          const isJoined = currentUser && gw.participants && gw.participants.some(p => p.id === currentUser.id);
+          const participants = gw.participants || [];
+          const isJoined = currentUser && participants.some(p => p.id === currentUser.id);
           const isEnded = gw.status === 'ended';
 
           const card = document.createElement('div');
-          card.className = 'bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between space-y-4';
-          
+          card.className = 'bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between space-y-4 relative overflow-hidden';
+
+          // Tampilan Pemenang dengan Avatar HD
           let winnersHTML = '';
           if (isEnded && gw.winners && gw.winners.length > 0) {
             winnersHTML = `
-              <div class="bg-emerald-950/50 border border-emerald-800/60 p-3 rounded-xl text-xs space-y-1">
-                <span class="font-bold text-emerald-400">🎉 Pemenang:</span>
-                <p class="text-white">${gw.winners.map(w => `@${w.username}`).join(', ')}</p>
+              <div class="bg-gradient-to-r from-emerald-950/80 to-slate-900 border border-emerald-500/40 p-3 rounded-xl space-y-2">
+                <span class="font-bold text-xs text-emerald-400 flex items-center space-x-1">
+                  <span>🎉 PEMENANG:</span>
+                </span>
+                <div class="flex flex-wrap gap-2">
+                  ${gw.winners.map(w => `
+                    <div class="flex items-center space-x-2 bg-emerald-900/40 border border-emerald-500/30 px-2.5 py-1 rounded-full">
+                      <img src="${getAvatarUrl(w)}" class="w-5 h-5 rounded-full object-cover">
+                      <span class="text-xs font-semibold text-white">${w.global_name || w.username}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+          }
+
+          // Deretan Avatar Peserta yang bergabung
+          let avatarsPreviewHTML = '';
+          if (participants.length > 0) {
+            avatarsPreviewHTML = `
+              <div class="flex items-center space-x-2 pt-1">
+                <div class="flex -space-x-2 overflow-hidden">
+                  ${participants.slice(0, 5).map(p => `
+                    <img class="inline-block h-6 w-6 rounded-full ring-2 ring-slate-900 object-cover" src="${getAvatarUrl(p)}" title="${p.global_name || p.username}">
+                  `).join('')}
+                </div>
+                ${participants.length > 5 ? `<span class="text-[10px] text-slate-400">+${participants.length - 5} lainnya</span>` : ''}
               </div>
             `;
           }
 
           card.innerHTML = `
-            <div class="space-y-2">
+            <div class="space-y-3">
               <div class="flex justify-between items-start">
                 <h4 class="font-bold text-lg text-white leading-tight">${gw.title}</h4>
                 <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${isEnded ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}">
@@ -219,13 +275,29 @@
               </div>
               <p class="text-xs text-indigo-400 font-medium">🎁 Hadiah: ${gw.prize}</p>
               <p class="text-xs text-slate-400">${gw.description || 'Tidak ada deskripsi.'}</p>
-              <p class="text-[11px] text-slate-500">👥 Total Peserta: ${gw.participants ? gw.participants.length : 0} Orang</p>
+              
+              <!-- Countdown Timer -->
+              ${gw.endsAt && !isEnded ? `<div id="timer-${gw._id}" class="text-xs font-mono text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg w-fit">⏳ Menghitung...</div>` : ''}
+
+              <!-- Total & Preview Avatar Peserta -->
+              <div class="flex items-center justify-between border-t border-slate-800/60 pt-2">
+                <div class="space-y-1">
+                  <p class="text-[11px] text-slate-400">👥 Total Peserta: <span class="font-bold text-white">${participants.length}</span></p>
+                  ${avatarsPreviewHTML}
+                </div>
+
+                <!-- Tombol Info Participants -->
+                <button onclick="openParticipantsModal('${encodeURIComponent(JSON.stringify(participants))}')" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs transition border border-slate-700 flex items-center space-x-1">
+                  <span>ℹ️ Participants</span>
+                </button>
+              </div>
+
               ${winnersHTML}
             </div>
 
             <div class="space-y-2 pt-2 border-t border-slate-800/60">
               ${!isEnded ? `
-                <button onclick="joinGiveaway('${gw._id}')" ${isJoined ? 'disabled' : ''} class="w-full py-2 px-4 ${isJoined ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-500 text-white'} rounded-xl text-xs font-semibold transition">
+                <button onclick="joinGiveaway('${gw._id}')" ${isJoined ? 'disabled' : ''} class="w-full py-2 px-4 ${isJoined ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/20'} rounded-xl text-xs font-semibold transition">
                   ${isJoined ? '✓ Sudah Mengikuti' : '🎉 Ikuti Giveaway'}
                 </button>
               ` : ''}
@@ -240,6 +312,36 @@
           `;
 
           container.appendChild(card);
+
+          // Setup Countdown Timer JavaScript Real-time
+          if (gw.endsAt && !isEnded) {
+            const timerElem = document.getElementById(`timer-${gw._id}`);
+            const endTime = new Date(gw.endsAt).getTime();
+
+            const interval = setInterval(() => {
+              const now = new Date().getTime();
+              const distance = endTime - now;
+
+              if (distance < 0) {
+                clearInterval(interval);
+                timerElem.innerText = '⌛ Waktu Habis! Mengocok...';
+                loadGiveaways();
+              } else {
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                let timerStr = '⏳ Sisa Waktu: ';
+                if (days > 0) timerStr += `${days}h `;
+                if (hours > 0 || days > 0) timerStr += `${hours}j `;
+                timerStr += `${minutes}m ${seconds}s`;
+                timerElem.innerText = timerStr;
+              }
+            }, 1000);
+
+            timerIntervals.push(interval);
+          }
         });
       } else if (data.success && data.data.length === 0) {
         container.innerHTML = '<p class="text-slate-500 text-sm col-span-2">Belum ada giveaway yang dibuat.</p>';
@@ -248,7 +350,37 @@
       }
     }
 
-    // Submit Buat Giveaway
+    // Handlers Modal Participants
+    function openParticipantsModal(encodedData) {
+      const participants = JSON.parse(decodeURIComponent(encodedData));
+      const listContainer = document.getElementById('modal-participants-list');
+      listContainer.innerHTML = '';
+
+      if (participants.length === 0) {
+        listContainer.innerHTML = '<p class="text-xs text-slate-500 text-center py-4">Belum ada peserta yang mendaftar.</p>';
+      } else {
+        participants.forEach(p => {
+          const item = document.createElement('div');
+          item.className = 'flex items-center space-x-3 bg-slate-950 p-2.5 rounded-xl border border-slate-800';
+          item.innerHTML = `
+            <img src="${getAvatarUrl(p)}" class="w-8 h-8 rounded-full object-cover border border-slate-700">
+            <div>
+              <p class="text-xs font-bold text-white leading-tight">${p.global_name || p.username}</p>
+              <p class="text-[10px] text-slate-400">@${p.username}</p>
+            </div>
+          `;
+          listContainer.appendChild(item);
+        });
+      }
+
+      document.getElementById('participants-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('participants-modal').classList.add('hidden');
+    }
+
+    // Submit Buat Giveaway dengan Custom Timer
     document.getElementById('create-giveaway-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!currentUser || currentUser.id !== OWNER_ID) {
@@ -259,6 +391,8 @@
         title: document.getElementById('gw-title').value,
         prize: document.getElementById('gw-prize').value,
         winnersCount: document.getElementById('gw-winners').value,
+        durationValue: document.getElementById('gw-duration-val').value,
+        durationUnit: document.getElementById('gw-duration-unit').value,
         description: document.getElementById('gw-desc').value,
         userId: currentUser.id
       };
@@ -270,7 +404,7 @@
       });
 
       if (data.success) {
-        showToast(data.message || 'Giveaway berhasil dibuat dan tersimpan ke MongoDB!');
+        showToast(data.message || 'Giveaway berhasil dibuat!');
         document.getElementById('create-giveaway-form').reset();
         loadGiveaways();
       } else {
@@ -330,6 +464,5 @@
       loadGiveaways();
     });
   </script>
- 
 </body>
 </html>
