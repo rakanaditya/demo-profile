@@ -4,6 +4,10 @@
     { "source": "/api/callback", "destination": "/api/callback.js" },
     { "source": "/api/giveaway", "destination": "/api/giveaway.js" },
     { "source": "/giveaway", "destination": "/src/giveaway.html" },
-    { "source": "/giveawayleaderboard", "destination": "/src/giveawayleaderboard.html" }
+    { "source": "/giveawayleaderboard", "destination": "/src/giveawayleaderboard.html" },
+    { "source": "/faq", "destination": "/src/faq.html" },
+    { "source": "/stats", "destination": "/src/stats.html" },
+    { "source": "/announcements", "destination": "/src/announcements.html" },
+    { "source": "/rewards", "destination": "/src/rewards.html" }
   ]
 }
