@@ -66,7 +66,7 @@
       <div class="max-w-sm mx-auto">
         <div class="bg-[#232428] rounded-2xl overflow-hidden shadow-2xl border border-slate-800">
           
-          <!-- Banner -->
+          <!-- Banner (Diambil dari Object Discord User CDN) -->
           <div id="owner-banner" class="h-28 bg-gradient-to-r from-indigo-600 to-purple-600 relative bg-cover bg-center transition-all duration-300">
             <div class="absolute top-3 right-3 px-2 py-1 bg-black/50 backdrop-blur rounded-full text-[10px] font-mono text-slate-300 border border-white/10">
               ID: 628205121704296458
@@ -289,6 +289,29 @@
       });
     }
 
+    // Function Pengambil Object Discord User Resmi (Mendapatkan Hash Banner GIF/PNG)
+    async function fetchDiscordUserObject() {
+      try {
+        const res = await fetch(`https://discord.com/api/v9/users/${OWNER_ID}`, {
+          headers: { 'Accept': 'application/json' }
+        });
+        if (res.ok) {
+          const userObj = await res.json();
+          const bannerElem = document.getElementById('owner-banner');
+          
+          if (userObj.banner) {
+            const format = userObj.banner.startsWith('a_') ? 'gif' : 'png';
+            const bannerUrl = `https://cdn.discordapp.com/banners/${userObj.id}/${userObj.banner}.${format}?size=600`;
+            bannerElem.style.backgroundImage = `url('${bannerUrl}')`;
+          }
+        }
+      } catch (err) {
+        // Fallback jika API Discord dibatasi (CORS)
+        const bannerElem = document.getElementById('owner-banner');
+        bannerElem.style.backgroundImage = `url('https://cdn.discordapp.com/banners/628205121704296458/a_8639d45a6370dbd1a3e5f003e47097e7.gif?size=600')`;
+      }
+    }
+
     async function fetchOwnerPresence() {
       try {
         const res = await fetch(`https://api.lanyard.rest/v1/users/${OWNER_ID}`);
@@ -335,19 +358,14 @@
             avatarContainer.appendChild(frameImg);
           }
 
-         // Ganti bagian penanganan banner di fetchOwnerPresence() dengan kode ini:
-const bannerElem = document.getElementById('owner-banner');
-
-if (user.banner) {
-  const isGif = user.banner.startsWith('a_');
-  const format = isGif ? 'gif' : 'png';
-  const bannerUrl = `https://cdn.discordapp.com/banners/${user.id}/${user.banner}.${format}?size=600`;
-  bannerElem.style.backgroundImage = `url('${bannerUrl}')`;
-} else {
-  // Jika Lanyard tidak mengembalikan hash banner, gunakan URL banner dari Discord CDN secara langsung:
-  const fallbackBannerUrl = `https://cdn.discordapp.com/banners/628205121704296458/a_8639d45a6370dbd1a3e5f003e47097e7.gif?size=600`;
-  bannerElem.style.backgroundImage = `url('${fallbackBannerUrl}')`;
-}
+          // Banner dari Lanyard jika ada Hash
+          const bannerElem = document.getElementById('owner-banner');
+          if (user.banner) {
+            const isGif = user.banner.startsWith('a_');
+            const format = isGif ? 'gif' : 'png';
+            const bannerUrl = `https://cdn.discordapp.com/banners/${user.id}/${user.banner}.${format}?size=600`;
+            bannerElem.style.backgroundImage = `url('${bannerUrl}')`;
+          }
 
           // Status Dot Indicator
           const statusDot = document.getElementById('owner-status-dot');
@@ -452,6 +470,7 @@ if (user.banner) {
     }
 
     window.addEventListener('DOMContentLoaded', () => {
+      fetchDiscordUserObject();
       fetchOwnerPresence();
       startTimerLoop();
       setInterval(fetchOwnerPresence, 10000);
