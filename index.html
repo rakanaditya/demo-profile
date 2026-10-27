@@ -324,22 +324,70 @@
       const flags = user.public_flags || user.flags || 0;
       const badges = [];
 
-      if (flags & DISCORD_FLAGS.ACTIVE_DEVELOPER) badges.push({ title: 'Active Developer', icon: '👨‍💻' });
-      if (user.premium_type && user.premium_type > 0) badges.push({ title: 'Nitro Subscriber', icon: '🚀' });
-      if (flags & DISCORD_FLAGS.HYPESQUAD_BRAVERY) badges.push({ title: 'HypeSquad Bravery', icon: '🛡️' });
-      else if (flags & DISCORD_FLAGS.HYPESQUAD_BRILLIANCE) badges.push({ title: 'HypeSquad Brilliance', icon: '🛡️' });
-      else if (flags & DISCORD_FLAGS.HYPESQUAD_BALANCE) badges.push({ title: 'HypeSquad Balance', icon: '⚖️' });
-      if (flags & DISCORD_FLAGS.PREMIUM_EARLY_SUPPORTER) badges.push({ title: 'Early Supporter', icon: '👑' });
+      // Badges Standar
+      if (flags & DISCORD_FLAGS.ACTIVE_DEVELOPER) badges.push({ 
+        title: 'Active Developers', 
+        imgUrl: 'https://cdn3.emoji.gg/emojis/6699-activedev-blue.png',
+        linkUrl: 'https://emoji.gg/emoji/6699-activedev-blue'
+      });
+      if (user.premium_type && user.premium_type > 0) badges.push({ 
+        title: 'Nitro Subscribers', 
+        imgUrl: 'https://cdn3.emoji.gg/emojis/789630-nitro.png',
+        linkUrl: 'https://emoji.gg/emojis/789630-nitro'
+          
+      if (flags & DISCORD_FLAGS.HYPESQUAD_BRAVERY) badges.push({ 
+        title: 'HYPESQUAD BRAVERY', 
+        imgUrl: 'https://cdn3.emoji.gg/emojis/677453-houseofbravery.png',
+        linkUrl: 'https://emoji.gg/emojis/677453-houseofbravery'
+      else if (flags & DISCORD_FLAGS.HYPESQUAD_BRILLIANCE) badges.push({ 
+        title: 'HYPESQUAD BRILLIANCE', 
+        imgUrl: 'https://cdn3.emoji.gg/emojis/271697-houseofbrilliance.png',
+        linkUrl: 'https://emoji.gg/emojis/271697-houseofbrilliance'
+          
+      else if (flags & DISCORD_FLAGS.HYPESQUAD_BALANCE) badges.push({ 
+        title: 'HYPESQUAD BALANCE', 
+        imgUrl: 'https://cdn3.emoji.gg/emojis/251341-discordhypesquadbalancebadge.png',
+        linkUrl: 'https://emoji.gg/emojis/251341-discordhypesquadbalancebadge'
+          
+      if (flags & DISCORD_FLAGS.PREMIUM_EARLY_SUPPORTER) badges.push({ 
+        title: 'PREMIUM EARLY SUPPORTER', 
+        imgUrl: 'https://cdn3.emoji.gg/emojis/544377-discordearlysupporterbadge.png',
+        linkUrl: 'https://emoji.gg/emojis/544377-discordearlysupporterbadge'
       
-      badges.push({ title: 'Completed Quest', icon: '🎮' });
+      // GANTI ICON QUEST DENGAN GAMBAR CUSTOM DISCORD COMPLETED A QUEST BADGE
+      badges.push({ 
+        title: 'Completed Quest', 
+        imgUrl: 'https://cdn3.emoji.gg/emojis/215207-discordcompletedaquestbadge.png',
+        linkUrl: 'https://emoji.gg/emoji/215207-discordcompletedaquestbadge'
+      });
       badges.push({ title: 'Quest Master', icon: '⚔️' });
 
+      // Append badges ke dalam container
       badges.forEach(b => {
-        const span = document.createElement('span');
-        span.className = 'text-xs cursor-pointer hover:scale-110 transition-transform';
-        span.title = b.title;
-        span.innerText = b.icon;
-        container.appendChild(span);
+        // Jika badge berupa Gambar Custom PNG/GIF
+        if (b.imgUrl) {
+          const a = document.createElement('a');
+          a.href = b.linkUrl || '#';
+          a.target = '_blank';
+          a.rel = 'noopener noreferrer';
+          a.title = b.title;
+          a.className = 'hover:scale-110 transition-transform inline-block';
+
+          const img = document.createElement('img');
+          img.src = b.imgUrl;
+          img.alt = b.title;
+          img.className = 'w-5 h-5 object-contain'; // Ukuran disesuaikan (20px) agar rapi dengan badge lain
+          
+          a.appendChild(img);
+          container.appendChild(a);
+        } else {
+          // Jika badge berupa Emoji biasa
+          const span = document.createElement('span');
+          span.className = 'text-xs cursor-pointer hover:scale-110 transition-transform';
+          span.title = b.title;
+          span.innerText = b.icon;
+          container.appendChild(span);
+        }
       });
     }
 
