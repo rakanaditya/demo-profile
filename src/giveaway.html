@@ -26,35 +26,42 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=gg+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'gg Sans', sans-serif; }
-    
-    /* Animation Keyframes */
-    @keyframes pulse-fast { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
-    .animate-pulse-fast { animation: pulse-fast 0.15s infinite; }
+  body { font-family: 'gg Sans', sans-serif; }
+  
+  /* Animation Keyframes */
+  @keyframes pulse-fast { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+  .animate-pulse-fast { animation: pulse-fast 0.15s infinite; }
 
-    @keyframes zoom-in-glow {
-      0% { transform: scale(0.3); opacity: 0; filter: drop-shadow(0 0 0px #eab308); }
-      50% { opacity: 1; filter: drop-shadow(0 0 35px #eab308); }
-      100% { transform: scale(1.3); opacity: 0; filter: drop-shadow(0 0 50px #eab308); }
-    }
-    .animate-zoom-glow { animation: zoom-in-glow 0.9s ease-out forwards; }
+  @keyframes scroll-carousel {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .animate-carousel { animation: scroll-carousel 0.25s linear infinite; }
 
-    @keyframes shake-light {
-      0%, 100% { transform: translate(0, 0) rotate(0deg); }
-      20% { transform: translate(-4px, 4px) rotate(-2deg); }
-      40% { transform: translate(4px, -4px) rotate(2deg); }
-      60% { transform: translate(-3px, -2px) rotate(-1deg); }
-      80% { transform: translate(3px, 2px) rotate(1deg); }
-    }
-    .animate-shake { animation: shake-light 0.5s ease-in-out; }
+  @keyframes zoom-in-glow {
+    0% { transform: scale(0.3); opacity: 0; filter: drop-shadow(0 0 0px #eab308); }
+    50% { opacity: 1; filter: drop-shadow(0 0 35px #eab308); }
+    100% { transform: scale(1.3); opacity: 0; filter: drop-shadow(0 0 50px #eab308); }
+  }
+  .animate-zoom-glow { animation: zoom-in-glow 0.9s ease-out forwards; }
 
-    @keyframes flash-dramatic {
-      0% { opacity: 0; background-color: rgba(255, 255, 255, 0.8); }
-      30% { opacity: 1; background-color: transparent; }
-      100% { opacity: 1; }
-    }
-    .animate-flash { animation: flash-dramatic 0.8s ease-out forwards; }
-  </style>
+  @keyframes shake-light {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    20% { transform: translate(-4px, 4px) rotate(-2deg); }
+    40% { transform: translate(4px, -4px) rotate(2deg); }
+    60% { transform: translate(-3px, -2px) rotate(-1deg); }
+    80% { transform: translate(3px, 2px) rotate(1deg); }
+  }
+  .animate-shake { animation: shake-light 0.5s ease-in-out; }
+
+  @keyframes flash-dramatic {
+    0% { opacity: 0; background-color: rgba(255, 255, 255, 0.8); }
+    30% { opacity: 1; background-color: transparent; }
+    100% { opacity: 1; }
+  }
+  .animate-flash { animation: flash-dramatic 0.8s ease-out forwards; }
+</style>
+  
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white relative">
 
@@ -189,24 +196,33 @@
     </div>
   </div>
 
-  <!-- MODAL ANIMASI ROLLING GIVEAWAY -->
-  <div id="rolling-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-amber-500/50 w-full max-w-md rounded-3xl p-6 text-center space-y-6 shadow-2xl relative overflow-hidden">
+ <!-- MODAL ANIMASI ROLLING GIVEAWAY -->
+  <div id="rolling-modal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-amber-500/50 w-full max-w-2xl rounded-3xl p-6 sm:p-8 text-center space-y-6 shadow-2xl relative overflow-hidden">
       
       <!-- Status Badge -->
       <div id="rolling-status" class="space-y-1">
         <span id="status-badge" class="inline-block px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full text-xs font-bold animate-pulse">ROLLING</span>
-        <h3 id="rolling-title" class="text-lg font-extrabold text-white">Mengocok Pemenang</h3>
+        <h3 id="rolling-title" class="text-xl font-extrabold text-white">Mengocok Pemenang Komunitas</h3>
       </div>
 
-      <!-- Display Rolling Profile Avatar, Nomor Urut, & Name -->
-      <div class="flex flex-col items-center justify-center space-y-3 py-2">
-        <div class="relative w-28 h-28 sm:w-32 sm:h-32">
-          <img id="roll-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" class="w-full h-full rounded-full border-4 border-indigo-500 object-cover shadow-2xl animate-pulse-fast">
-          <span id="roll-number-tag" class="absolute -top-1 -right-1 bg-amber-500 text-slate-950 text-xs font-black px-2.5 py-1 rounded-full border-2 border-slate-900 shadow-lg">#1</span>
+      <!-- CAROUSEL / SLOT MACHINE CONTAINER (Kiri - Tengah - Kanan) -->
+      <div class="relative w-full overflow-hidden py-6 bg-slate-950/80 border border-slate-800 rounded-2xl flex items-center justify-center shadow-inner">
+        
+        <!-- Garis Penanda Pemenang di Tengah -->
+        <div class="absolute inset-y-0 w-1 bg-amber-500 z-20 shadow-[0_0_15px_#eab308]"></div>
+
+        <!-- Track Geser Kiri-Kanan -->
+        <div id="roll-track" class="flex items-center space-x-4 transition-transform duration-75 ease-out px-4">
+          <!-- Item peserta akan di-generate secara dinamis via JavaScript -->
         </div>
-        <p id="roll-name" class="font-black text-xl sm:text-2xl text-white tracking-wide truncate max-w-xs">...</p>
-        <p id="roll-tag" class="text-xs font-mono text-slate-400 truncate max-w-xs">@mengocok_peserta</p>
+      </div>
+
+      <!-- Info Pemenang Terpilih (Ditampilkan saat berhenti) -->
+      <div id="winner-display-info" class="hidden flex flex-col items-center justify-center space-y-2 animate-bounce">
+        <p class="text-xs text-amber-400 font-bold uppercase tracking-widest">🎉 PEMENANG TERpILIH 🎉</p>
+        <p id="winner-selected-name" class="font-black text-2xl text-white tracking-wide"></p>
+        <p id="winner-selected-tag" class="text-xs font-mono text-slate-400"></p>
       </div>
 
       <!-- Auto Refresh Timer Indicator -->
@@ -406,69 +422,89 @@
     function startRollingAnimation(participants, winners, giveawayTitle, prize, onFinish) {
       isRollingActive = true;
       const modal = document.getElementById('rolling-modal');
-      const rollAvatar = document.getElementById('roll-avatar');
-      const rollName = document.getElementById('roll-name');
-      const rollTag = document.getElementById('roll-tag');
-      const rollNumberTag = document.getElementById('roll-number-tag');
+      const track = document.getElementById('roll-track');
       const statusBadge = document.getElementById('status-badge');
+      const winnerInfo = document.getElementById('winner-display-info');
       const refreshIndicator = document.getElementById('refresh-indicator');
       const refreshTimerVal = document.getElementById('refresh-timer-val');
 
       modal.classList.remove('hidden');
+      winnerInfo.classList.add('hidden');
       refreshIndicator.classList.add('hidden');
-      statusBadge.innerText = 'ROLLING';
+      statusBadge.innerText = 'ROLLING...';
       statusBadge.className = 'inline-block px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full text-xs font-bold animate-pulse';
+
+      // Buat deretan list peserta secara acak ke kiri dan kanan (slot machine items)
+      let displayList = [];
+      for (let i = 0; i < 30; i++) {
+        const shuffled = [...participants].sort(() => 0.5 - Math.random());
+        displayList = displayList.concat(shuffled);
+      }
+      // Pastikan pemenang utama berada di posisi akhir/tengah track
+      const firstWinner = winners[0];
+      displayList.push(firstWinner);
+
+      track.innerHTML = displayList.map((p, idx) => `
+        <div class="flex-shrink-0 w-24 sm:w-28 bg-slate-900 border border-slate-700 rounded-xl p-3 flex flex-col items-center space-y-2 shadow-lg">
+          <img src="${getAvatarUrl(p)}" class="w-14 h-14 rounded-full object-cover border-2 border-indigo-500 shadow-md">
+          <span class="text-[10px] font-bold text-slate-300 truncate w-full">${p.global_name || p.username}</span>
+          <span class="text-[9px] font-mono text-slate-500 truncate w-full">@${p.username}</span>
+        </div>
+      `).join('');
+
+      let currentPos = 0;
+      const totalItems = displayList.length;
+      const itemWidth = 120; // Lebar card + margin
+      const maxScroll = (totalItems - 3) * itemWidth;
 
       const rollInterval = setInterval(() => {
         playAudio('audio-pop');
-        const randomIndex = Math.floor(Math.random() * participants.length);
-        const randomP = participants[randomIndex];
-        
-        rollAvatar.src = getAvatarUrl(randomP);
-        rollName.innerText = randomP.global_name || randomP.username;
-        rollTag.innerText = `@${randomP.username}`;
-        rollNumberTag.innerText = `#${randomIndex + 1}`;
-      }, 80);
+        currentPos += 45;
+        if (currentPos >= maxScroll) currentPos = 0;
+        track.style.transform = `translateX(-${currentPos}px)`;
+      }, 60);
 
       setTimeout(() => {
         clearInterval(rollInterval);
 
-        const firstWinner = winners[0];
-        const winnerIndex = participants.findIndex(p => p.id === firstWinner.id);
+        // Posisikan pas di kartu pemenang akhir
+        const targetScroll = (totalItems - 2.5) * itemWidth;
+        track.style.transition = 'transform 0.8s cubic-bezier(0.15, 0.85, 0.35, 1)';
+        track.style.transform = `translateX(-${targetScroll}px)`;
 
-        playAudio('audio-win');
-        rollAvatar.src = getAvatarUrl(firstWinner);
-        rollName.innerText = firstWinner.global_name || firstWinner.username;
-        rollTag.innerText = `@${firstWinner.username}`;
-        rollNumberTag.innerText = `#${winnerIndex !== -1 ? winnerIndex + 1 : 1}`;
+        setTimeout(() => {
+          playAudio('audio-win');
+          statusBadge.innerText = 'WINNER SELECTED';
+          statusBadge.className = 'inline-block px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-bold animate-bounce';
 
-        statusBadge.innerText = 'WINNER SELECTED';
-        statusBadge.className = 'inline-block px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-bold animate-bounce';
+          winnerInfo.classList.remove('hidden');
+          document.getElementById('winner-selected-name').innerText = firstWinner.global_name || firstWinner.username;
+          document.getElementById('winner-selected-tag').innerText = `@${firstWinner.username} • Hadiah: ${prize}`;
 
-        refreshIndicator.classList.remove('hidden');
-        let refreshSeconds = 10;
-        refreshTimerVal.innerText = refreshSeconds;
-
-        const refreshCountdown = setInterval(() => {
-          refreshSeconds--;
+          refreshIndicator.classList.remove('hidden');
+          let refreshSeconds = 10;
           refreshTimerVal.innerText = refreshSeconds;
-          if (refreshSeconds <= 0) {
-            clearInterval(refreshCountdown);
-            window.location.href = 'https://demo-profile-dun.vercel.app/giveaway';
-          }
-        }, 1000);
 
-        const allWinnerNames = winners.map(w => w.global_name || w.username).join(', ');
-        localStorage.setItem('recent_winner_notification', JSON.stringify({
-          winnerName: allWinnerNames,
-          prize: prize,
-          title: giveawayTitle,
-          timestamp: Date.now()
-        }));
+          const refreshCountdown = setInterval(() => {
+            refreshSeconds--;
+            refreshTimerVal.innerText = refreshSeconds;
+            if (refreshSeconds <= 0) {
+              clearInterval(refreshCountdown);
+              window.location.href = 'https://demo-profile-dun.vercel.app/giveaway';
+            }
+          }, 1000);
 
-        if (onFinish) onFinish();
+          localStorage.setItem('recent_winner_notification', JSON.stringify({
+            winnerName: firstWinner.global_name || firstWinner.username,
+            prize: prize,
+            title: giveawayTitle,
+            timestamp: Date.now()
+          }));
 
-      }, 5000);
+          if (onFinish) onFinish();
+        }, 800);
+
+      }, 4500);
     }
 
     async function loadGiveaways() {
