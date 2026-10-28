@@ -163,11 +163,13 @@ export default async function handler(req, res) {
 
     // 4. DELETE: Hapus
     if (req.method === 'DELETE') {
-      const { giveawayId, userId } = body;
-      if (!userId || userId !== OWNER_ID) return res.status(403).json({ success: false, error: 'Akses ditolak.' });
-      await giveawaysCol.deleteOne({ _id: new ObjectId(giveawayId) });
-      return res.status(200).json({ success: true, message: 'Giveaway dihapus!' });
-    }
+  const { giveawayId, userId } = body;
+  if (!userId || String(userId) !== String(OWNER_ID)) {
+    return res.status(403).json({ success: false, error: 'Akses ditolak. Anda bukan Owner!' });
+  }
+  await giveawaysCol.deleteOne({ _id: new ObjectId(giveawayId) });
+  return res.status(200).json({ success: true, message: 'Giveaway berhasil dihapus!' });
+}
 
     return res.status(405).json({ success: false, error: 'Method Not Allowed' });
   } catch (error) {
