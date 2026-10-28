@@ -432,6 +432,35 @@
         }
       }
     });
+
+// Fungsi untuk menampilkan toast/notifikasi bawaan di index.html
+    function showNotification(msg) {
+      const toast = document.createElement('div');
+      toast.className = 'fixed bottom-5 right-5 z-50 bg-emerald-600 border border-emerald-400 text-white px-5 py-3 rounded-xl shadow-2xl text-xs sm:text-sm font-medium flex items-center space-x-2 animate-bounce';
+      toast.innerHTML = `<span>🏆</span><span>${msg}</span>`;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 5000);
+    }
+
+    // Memeriksa dan memunculkan notifikasi Pemenang Giveaway Terbaru 
+    function checkWinnerNotification() {
+      const savedWinner = localStorage.getItem('recent_winner_notification');
+      if (savedWinner) {
+        try {
+          const winData = JSON.parse(savedWinner);
+          // Hanya tampilkan jika event terjadi kurang dari 1 jam yang lalu
+          if (Date.now() - winData.timestamp < 3600000) {
+            showNotification(`🎉 SELAMAT! ${winData.winnerName} memenangkan ${winData.prize} pada ${winData.title}!`);
+          }
+          localStorage.removeItem('recent_winner_notification');
+        } catch(e) {}
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      checkWinnerNotification();
+    });
+    
   </script>
 </body>
 </html>
