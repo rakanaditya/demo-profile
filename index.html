@@ -83,7 +83,7 @@
         </div>
       </div>
       
-      <!-- Nav Links -->
+      <!-- Nav Links & Profile Badge -->
       <div class="flex items-center space-x-3 sm:space-x-4">
         <a href="/giveaway" class="text-xs font-medium text-slate-300 hover:text-indigo-400 transition flex items-center space-x-1">
           <span>🎁 Giveaway</span>
@@ -94,18 +94,19 @@
         <a href="/announcements" class="text-xs font-medium text-slate-300 hover:text-indigo-400 transition hidden sm:inline-block">
           <span>📢 News</span>
         </a>
-      
 
         <!-- Language Switcher -->
         <button onclick="toggleLanguage()" id="lang-btn" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold border border-slate-700 transition">
           🇮🇩 ID
         </button>
 
-        <!-- Status User Login Nav Badge -->
-        <div id="nav-user-badge" class="hidden flex items-center space-x-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full">
-          <img id="nav-user-avatar" src="" alt="Avatar" class="w-6 h-6 rounded-full object-cover">
-          <span id="nav-user-name" class="text-xs font-semibold text-white">User</span>
-          <button onclick="logoutSession()" class="text-slate-500 hover:text-rose-400 text-xs ml-1" title="Logout">✕</button>
+        <!-- Status User Login Nav Badge (Button mengarah ke /myprofile & Logout Merah) -->
+        <div id="nav-user-badge" class="hidden flex items-center bg-slate-900 border border-slate-800 rounded-full pl-1.5 pr-2 py-1 hover:border-indigo-500/50 transition">
+          <a href="/myprofile" class="flex items-center space-x-2 pr-2" title="Lihat Profil Saya">
+            <img id="nav-user-avatar" src="" alt="Avatar" class="w-6 h-6 rounded-full object-cover">
+            <span id="nav-user-name" class="text-xs font-semibold text-white">User</span>
+          </a>
+          <button onclick="logoutSession()" class="w-5 h-5 flex items-center justify-center rounded-full bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white text-[10px] transition font-bold" title="Logout / Keluar">✕</button>
         </div>
       </div>
     </div>
@@ -205,7 +206,7 @@
       </div>
     </div>
 
-    <!-- FITUR LOOKUP DISCORD USER ID (SEARCH ANY PROFILE) -->
+    <!-- FITUR LOOKUP DISCORD USER ID -->
     <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-2xl mx-auto space-y-4 shadow-xl">
       <div class="text-center space-y-1">
         <h3 id="lookup-title" class="font-bold text-lg text-white">🔍 Discord Profile Lookup</h3>
@@ -218,86 +219,25 @@
       </div>
 
       <div id="lookup-result" class="hidden pt-4 border-t border-slate-800/80">
-        <!-- Hasil Lookup Rendered Here -->
-      </div>
-    </div>
-
-    <!-- Tampilan Kartu Profil Discord Login User -->
-    <div id="profile-container" class="hidden max-w-sm mx-auto">
-      <div class="bg-[#232428] rounded-2xl overflow-hidden shadow-2xl border border-slate-800">
-        
-        <!-- Banner -->
-        <div id="user-banner" class="h-28 bg-gradient-to-r from-indigo-600 to-purple-600 relative bg-cover bg-center">
-          <button onclick="resetProfile()" class="absolute top-3 right-3 p-1.5 bg-black/40 hover:bg-black/60 text-white rounded-full transition" title="Keluar / Reset">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-          </button>
-        </div>
-
-        <!-- Detail Profil & Avatar -->
-        <div class="px-4 pt-0 pb-4 relative">
-          <div class="flex justify-between items-end -mt-12 mb-3 px-2">
-            
-            <div class="relative w-20 h-20 flex items-center justify-center">
-              <img id="user-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Avatar Discord" class="w-20 h-20 rounded-full border-4 border-[#232428] bg-[#232428] object-cover shadow-lg relative z-0">
-              <span id="user-status-dot" class="w-5 h-5 bg-slate-500 border-4 border-[#232428] rounded-full absolute bottom-0 right-0 z-20" title="Offline"></span>
-            </div>
-
-            <div id="badges-container" class="bg-[#111214] px-2.5 py-1.5 rounded-lg flex items-center space-x-2 border border-slate-800 flex-wrap gap-y-1">
-            </div>
-
-          </div>
-
-          <div class="bg-[#111214] rounded-xl p-4 space-y-3">
-            <div>
-              <div class="flex items-center space-x-2 flex-wrap">
-                <h3 id="user-global-name" class="text-lg font-bold text-white leading-tight">Nama Pengguna</h3>
-                <span id="user-clan-tag" class="hidden px-1.5 py-0.5 bg-slate-800 border border-slate-700 text-slate-300 font-semibold text-[11px] rounded tracking-wide"></span>
-              </div>
-              <p id="user-username" class="text-xs text-slate-400 mt-0.5">@username</p>
-            </div>
-
-            <hr class="border-slate-800">
-
-            <div class="flex justify-between items-center text-xs">
-              <div>
-                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">ID Pengguna</h4>
-                <p id="user-id" class="font-mono text-slate-400">000000000000000000</p>
-              </div>
-              <span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-[10px]">Saved in MongoDB</span>
-            </div>
-          </div>
-
-        </div>
-
       </div>
     </div>
 
   </main>
 
-  <!-- Footer Navigasi Lengkap -->
+  <!-- Footer -->
   <footer class="border-t border-slate-800 py-8 bg-slate-900/40 text-center text-xs text-slate-500 space-y-4">
     <div class="flex justify-center space-x-6 text-slate-400 font-medium flex-wrap gap-y-2">
       <a href="/faq" class="hover:text-white transition">FAQ & Privacy</a>
       <a href="/stats" class="hover:text-white transition">System Status</a>
       <a href="/announcements" class="hover:text-white transition">Announcements</a>
-      <a href="/giveaway" class="hover:text-white transition">Giveaways </a>
+      <a href="/giveaway" class="hover:text-white transition">Giveaways</a>
     </div>
     <p>Rakan Aditya Community &bull; Hosted on Vercel</p>
   </footer>
 
   <script>
-    const DISCORD_FLAGS = {
-      STAFF: 1 << 0, PARTNER: 1 << 1, HYPESQUAD: 1 << 2, BUG_HUNTER_LEVEL_1: 1 << 3,
-      HYPESQUAD_BRAVERY: 1 << 6, HYPESQUAD_BRILLIANCE: 1 << 7, HYPESQUAD_BALANCE: 1 << 8,
-      PREMIUM_EARLY_SUPPORTER: 1 << 9, BUG_HUNTER_LEVEL_2: 1 << 14, VERIFIED_DEVELOPER: 1 << 17,
-      ACTIVE_DEVELOPER: 1 << 22
-    };
-
     let currentLang = 'ID';
 
-    // Play Sound Helper
     function playAudio(soundId) {
       try {
         const audio = document.getElementById(soundId);
@@ -308,7 +248,6 @@
       } catch (e) {}
     }
 
-    // Multi-Language Toggle
     function toggleLanguage() {
       playAudio('audio-pop');
       currentLang = currentLang === 'ID' ? 'EN' : 'ID';
@@ -331,7 +270,6 @@
       }
     }
 
-    // Lookup Profile Function (Lanyard API)
     async function lookupUserProfile() {
       playAudio('audio-pop');
       const inputId = document.getElementById('lookup-id-input').value.trim();
@@ -410,169 +348,10 @@
       }
     }
 
-    function renderUserProfile(user) {
-      document.getElementById('auth-section').classList.add('hidden');
-      document.getElementById('profile-container').classList.remove('hidden');
-
-      document.getElementById('user-global-name').innerText = user.global_name || user.username;
-      document.getElementById('user-username').innerText = `@${user.username}`;
-      document.getElementById('user-id').innerText = user.id;
-
-      updateNavUser(user);
-
-      // Clan Tag
-      const clanTagElem = document.getElementById('user-clan-tag');
-      const clanTag = (user.clan && user.clan.tag) || (user.primary_guild && user.primary_guild.tag);
-      if (clanTag) {
-        clanTagElem.innerText = `[${clanTag}]`;
-        clanTagElem.classList.remove('hidden');
-      } else {
-        clanTagElem.classList.add('hidden');
-      }
-
-      // Avatar
-      let avatarUrl = "https://cdn.discordapp.com/embed/avatars/0.png";
-      if (user.avatar) {
-        const format = user.avatar.startsWith('a_') ? 'gif' : 'png';
-        avatarUrl = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${format}?size=512`;
-      }
-      document.getElementById('user-avatar').src = avatarUrl;
-
-      // Avatar Frame Decoration
-      const avatarContainer = document.getElementById('user-avatar').parentElement;
-      const existingFrame = document.getElementById('avatar-decoration-frame');
-      if (existingFrame) existingFrame.remove();
-
-      if (user.avatar_decoration_data && user.avatar_decoration_data.asset) {
-        const frameImg = document.createElement('img');
-        frameImg.id = 'avatar-decoration-frame';
-        frameImg.src = `https://cdn.discordapp.com/avatar-decoration-presets/${user.avatar_decoration_data.asset}.png?size=240`;
-        frameImg.className = 'absolute -top-[10%] -left-[10%] w-[120%] h-[120%] max-w-none pointer-events-none z-10 object-contain';
-        avatarContainer.appendChild(frameImg);
-      }
-
-      // Banner
-      if (user.banner) {
-        const bannerFormat = user.banner.startsWith('a_') ? 'gif' : 'png';
-        const bannerUrl = `https://cdn.discordapp.com/banners/${user.id}/${user.banner}.${bannerFormat}?size=600`;
-        document.getElementById('user-banner').style.backgroundImage = `url('${bannerUrl}')`;
-      }
-
-      renderBadges(user);
-      fetchRealtimeStatus(user.id);
-    }
-
-    async function fetchRealtimeStatus(userId) {
-      try {
-        const res = await fetch(`https://api.lanyard.rest/v1/users/${userId}`);
-        const data = await res.json();
-        if (data.success) {
-          const status = data.data.discord_status;
-          const statusDot = document.getElementById('user-status-dot');
-          if (statusDot) {
-            statusDot.className = 'w-5 h-5 border-4 border-[#232428] rounded-full absolute bottom-0 right-0 z-20 ';
-            if (status === 'online') statusDot.className += 'bg-emerald-500';
-            else if (status === 'idle') statusDot.className += 'bg-amber-500';
-            else if (status === 'dnd') statusDot.className += 'bg-rose-500';
-            else statusDot.className += 'bg-slate-500';
-          }
-        }
-      } catch (err) {}
-    }
-
-    function renderBadges(user) {
-      const container = document.getElementById('badges-container');
-      container.innerHTML = '';
-      const flags = user.public_flags || user.flags || 0;
-      const badges = [];
-
-      if (flags & DISCORD_FLAGS.ACTIVE_DEVELOPER) {
-        badges.push({ 
-          title: 'Active Developers', 
-          imgUrl: 'https://cdn3.emoji.gg/emojis/6699-activedev-blue.png',
-          linkUrl: 'https://emoji.gg/emoji/6699-activedev-blue'
-        });
-      }
-
-      if (user.premium_type && user.premium_type > 0) {
-        badges.push({ 
-          title: 'Nitro Subscribers', 
-          imgUrl: 'https://cdn3.emoji.gg/emojis/789630-nitro.png',
-          linkUrl: 'https://emoji.gg/emojis/789630-nitro'
-        });
-      }
-
-      if (flags & DISCORD_FLAGS.HYPESQUAD_BRAVERY) {
-        badges.push({ 
-          title: 'HYPESQUAD BRAVERY', 
-          imgUrl: 'https://cdn3.emoji.gg/emojis/677453-houseofbravery.png',
-          linkUrl: 'https://emoji.gg/emojis/677453-houseofbravery'
-        });
-      } else if (flags & DISCORD_FLAGS.HYPESQUAD_BRILLIANCE) {
-        badges.push({ 
-          title: 'HYPESQUAD BRILLIANCE', 
-          imgUrl: 'https://cdn3.emoji.gg/emojis/271697-houseofbrilliance.png',
-          linkUrl: 'https://emoji.gg/emojis/271697-houseofbrilliance'
-        });
-      } else if (flags & DISCORD_FLAGS.HYPESQUAD_BALANCE) {
-        badges.push({ 
-          title: 'HYPESQUAD BALANCE', 
-          imgUrl: 'https://cdn3.emoji.gg/emojis/251341-discordhypesquadbalancebadge.png',
-          linkUrl: 'https://emoji.gg/emojis/251341-discordhypesquadbalancebadge'
-        });
-      }
-
-      if (flags & DISCORD_FLAGS.PREMIUM_EARLY_SUPPORTER) {
-        badges.push({ 
-          title: 'PREMIUM EARLY SUPPORTER', 
-          imgUrl: 'https://cdn3.emoji.gg/emojis/544377-discordearlysupporterbadge.png',
-          linkUrl: 'https://emoji.gg/emojis/544377-discordearlysupporterbadge'
-        });
-      }
-
-      badges.push({ 
-        title: 'Completed Quest', 
-        imgUrl: 'https://cdn3.emoji.gg/emojis/215207-discordcompletedaquestbadge.png',
-        linkUrl: 'https://emoji.gg/emoji/215207-discordcompletedaquestbadge'
-      });
-
-      badges.forEach(b => {
-        if (b.imgUrl) {
-          const a = document.createElement('a');
-          a.href = b.linkUrl || '#';
-          a.target = '_blank';
-          a.rel = 'noopener noreferrer';
-          a.title = b.title;
-          a.className = 'hover:scale-110 transition-transform inline-block';
-
-          const img = document.createElement('img');
-          img.src = b.imgUrl;
-          img.alt = b.title;
-          img.className = 'w-5 h-5 object-contain';
-          
-          a.appendChild(img);
-          container.appendChild(a);
-        } else {
-          const span = document.createElement('span');
-          span.className = 'text-xs cursor-pointer hover:scale-110 transition-transform';
-          span.title = b.title;
-          span.innerText = b.icon;
-          container.appendChild(span);
-        }
-      });
-    }
-
-    function resetProfile() {
-      localStorage.removeItem('discord_user');
-      window.history.replaceState({}, document.title, window.location.pathname);
-      document.getElementById('profile-container').classList.add('hidden');
-      document.getElementById('auth-section').classList.remove('hidden');
-      updateNavUser(null);
-    }
-
     function logoutSession() {
       playAudio('audio-pop');
-      resetProfile();
+      localStorage.removeItem('discord_user');
+      updateNavUser(null);
       showNotification("Anda telah keluar dari akun.");
     }
 
@@ -584,15 +363,15 @@
         try {
           const userData = JSON.parse(decodeURIComponent(userParam));
           localStorage.setItem('discord_user', JSON.stringify(userData));
-          renderUserProfile(userData);
-          showNotification(`Selamat Datang, ${userData.global_name || userData.username}!`);
+          updateNavUser(userData);
+          window.location.href = '/myprofile';
         } catch (err) {}
       } else {
         const savedUser = localStorage.getItem('discord_user');
         if (savedUser) {
           try {
             const userData = JSON.parse(savedUser);
-            renderUserProfile(userData);
+            updateNavUser(userData);
           } catch(e) {}
         }
       }
