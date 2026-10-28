@@ -1,58 +1,13 @@
 {
   "version": 2,
-  "cleanUrls": true,
-  "trailingSlash": false,
   "rewrites": [
-    {
-      "source": "/",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/myprofile",
-      "destination": "/src/myprofile.html"
-    },
-    {
-      "source": "/stats",
-      "destination": "/src/stats.html"
-    },
-    {
-      "source": "/giveaway",
-      "destination": "/src/giveaway.html"
-    },
-    {
-      "source": "/giveawayleaderboard",
-      "destination": "/src/giveawayleaderboard.html"
-    },
-    {
-      "source": "/announcements",
-      "destination": "/src/announcements.html"
-    },
-    {
-      "source": "/faq",
-      "destination": "/src/faq.html"
-    },
-    {
-      "source": "/Assets/:path*",
-      "destination": "/Assets/:path*"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        }
-      ]
-    }
+    { "source": "/api/callback", "destination": "/api/callback.js" },
+    { "source": "/api/giveaway", "destination": "/api/giveaway.js" },
+    { "source": "/giveaway", "destination": "/src/giveaway.html" },
+    { "source": "/giveawayleaderboard", "destination": "/src/giveawayleaderboard.html" },
+    { "source": "/faq", "destination": "/src/faq.html" },
+    { "source": "/stats", "destination": "/src/stats.html" },
+    { "source": "/announcements", "destination": "/src/announcements.html" }
+    { "source": "/myprofile", "destination": "/src/myprofile.html" }
   ]
 }
