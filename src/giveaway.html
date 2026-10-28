@@ -32,12 +32,6 @@
   @keyframes pulse-fast { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
   .animate-pulse-fast { animation: pulse-fast 0.15s infinite; }
 
-  @keyframes scroll-carousel {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
-  .animate-carousel { animation: scroll-carousel 0.25s linear infinite; }
-
   @keyframes zoom-in-glow {
     0% { transform: scale(0.3); opacity: 0; filter: drop-shadow(0 0 0px #eab308); }
     50% { opacity: 1; filter: drop-shadow(0 0 35px #eab308); }
@@ -86,12 +80,10 @@
       </div>
       
       <div class="flex items-center space-x-3">
-        <!-- Control Audio & Sound -->
         <button onclick="toggleAudioMute()" id="btn-audio-toggle" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold border border-slate-700 transition flex items-center space-x-1">
           <span id="audio-icon">🔊</span> <span id="audio-text">Sound ON</span>
         </button>
 
-        <!-- Button Live OBS Fullscreen -->
         <button onclick="toggleLiveDisplayMode()" class="px-3 py-1.5 bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition shadow-lg shadow-indigo-600/30 flex items-center space-x-1">
           <span>🖥️ Live Display (Press ESC to Exit)</span>
         </button>
@@ -182,7 +174,7 @@
 
   </main>
 
-  <!-- OVERLAY COUNTDOWN DRAMATIS (KHUSUS ROLL MANUAL HOST) -->
+  <!-- OVERLAY COUNTDOWN DRAMATIS -->
   <div id="countdown-overlay" class="hidden fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-xl flex flex-col items-center justify-center p-4 transition-all">
     <div id="countdown-card" class="text-center space-y-6">
       <p id="countdown-subtext" class="text-amber-400 font-bold tracking-widest uppercase text-sm sm:text-base animate-pulse">🎯 PREPARING GIVEAWAY ROLL</p>
@@ -196,7 +188,7 @@
     </div>
   </div>
 
- <!-- MODAL ANIMASI ROLLING GIVEAWAY -->
+  <!-- MODAL ANIMASI ROLLING GIVEAWAY -->
   <div id="rolling-modal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-amber-500/50 w-full max-w-2xl rounded-3xl p-6 sm:p-8 text-center space-y-6 shadow-2xl relative overflow-hidden">
       
@@ -206,11 +198,11 @@
         <h3 id="rolling-title" class="text-xl font-extrabold text-white">Mengocok Pemenang Komunitas</h3>
       </div>
 
-      <!-- CAROUSEL / SLOT MACHINE CONTAINER (Kiri - Tengah - Kanan) -->
+      <!-- CAROUSEL / SLOT MACHINE CONTAINER -->
       <div class="relative w-full overflow-hidden py-6 bg-slate-950/80 border border-slate-800 rounded-2xl flex items-center justify-center shadow-inner">
         
-        <!-- Garis Penanda Pemenang di Tengah -->
-        <div class="absolute inset-y-0 w-1 bg-amber-500 z-20 shadow-[0_0_15px_#eab308]"></div>
+        <!-- Garis Penanda Pemenang di Tengah (Tepat menyorot kartu pemenang) -->
+        <div class="absolute inset-y-0 w-1.5 bg-amber-500 z-20 shadow-[0_0_20px_#eab308]"></div>
 
         <!-- Track Geser Kiri-Kanan -->
         <div id="roll-track" class="flex items-center space-x-4 transition-transform duration-75 ease-out px-4">
@@ -218,7 +210,7 @@
         </div>
       </div>
 
-      <!-- DISCORD USER PROFILE CARD (Ditampilkan saat pemenang terpilih) -->
+      <!-- KARTU PROFIL DISCORD PEMENANG (Muncul Tepat di Bawah Garis Kuning) -->
       <div id="winner-display-info" class="hidden bg-[#2b2d31] border border-[#1e1f22] rounded-2xl p-4 max-w-sm mx-auto shadow-2xl text-left space-y-3 relative overflow-hidden animate-bounce">
         <div class="h-16 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-xl relative">
           <span class="absolute top-2 right-2 bg-emerald-500 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full shadow">OFFICIAL WINNER</span>
@@ -269,7 +261,7 @@
     let isMuted = false;
     let isLiveMode = false;
     let isRollingActive = false;
-    let triggeredRollIds = new Set(); // Mencegah pemanggilan ganda per giveaway ID
+    let triggeredRollIds = new Set();
 
     function toggleAudioMute() {
       isMuted = !isMuted;
@@ -339,14 +331,8 @@
       try {
         const res = await fetch(url, options);
         const text = await res.text();
-        try { 
-          return JSON.parse(text); 
-        } catch (e) { 
-          return { success: false, error: `Server Error (${res.status}): Respon tidak valid.` }; 
-        }
-      } catch (err) { 
-        return { success: false, error: "Gagal menghubungkan ke jaringan." }; 
-      }
+        try { return JSON.parse(text); } catch (e) { return { success: false, error: `Server Error (${res.status})` }; }
+      } catch (err) { return { success: false, error: "Gagal menghubungkan ke jaringan." }; }
     }
 
     function triggerWebhook(payload) {
@@ -399,37 +385,31 @@
     function runCountdownSequence(onComplete) {
       const overlay = document.getElementById('countdown-overlay');
       const numElem = document.getElementById('countdown-number');
-      
       overlay.classList.remove('hidden');
       
       const steps = [
         { text: '5', sound: 'audio-tick', class: 'animate-zoom-glow' },
         { text: '4', sound: 'audio-tick', class: 'animate-zoom-glow' },
-        { text: '3', sound: 'audio-tick', class: 'animate-shake' },
+        { text: '3', sound: 'audio-shake', class: 'animate-shake' },
         { text: '2', sound: 'audio-tick', class: 'animate-zoom-glow' },
         { text: '1', sound: 'audio-dramatic', class: 'animate-flash' },
         { text: 'GET READY...', sound: 'audio-pop', class: 'animate-pulse' }
       ];
 
       let index = 0;
-
       function nextStep() {
         if (index >= steps.length) {
           overlay.classList.add('hidden');
           if (onComplete) onComplete();
           return;
         }
-
         const step = steps[index];
         numElem.innerText = step.text;
         playAudio(step.sound);
-
         numElem.className = "text-5xl sm:text-8xl font-black text-white tracking-tighter drop-shadow-[0_0_35px_rgba(234,179,8,0.8)] " + step.class;
-
         index++;
         setTimeout(nextStep, step.text === 'GET READY...' ? 1200 : 1000);
       }
-
       nextStep();
     }
 
@@ -448,18 +428,17 @@
       statusBadge.innerText = 'ROLLING...';
       statusBadge.className = 'inline-block px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full text-xs font-bold animate-pulse';
 
-      // Buat deretan list peserta secara acak ke kiri dan kanan (slot machine items)
+      // Buat deretan peserta acak untuk carousel slot machine
       let displayList = [];
-      for (let i = 0; i < 30; i++) {
+      for (let i = 0; i < 35; i++) {
         const shuffled = [...participants].sort(() => 0.5 - Math.random());
         displayList = displayList.concat(shuffled);
       }
-      // Pastikan pemenang utama berada di posisi akhir/tengah track
       const firstWinner = winners[0];
       displayList.push(firstWinner);
 
       track.innerHTML = displayList.map((p, idx) => `
-        <div class="flex-shrink-0 w-24 sm:w-28 bg-slate-900 border border-slate-700 rounded-xl p-3 flex flex-col items-center space-y-2 shadow-lg">
+        <div class="roll-card flex-shrink-0 w-24 sm:w-28 bg-slate-900 border ${p.id === firstWinner.id && idx === displayList.length - 1 ? 'border-amber-500 shadow-[0_0_15px_#eab308]' : 'border-slate-700'} rounded-xl p-3 flex flex-col items-center space-y-2 shadow-lg transition-all duration-300">
           <img src="${getAvatarUrl(p)}" class="w-14 h-14 rounded-full object-cover border-2 border-indigo-500 shadow-md">
           <span class="text-[10px] font-bold text-slate-300 truncate w-full">${p.global_name || p.username}</span>
           <span class="text-[9px] font-mono text-slate-500 truncate w-full">@${p.username}</span>
@@ -468,22 +447,22 @@
 
       let currentPos = 0;
       const totalItems = displayList.length;
-      const itemWidth = 120; // Lebar card + margin
-      const maxScroll = (totalItems - 3) * itemWidth;
+      const itemWidth = 128; // Lebar card (w-28/w-24 + gap-4)
+      const maxScroll = (totalItems - 4) * itemWidth;
 
       const rollInterval = setInterval(() => {
         playAudio('audio-pop');
-        currentPos += 45;
+        currentPos += 50;
         if (currentPos >= maxScroll) currentPos = 0;
         track.style.transform = `translateX(-${currentPos}px)`;
-      }, 60);
+      }, 50);
 
       setTimeout(() => {
         clearInterval(rollInterval);
 
-        // Posisikan pas di kartu pemenang akhir
-        const targetScroll = (totalItems - 2.5) * itemWidth;
-        track.style.transition = 'transform 0.8s cubic-bezier(0.15, 0.85, 0.35, 1)';
+        // Posisikan tepat pada kartu pemenang tepat di bawah garis kuning
+        const targetScroll = (totalItems - 3.2) * itemWidth;
+        track.style.transition = 'transform 0.9s cubic-bezier(0.1, 0.9, 0.2, 1)';
         track.style.transform = `translateX(-${targetScroll}px)`;
 
         setTimeout(() => {
@@ -491,7 +470,7 @@
           statusBadge.innerText = 'WINNER SELECTED';
           statusBadge.className = 'inline-block px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-bold animate-bounce';
 
-          // Tampilkan Profil Discord Pemenang
+          // Tampilkan Kartu Profil Discord Pemenang di bawah carousel
           winnerInfo.classList.remove('hidden');
           document.getElementById('winner-profile-avatar').src = getAvatarUrl(firstWinner);
           document.getElementById('winner-profile-globalname').innerText = firstWinner.global_name || firstWinner.username;
@@ -519,15 +498,13 @@
           }));
 
           if (onFinish) onFinish();
-        }, 800);
+        }, 900);
 
       }, 4500);
     }
 
     async function loadGiveaways() {
-      // KUNCI UI: Jika sedang rolling, jangan ubah tampilan HTML
       if (isRollingActive) return;
-
       timerIntervals.forEach(clearInterval);
       timerIntervals = [];
 
@@ -544,7 +521,6 @@
 
           let statusText = 'READY';
           let statusStyle = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
-
           if (isEnded) {
             statusText = 'COMPLETED';
             statusStyle = 'bg-slate-800 text-slate-400 border-slate-700';
@@ -596,9 +572,7 @@
             <div class="space-y-3">
               <div class="flex justify-between items-start">
                 <h4 class="font-bold text-lg text-white leading-tight">${gw.title}</h4>
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${statusStyle}">
-                  ${statusText}
-                </span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${statusStyle}">${statusText}</span>
               </div>
               <p class="text-xs text-indigo-400 font-medium">🎁 Hadiah: ${gw.prize}</p>
               <p class="text-xs text-slate-400">${gw.description || 'Tidak ada deskripsi.'}</p>
@@ -610,12 +584,10 @@
                   <p class="text-[11px] text-slate-400">👥 Total Peserta: <span class="font-bold text-white">${participants.length}</span></p>
                   ${avatarsPreviewHTML}
                 </div>
-
                 <button onclick="openParticipantsModal('${encodeURIComponent(JSON.stringify(participants))}')" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs transition border border-slate-700 flex items-center space-x-1">
                   <span>ℹ️ Participants</span>
                 </button>
               </div>
-
               ${winnersHTML}
             </div>
 
@@ -637,7 +609,6 @@
 
           container.appendChild(card);
 
-          // PENGATURAN HITUNG MUNDUR & AUTO-ROLL OTOMATIS
           if (gw.endsAt && !isEnded) {
             const timerElem = document.getElementById(`timer-${gw._id}`);
             const endTime = new Date(gw.endsAt).getTime();
@@ -649,10 +620,8 @@
               if (distance <= 0) {
                 clearInterval(interval);
                 timerElem.innerText = '🎲 Waktu Habis! Mengocok Pemenang...';
-                
                 if (!triggeredRollIds.has(gw._id)) {
                   triggeredRollIds.add(gw._id);
-                  // Eksekusi Roll Otomatis
                   triggerAutoRoll(gw._id);
                 }
               } else {
@@ -668,32 +637,26 @@
                 timerElem.innerText = timerStr;
               }
             }, 1000);
-
             timerIntervals.push(interval);
           }
         });
       } else if (data.success && data.data.length === 0) {
         container.innerHTML = '<p class="text-slate-500 text-sm col-span-2">Belum ada giveaway yang dibuat.</p>';
       } else {
-        container.innerHTML = `<p class="text-rose-400 text-sm col-span-2">Gagal memuat data giveaway: ${data.error || 'Terjadi kesalahan.'}</p>`;
+        container.innerHTML = `<p class="text-rose-400 text-sm col-span-2">Gagal memuat data giveaway.</p>`;
       }
     }
 
-    // Trigger Roll Manual dari Tombol Owner (Countdown 5 detik terlebih dahulu)
     async function triggerRollStart(id) {
       triggerWebhook({ type: 'roll_start' });
-      runCountdownSequence(() => {
-        rollGiveaway(id, true);
-      });
+      runCountdownSequence(() => { rollGiveaway(id, true); });
     }
 
-    // Trigger Roll Otomatis ketika Timer Hitung Mundur Habis
     async function triggerAutoRoll(id) {
       triggerWebhook({ type: 'roll_auto' });
       rollGiveaway(id, false);
     }
 
-    // Eksekusi Roll ke Backend dan jalankan animasi modal
     async function rollGiveaway(id, isManual = true) {
       const data = await safeFetchJson('/api/giveaway', {
         method: 'PUT',
@@ -706,9 +669,7 @@
         const winners = gw.winners;
         const participants = gw.participants || winners;
 
-        // Memulai animasi rolling avatar & profil peserta selama 5 detik
         startRollingAnimation(participants, winners, gw.title, gw.prize, () => {
-          // Kirim Webhook Pemenang ke Discord setelah animasi selesai
           triggerWebhook({ type: 'winner', giveaway: gw, winners: winners });
           const winnerNames = winners.map(w => w.global_name || w.username).join(', ');
           showToast(`Selamat! ${winnerNames} menang ${gw.prize}!`);
@@ -742,7 +703,7 @@
 
       if (data.success) {
         triggerWebhook({ type: 'create', giveaway: data.data });
-        showToast(data.message || 'Giveaway berhasil dibuat!');
+        showToast('Giveaway berhasil dibuat!');
         document.getElementById('create-giveaway-form').reset();
         loadGiveaways();
       } else {
@@ -819,11 +780,7 @@
     window.addEventListener('DOMContentLoaded', () => {
       initAuth();
       loadGiveaways();
-
-      // Auto Refresh Data Setiap 30 Detik secara halus di background
-      setInterval(() => {
-        loadGiveaways();
-      }, 30000);
+      setInterval(() => { loadGiveaways(); }, 30000);
     });
   </script>
 </body>
