@@ -175,7 +175,7 @@
 
   </main>
 
-  <!-- OVERLAY COUNTDOWN DRAMATIS (5, 4, 3, 2, 1 -> GET READY) -->
+  <!-- OVERLAY COUNTDOWN DRAMATIS (KHUSUS ROLL MANUAL) -->
   <div id="countdown-overlay" class="hidden fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-xl flex flex-col items-center justify-center p-4 transition-all">
     <div id="countdown-card" class="text-center space-y-6">
       <p id="countdown-subtext" class="text-amber-400 font-bold tracking-widest uppercase text-sm sm:text-base animate-pulse">🎯 PREPARING GIVEAWAY ROLL</p>
@@ -240,7 +240,7 @@
     let isMuted = false;
     let isLiveMode = false;
     let isRollingActive = false;
-    let triggeredRollIds = new Set(); // Mencegah double-roll untuk giveaway yang sama
+    let triggeredRollIds = new Set(); // Menjaga agar pengocokan otomatis hanya dipanggil 1x per ID
 
     function toggleAudioMute() {
       isMuted = !isMuted;
@@ -362,7 +362,7 @@
         : 'https://cdn.discordapp.com/embed/avatars/0.png';
     }
 
-    // COUNTDOWN SEQUENCE ANIMATION (5 -> 4 -> 3 -> 2 -> 1 -> GET READY)
+    // COUNTDOWN SEQUENCE ANIMATION (KHUSUS ROLL MANUAL)
     function runCountdownSequence(onComplete) {
       const overlay = document.getElementById('countdown-overlay');
       const numElem = document.getElementById('countdown-number');
@@ -400,7 +400,7 @@
       nextStep();
     }
 
-    // ANIMASI ROLLING GIVEAWAY (DIPANGGIL BAIK DARI MANUAL MAUPUN TIMER OTOMATIS)
+    // ANIMASI ROLLING GIVEAWAY (DIPANGGIL BAIK ROLL MANUAL MAUPUN OTOMATIS)
     function startRollingAnimation(participants, winners, giveawayTitle, prize, onFinish) {
       isRollingActive = true;
       const modal = document.getElementById('rolling-modal');
@@ -417,7 +417,7 @@
       statusBadge.innerText = 'ROLLING';
       statusBadge.className = 'inline-block px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full text-xs font-bold animate-pulse';
 
-      // Acak tampilan peserta selama 5 detik
+      // Mengocok Tampilan Peserta Secara Acak Selama 5 Detik
       const rollInterval = setInterval(() => {
         playAudio('audio-pop');
         const randomIndex = Math.floor(Math.random() * participants.length);
@@ -429,7 +429,7 @@
         rollNumberTag.innerText = `#${randomIndex + 1}`;
       }, 80);
 
-      // Selesai Rolling -> Tampilkan Pemenang
+      // Selesai Rolling -> Menampilkan Pemenang
       setTimeout(() => {
         clearInterval(rollInterval);
 
@@ -474,6 +474,7 @@
     }
 
     async function loadGiveaways() {
+      // Mencegah gangguan rendering saat animasi rolling sedang berjalan di layar
       if (isRollingActive) return;
 
       timerIntervals.forEach(clearInterval);
@@ -585,7 +586,7 @@
 
           container.appendChild(card);
 
-          // PENGATURAN TIMER HITUNG MUNDUR (MENDUKUNG AUTO-ROLL BERANIMASI & DISCORD WEBHOOK)
+          // PENGATURAN HITUNG MUNDUR TIMER & ROLL OTOMATIS
           if (gw.endsAt && !isEnded) {
             const timerElem = document.getElementById(`timer-${gw._id}`);
             const endTime = new Date(gw.endsAt).getTime();
@@ -596,12 +597,13 @@
 
               if (distance <= 0) {
                 clearInterval(interval);
-                timerElem.innerText = '⌛ Waktu Habis! Mengocok...';
+                timerElem.innerText = '🎲 Selesai! Mengocok Pemenang...';
                 
-                // Mencegah pemanggilan ganda jika sudah dalam proses roll
+                // Mencegah eksekusi ganda jika sudah diproses
                 if (!triggeredRollIds.has(gw._id)) {
                   triggeredRollIds.add(gw._id);
-                  triggerRollStart(gw._id);
+                  // Roll Otomatis: Mengocok langsung dengan animasi rolling modal & Discord webhook
+                  rollGiveaway(gw._id, false);
                 }
               } else {
                 const days = Math.floor(distance / (1000 * 60 * 60 * 24));
@@ -627,7 +629,7 @@
       }
     }
 
-    // Eksekusi Roll (Manual maupun dari Timer Waktu Habis)
+    // Trigger Roll Manual (Menggunakan Countdown Sequence 5,4,3,2,1 terlebih dahulu)
     async function triggerRollStart(id) {
       triggerWebhook({ type: 'roll_start' });
       runCountdownSequence(() => {
@@ -635,6 +637,7 @@
       });
     }
 
+    // Eksekusi API Roll & Memulai Animasi Modal Rolling + Discord Webhook
     async function rollGiveaway(id, isManual = true) {
       const data = await safeFetchJson('/api/giveaway', {
         method: 'PUT',
@@ -647,8 +650,9 @@
         const winners = gw.winners;
         const participants = gw.participants || winners;
 
+        // Memulai animasi rolling avatar & profil peserta selama 5 detik
         startRollingAnimation(participants, winners, gw.title, gw.prize, () => {
-          // Kirim pesan Webhook Pemenang ke Discord
+          // Kirim Webhook Pemenang ke Discord setelah animasi selesai
           triggerWebhook({ type: 'winner', giveaway: gw, winners: winners });
           const winnerNames = winners.map(w => w.global_name || w.username).join(', ');
           showToast(`Selamat! ${winnerNames} menang ${gw.prize}!`);
@@ -692,7 +696,7 @@
 
     async function joinGiveaway(id) {
       if (!currentUser) return showToast('Silakan login terlebih dahulu!', true);
-      const data = await safeFetchJson('/api/giveaway', {
+      const data = await safeFetchJson('/api/join', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'join', giveawayId: id, user: currentUser })
