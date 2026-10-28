@@ -199,10 +199,10 @@
       </div>
 
       <!-- CAROUSEL / SLOT MACHINE CONTAINER -->
-      <div class="relative w-full overflow-hidden py-6 bg-slate-950/80 border border-slate-800 rounded-2xl flex items-center justify-center shadow-inner">
+      <div id="carousel-box" class="relative w-full overflow-hidden py-6 bg-slate-950/80 border border-slate-800 rounded-2xl flex items-center justify-center shadow-inner transition-all duration-500">
         
-        <!-- Garis Penanda Pemenang di Tengah (Tepat menyorot kartu pemenang) -->
-        <div class="absolute inset-y-0 w-1.5 bg-amber-500 z-20 shadow-[0_0_20px_#eab308]"></div>
+        <!-- Garis Penanda Pemenang di Tengah (Hilang saat stop rolling) -->
+        <div id="center-indicator-line" class="absolute inset-y-0 w-1.5 bg-amber-500 z-20 shadow-[0_0_20px_#eab308] transition-opacity duration-300"></div>
 
         <!-- Track Geser Kiri-Kanan -->
         <div id="roll-track" class="flex items-center space-x-4 transition-transform duration-75 ease-out px-4">
@@ -210,24 +210,28 @@
         </div>
       </div>
 
-      <!-- KARTU PROFIL DISCORD PEMENANG (Muncul Tepat di Bawah Garis Kuning) -->
-      <div id="winner-display-info" class="hidden bg-[#2b2d31] border border-[#1e1f22] rounded-2xl p-4 max-w-sm mx-auto shadow-2xl text-left space-y-3 relative overflow-hidden animate-bounce">
-        <div class="h-16 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-xl relative">
+      <!-- KARTU PROFIL DISCORD PEMENANG (Muncul elegan menggantikan carousel saat berhenti) -->
+      <div id="winner-display-info" class="hidden bg-[#2b2d31] border border-[#1e1f22] rounded-2xl p-5 max-w-sm mx-auto shadow-2xl text-left space-y-4 relative overflow-hidden animate-bounce">
+        <!-- Banner unik per pemenang -->
+        <div id="winner-profile-banner" class="h-20 rounded-xl relative bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 shadow-inner">
           <span class="absolute top-2 right-2 bg-emerald-500 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full shadow">OFFICIAL WINNER</span>
         </div>
-        <div class="px-2 pb-2 relative flex items-start space-x-3 -mt-8">
+        <div class="px-2 pb-1 relative flex items-start space-x-3 -mt-10">
           <div class="relative">
             <img id="winner-profile-avatar" src="" class="w-16 h-16 rounded-full border-4 border-[#2b2d31] object-cover bg-slate-800 shadow-xl">
             <div class="absolute bottom-0 right-0 w-4 h-4 bg-emerald-500 border-2 border-[#2b2d31] rounded-full"></div>
           </div>
-          <div class="pt-8">
+          <div class="pt-10">
             <h4 id="winner-profile-globalname" class="font-bold text-white text-base leading-tight">...</h4>
             <p id="winner-profile-username" class="text-xs text-slate-400 font-mono">@...</p>
           </div>
         </div>
-        <div class="bg-[#1e1f22] p-2.5 rounded-xl border border-slate-800 space-y-1">
-          <p class="text-[11px] text-indigo-400 font-semibold">🎁 Hadiah:</p>
-          <p id="winner-profile-prize" class="text-xs text-white font-bold">...</p>
+        <div class="bg-[#1e1f22] p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+          <div>
+            <p class="text-[10px] text-indigo-400 font-semibold uppercase tracking-wider">Hadiah Giveaway</p>
+            <p id="winner-profile-prize" class="text-xs text-white font-bold mt-0.5">...</p>
+          </div>
+          <span class="text-xl">🎁</span>
         </div>
       </div>
 
@@ -419,16 +423,19 @@
       const track = document.getElementById('roll-track');
       const statusBadge = document.getElementById('status-badge');
       const winnerInfo = document.getElementById('winner-display-info');
+      const carouselBox = document.getElementById('carousel-box');
+      const centerLine = document.getElementById('center-indicator-line');
       const refreshIndicator = document.getElementById('refresh-indicator');
       const refreshTimerVal = document.getElementById('refresh-timer-val');
 
       modal.classList.remove('hidden');
       winnerInfo.classList.add('hidden');
+      carouselBox.classList.remove('hidden');
+      centerLine.style.opacity = '1';
       refreshIndicator.classList.add('hidden');
       statusBadge.innerText = 'ROLLING...';
       statusBadge.className = 'inline-block px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full text-xs font-bold animate-pulse';
 
-      // Buat deretan peserta acak untuk carousel slot machine
       let displayList = [];
       for (let i = 0; i < 35; i++) {
         const shuffled = [...participants].sort(() => 0.5 - Math.random());
@@ -438,7 +445,7 @@
       displayList.push(firstWinner);
 
       track.innerHTML = displayList.map((p, idx) => `
-        <div class="roll-card flex-shrink-0 w-24 sm:w-28 bg-slate-900 border ${p.id === firstWinner.id && idx === displayList.length - 1 ? 'border-amber-500 shadow-[0_0_15px_#eab308]' : 'border-slate-700'} rounded-xl p-3 flex flex-col items-center space-y-2 shadow-lg transition-all duration-300">
+        <div class="roll-card flex-shrink-0 w-24 sm:w-28 bg-slate-900 border border-slate-700 rounded-xl p-3 flex flex-col items-center space-y-2 shadow-lg">
           <img src="${getAvatarUrl(p)}" class="w-14 h-14 rounded-full object-cover border-2 border-indigo-500 shadow-md">
           <span class="text-[10px] font-bold text-slate-300 truncate w-full">${p.global_name || p.username}</span>
           <span class="text-[9px] font-mono text-slate-500 truncate w-full">@${p.username}</span>
@@ -447,7 +454,7 @@
 
       let currentPos = 0;
       const totalItems = displayList.length;
-      const itemWidth = 128; // Lebar card (w-28/w-24 + gap-4)
+      const itemWidth = 128;
       const maxScroll = (totalItems - 4) * itemWidth;
 
       const rollInterval = setInterval(() => {
@@ -460,7 +467,6 @@
       setTimeout(() => {
         clearInterval(rollInterval);
 
-        // Posisikan tepat pada kartu pemenang tepat di bawah garis kuning
         const targetScroll = (totalItems - 3.2) * itemWidth;
         track.style.transition = 'transform 0.9s cubic-bezier(0.1, 0.9, 0.2, 1)';
         track.style.transform = `translateX(-${targetScroll}px)`;
@@ -470,8 +476,25 @@
           statusBadge.innerText = 'WINNER SELECTED';
           statusBadge.className = 'inline-block px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-bold animate-bounce';
 
-          // Tampilkan Kartu Profil Discord Pemenang di bawah carousel
+          // Hilangkan garis kuning penanda saat stop
+          centerLine.style.opacity = '0';
+
+          // Generate variasi warna banner Discord unik berdasarkan ID atau hash pemenang
+          const bannerGradients = [
+            'from-indigo-600 via-purple-600 to-pink-600',
+            'from-emerald-600 via-teal-600 to-cyan-600',
+            'from-amber-600 via-orange-600 to-rose-600',
+            'from-blue-600 via-violet-600 to-fuchsia-600',
+            'from-rose-600 via-pink-600 to-amber-600'
+          ];
+          const hashVal = firstWinner.id ? parseInt(firstWinner.id.slice(-3)) || 0 : 0;
+          const selectedBanner = bannerGradients[hashVal % bannerGradients.length];
+
+          // Sembunyikan carousel dan tampilkan Kartu Profil Discord Pemenang
+          carouselBox.classList.add('hidden');
           winnerInfo.classList.remove('hidden');
+          
+          document.getElementById('winner-profile-banner').className = `h-20 rounded-xl relative bg-gradient-to-r ${selectedBanner} shadow-inner`;
           document.getElementById('winner-profile-avatar').src = getAvatarUrl(firstWinner);
           document.getElementById('winner-profile-globalname').innerText = firstWinner.global_name || firstWinner.username;
           document.getElementById('winner-profile-username').innerText = `@${firstWinner.username}`;
