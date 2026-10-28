@@ -10,12 +10,7 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     try {
-      const { status } = req.query;
-      let filter = {};
-      if (status === 'ended') {
-        filter = { status: 'ended' };
-      }
-      const giveaways = await collection.find(filter).sort({ endedAt: -1, createdAt: -1 }).toArray();
+      const giveaways = await collection.find({}).sort({ createdAt: -1 }).toArray();
       return res.status(200).json({ success: true, data: giveaways });
     } catch (e) {
       return res.status(500).json({ success: false, error: 'Gagal mengambil data giveaway.' });
@@ -43,7 +38,9 @@ export default async function handler(req, res) {
         status: 'active',
         participants: [],
         winners: [],
-        webhookSent: false,
+        webhookWinnerSent: false,
+        webhookAutoRollSent: false,
+        webhookManualRollSent: false,
         createdAt: new Date(),
         endsAt: new Date(Date.now() + durationMs)
       };
@@ -59,13 +56,15 @@ export default async function handler(req, res) {
 
   if (req.method === 'PUT') {
     try {
-      const { action, giveawayId, user, userId } = req.body;
+      const { action, giveawayId, user } = req.body;
 
       if (!giveawayId) {
         return res.status(400).json({ success: false, error: 'ID Giveaway wajib diisi.' });
       }
 
-      const giveaway = await collection.findOne({ _id: new ObjectId(giveawayId) });
+      const gwId = new ObjectId(giveawayId);
+      const giveaway = await collection.findOne({ _id: gwId });
+
       if (!giveaway) {
         return res.status(404).json({ success: false, error: 'Giveaway tidak ditemukan.' });
       }
@@ -81,7 +80,7 @@ export default async function handler(req, res) {
         }
 
         await collection.updateOne(
-          { _id: new ObjectId(giveawayId) },
+          { _id: gwId },
           { $push: { participants: user } }
         );
 
@@ -89,9 +88,9 @@ export default async function handler(req, res) {
       }
 
       if (action === 'roll') {
-        // Jika sudah di-roll sebelumnya, kembalikan data tanpa mengubah pemenang lagi
+        // Jika sudah di-roll di DB, return data yang ada tanpa acak ulang
         if (giveaway.status === 'ended') {
-          return res.status(200).json({ success: true, data: giveaway, isAlreadyEnded: true, message: 'Giveaway sudah memiliki pemenang.' });
+          return res.status(200).json({ success: true, data: giveaway, isAlreadyEnded: true });
         }
 
         const participants = giveaway.participants || [];
@@ -103,9 +102,10 @@ export default async function handler(req, res) {
         const count = Math.min(giveaway.winnersCount || 1, participants.length);
         const winners = shuffled.slice(0, count);
 
+        // Update ke database bahwa giveaway sudah ended
         await collection.updateOne(
-          { _id: new ObjectId(giveawayId) },
-          { $set: { status: 'ended', winners: winners, endedAt: new Date(), webhookSent: false } }
+          { _id: gwId },
+          { $set: { status: 'ended', winners: winners, endedAt: new Date() } }
         );
 
         giveaway.status = 'ended';
