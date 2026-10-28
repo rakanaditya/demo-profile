@@ -7,7 +7,7 @@
     { "source": "/giveawayleaderboard", "destination": "/src/giveawayleaderboard.html" },
     { "source": "/faq", "destination": "/src/faq.html" },
     { "source": "/stats", "destination": "/src/stats.html" },
-    { "source": "/announcements", "destination": "/src/announcements.html" }
+    { "source": "/announcements", "destination": "/src/announcements.html" },
     { "source": "/myprofile", "destination": "/src/myprofile.html" }
   ]
 }
