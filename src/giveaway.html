@@ -1,787 +1,1552 @@
 <!DOCTYPE html>
+
 <html lang="id">
+
 <head>
+
   <meta charset="UTF-8">
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Giveaway Live Panel - Rakan Aditya Community</title>
+
   
+
   <script>
+
     const origConsoleWarn = console.warn;
+
     console.warn = function(...args) {
+
       if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) return;
+
       origConsoleWarn.apply(console, args);
+
     };
+
     tailwind = {
+
       config: {
+
         theme: {
+
           extend: {
+
             colors: {
+
               discord: { bg: '#313338', card: '#2b2d31', inner: '#1e1f22', accent: '#5865f2' }
+
             }
+
           }
+
         }
+
       }
+
     };
+
   </script>
+
   <script src="https://cdn.tailwindcss.com"></script>
+
   <link href="https://fonts.googleapis.com/css2?family=gg+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <style>
-  body { font-family: 'gg Sans', sans-serif; }
-  
-  /* Animation Keyframes */
-  @keyframes pulse-fast { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
-  .animate-pulse-fast { animation: pulse-fast 0.15s infinite; }
 
-  @keyframes zoom-in-glow {
-    0% { transform: scale(0.3); opacity: 0; filter: drop-shadow(0 0 0px #eab308); }
-    50% { opacity: 1; filter: drop-shadow(0 0 35px #eab308); }
-    100% { transform: scale(1.3); opacity: 0; filter: drop-shadow(0 0 50px #eab308); }
-  }
-  .animate-zoom-glow { animation: zoom-in-glow 0.9s ease-out forwards; }
+    body { font-family: 'gg Sans', sans-serif; }
 
-  @keyframes shake-light {
-    0%, 100% { transform: translate(0, 0) rotate(0deg); }
-    20% { transform: translate(-4px, 4px) rotate(-2deg); }
-    40% { transform: translate(4px, -4px) rotate(2deg); }
-    60% { transform: translate(-3px, -2px) rotate(-1deg); }
-    80% { transform: translate(3px, 2px) rotate(1deg); }
-  }
-  .animate-shake { animation: shake-light 0.5s ease-in-out; }
+    
 
-  @keyframes flash-dramatic {
-    0% { opacity: 0; background-color: rgba(255, 255, 255, 0.8); }
-    30% { opacity: 1; background-color: transparent; }
-    100% { opacity: 1; }
-  }
-  .animate-flash { animation: flash-dramatic 0.8s ease-out forwards; }
-</style>
-  
+    /* Animation Keyframes */
+
+    @keyframes pulse-fast { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+
+    .animate-pulse-fast { animation: pulse-fast 0.15s infinite; }
+
+
+
+    @keyframes zoom-in-glow {
+
+      0% { transform: scale(0.3); opacity: 0; filter: drop-shadow(0 0 0px #eab308); }
+
+      50% { opacity: 1; filter: drop-shadow(0 0 35px #eab308); }
+
+      100% { transform: scale(1.3); opacity: 0; filter: drop-shadow(0 0 50px #eab308); }
+
+    }
+
+    .animate-zoom-glow { animation: zoom-in-glow 0.9s ease-out forwards; }
+
+
+
+    @keyframes shake-light {
+
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+
+      20% { transform: translate(-4px, 4px) rotate(-2deg); }
+
+      40% { transform: translate(4px, -4px) rotate(2deg); }
+
+      60% { transform: translate(-3px, -2px) rotate(-1deg); }
+
+      80% { transform: translate(3px, 2px) rotate(1deg); }
+
+    }
+
+    .animate-shake { animation: shake-light 0.5s ease-in-out; }
+
+
+
+    @keyframes flash-dramatic {
+
+      0% { opacity: 0; background-color: rgba(255, 255, 255, 0.8); }
+
+      30% { opacity: 1; background-color: transparent; }
+
+      100% { opacity: 1; }
+
+    }
+
+    .animate-flash { animation: flash-dramatic 0.8s ease-out forwards; }
+
+  </style>
+
 </head>
+
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white relative">
 
+
+
   <!-- Audio Sound Effects -->
+
   <audio id="audio-chime" preload="auto" src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3"></audio>
+
   <audio id="audio-pop" preload="auto" src="https://assets.mixkit.co/active_storage/sfx/2578/2578-preview.mp3"></audio>
+
   <audio id="audio-win" preload="auto" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"></audio>
+
   <audio id="audio-tick" preload="auto" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"></audio>
+
   <audio id="audio-dramatic" preload="auto" src="https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3"></audio>
 
+
+
   <!-- Header -->
+
   <header id="main-header" class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-40 transition-all">
+
     <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+
       <div class="flex items-center space-x-3">
+
         <a href="/" class="w-10 h-10 rounded-2xl overflow-hidden flex items-center justify-center shadow-lg shadow-indigo-600/30 hover:scale-105 transition border border-slate-700">
+
           <img src="/Assets/server.png" alt="Server Icon" class="w-full h-full object-cover">
+
         </a>
+
         <div>
+
           <h1 class="font-bold text-lg text-white leading-none">Rakan Aditya Community</h1>
+
           <span class="text-xs text-slate-400">Giveaway & Live Stream Panel</span>
+
         </div>
+
       </div>
+
       
+
       <div class="flex items-center space-x-3">
+
+        <!-- Control Audio & Sound -->
+
         <button onclick="toggleAudioMute()" id="btn-audio-toggle" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold border border-slate-700 transition flex items-center space-x-1">
+
           <span id="audio-icon">🔊</span> <span id="audio-text">Sound ON</span>
+
         </button>
+
+
+
+        <!-- Button Live OBS Fullscreen -->
 
         <button onclick="toggleLiveDisplayMode()" class="px-3 py-1.5 bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition shadow-lg shadow-indigo-600/30 flex items-center space-x-1">
+
           <span>🖥️ Live Display (Press ESC to Exit)</span>
+
         </button>
 
+
+
         <a href="/" class="text-xs text-slate-400 hover:text-white transition hidden sm:inline-block">← Beranda</a>
+
         
+
         <div id="user-badge" class="hidden flex items-center space-x-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full">
+
           <img id="nav-avatar" class="w-5 h-5 rounded-full object-cover" src="" alt="Avatar">
+
           <span id="nav-name" class="text-xs font-semibold text-white">User</span>
+
           <button onclick="logoutSession()" class="text-slate-500 hover:text-rose-400 text-xs ml-1" title="Logout">✕</button>
+
         </div>
+
       </div>
+
     </div>
+
   </header>
 
+
+
   <!-- Main Content -->
+
   <main id="main-content" class="max-w-4xl mx-auto px-4 py-10 w-full flex-grow space-y-8">
+
     
+
     <div class="text-center space-y-2">
+
       <h2 class="text-3xl font-extrabold text-white">🎁 Event & Giveaway Komunitas</h2>
+
       <p class="text-sm text-slate-400">Ikuti giveaway resmi dari Rakan Aditya Community dan dapatkan hadiah menarik!</p>
+
     </div>
+
+
 
     <!-- Login Alert -->
+
     <div id="login-alert" class="bg-indigo-950/60 border border-indigo-800 p-6 rounded-2xl text-center space-y-4">
+
       <p class="text-sm text-indigo-200">Anda harus masuk dengan akun Discord terlebih dahulu untuk mengikuti giveaway.</p>
+
       <a href="https://discord.com/api/oauth2/authorize?client_id=1380868700688613416&redirect_uri=https%3A%2F%2Fdemo-profile-dun.vercel.app%2Fapi%2Fcallback&response_type=code&scope=identify%20guilds&state=giveaway" 
+
          class="inline-flex items-center space-x-2 py-2.5 px-6 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition text-sm">
-        <span>Login dengan Discord</span>
+
+         <span>Login dengan Discord</span>
+
       </a>
+
     </div>
+
+
 
     <!-- OWNER PANEL -->
+
     <div id="owner-panel" class="hidden bg-slate-900 border border-amber-500/40 p-6 rounded-2xl space-y-4 shadow-xl">
+
       <div class="flex items-center space-x-2 text-amber-400">
+
         <span class="text-lg">👑</span>
+
         <h3 class="font-bold text-lg text-white">Owner Management Panel</h3>
+
       </div>
+
       
+
       <form id="create-giveaway-form" class="space-y-4">
+
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
           <div>
+
             <label class="block text-xs text-slate-400 mb-1">Judul Event</label>
+
             <input type="text" id="gw-title" required placeholder="Contoh: Nitro Basic 1 Bulan" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+
           </div>
+
           <div>
+
             <label class="block text-xs text-slate-400 mb-1">Hadiah (Prize)</label>
+
             <input type="text" id="gw-prize" required placeholder="Contoh: 1x Discord Nitro" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+
           </div>
+
         </div>
+
+
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs text-slate-400 mb-1">Jumlah Pemenang</label>
-            <input type="number" id="gw-winners" value="1" min="1" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
-          </div>
 
           <div>
-            <label class="block text-xs text-slate-400 mb-1">Durasi Timer (Hitung Mundur)</label>
-            <div class="flex space-x-2">
-              <input type="number" id="gw-duration-val" min="1" placeholder="Durasi" class="w-1/2 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
-              <select id="gw-duration-unit" class="w-1/2 bg-slate-950 border border-slate-800 rounded-xl px-2 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
-                <option value="minutes" selected>Menit</option>
-                <option value="hours">Jam</option>
-                <option value="days">Hari</option>
-                <option value="weeks">Minggu</option>
-              </select>
-            </div>
+
+            <label class="block text-xs text-slate-400 mb-1">Jumlah Pemenang</label>
+
+            <input type="number" id="gw-winners" value="1" min="1" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+
           </div>
+
+
+
+          <div>
+
+            <label class="block text-xs text-slate-400 mb-1">Durasi Timer (Hitung Mundur)</label>
+
+            <div class="flex space-x-2">
+
+              <input type="number" id="gw-duration-val" min="1" placeholder="Durasi" class="w-1/2 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+
+              <select id="gw-duration-unit" class="w-1/2 bg-slate-950 border border-slate-800 rounded-xl px-2 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+
+                <option value="minutes" selected>Menit</option>
+
+                <option value="hours">Jam</option>
+
+                <option value="days">Hari</option>
+
+                <option value="weeks">Minggu</option>
+
+              </select>
+
+            </div>
+
+          </div>
+
         </div>
+
+
 
         <div>
+
           <label class="block text-xs text-slate-400 mb-1">Deskripsi / Syarat</label>
+
           <textarea id="gw-desc" rows="2" placeholder="Deskripsi singkat..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"></textarea>
+
         </div>
 
+
+
         <button type="submit" class="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-xl text-sm transition shadow-lg shadow-amber-600/20">Buat Giveaway Baru</button>
+
       </form>
+
     </div>
 
+
+
     <!-- List Giveaway -->
+
     <div class="space-y-4">
+
       <h3 class="font-bold text-lg text-white">Daftar Giveaway Aktif</h3>
+
       <div id="giveaway-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
         <p class="text-slate-500 text-sm">Memuat daftar giveaway...</p>
+
       </div>
+
     </div>
+
+
 
   </main>
 
-  <!-- OVERLAY COUNTDOWN DRAMATIS -->
+
+
+  <!-- OVERLAY COUNTDOWN DRAMATIS (KHUSUS ROLL MANUAL HOST) -->
+
   <div id="countdown-overlay" class="hidden fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-xl flex flex-col items-center justify-center p-4 transition-all">
+
     <div id="countdown-card" class="text-center space-y-6">
+
       <p id="countdown-subtext" class="text-amber-400 font-bold tracking-widest uppercase text-sm sm:text-base animate-pulse">🎯 PREPARING GIVEAWAY ROLL</p>
+
       
+
       <div class="relative flex items-center justify-center w-48 h-48 sm:w-64 sm:h-64">
+
         <div id="countdown-glow-ring" class="absolute inset-0 rounded-full border-4 border-amber-500/40 animate-ping opacity-50"></div>
+
         <h1 id="countdown-number" class="text-7xl sm:text-9xl font-black text-white tracking-tighter drop-shadow-[0_0_35px_rgba(234,179,8,0.8)]">5</h1>
+
       </div>
+
+
 
       <p class="text-xs text-slate-400 font-mono">LIVE DISPLAY MODE &bull; RAKAN ADITYA COMMUNITY</p>
+
     </div>
+
   </div>
+
+
 
   <!-- MODAL ANIMASI ROLLING GIVEAWAY -->
-  <div id="rolling-modal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-amber-500/50 w-full max-w-2xl rounded-3xl p-6 sm:p-8 text-center space-y-6 shadow-2xl relative overflow-hidden">
+
+  <div id="rolling-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+
+    <div class="bg-slate-900 border border-amber-500/50 w-full max-w-md rounded-3xl p-6 text-center space-y-6 shadow-2xl relative overflow-hidden">
+
       
+
       <!-- Status Badge -->
+
       <div id="rolling-status" class="space-y-1">
+
         <span id="status-badge" class="inline-block px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full text-xs font-bold animate-pulse">ROLLING</span>
-        <h3 id="rolling-title" class="text-xl font-extrabold text-white">Mengocok Pemenang Komunitas</h3>
+
+        <h3 id="rolling-title" class="text-lg font-extrabold text-white">Mengocok Pemenang</h3>
+
       </div>
 
-      <!-- CAROUSEL / SLOT MACHINE CONTAINER -->
-      <div id="carousel-box" class="relative w-full overflow-hidden py-6 bg-slate-950/80 border border-slate-800 rounded-2xl flex items-center justify-center shadow-inner transition-all duration-500">
-        
-        <!-- Garis Penanda Pemenang di Tengah (Hilang saat stop) -->
-        <div id="center-indicator-line" class="absolute inset-y-0 w-1.5 bg-amber-500 z-20 shadow-[0_0_20px_#eab308] transition-opacity duration-300"></div>
 
-        <!-- Track Geser Kiri-Kanan -->
-        <div id="roll-track" class="flex items-center space-x-4 transition-transform duration-75 ease-out px-4">
-          <!-- Item peserta akan di-generate secara dinamis via JavaScript -->
+
+      <!-- Display Rolling Profile Avatar, Nomor Urut, & Name -->
+
+      <div class="flex flex-col items-center justify-center space-y-3 py-2">
+
+        <div class="relative w-28 h-28 sm:w-32 sm:h-32">
+
+          <img id="roll-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" class="w-full h-full rounded-full border-4 border-indigo-500 object-cover shadow-2xl animate-pulse-fast">
+
+          <span id="roll-number-tag" class="absolute -top-1 -right-1 bg-amber-500 text-slate-950 text-xs font-black px-2.5 py-1 rounded-full border-2 border-slate-900 shadow-lg">#1</span>
+
         </div>
+
+        <p id="roll-name" class="font-black text-xl sm:text-2xl text-white tracking-wide truncate max-w-xs">...</p>
+
+        <p id="roll-tag" class="text-xs font-mono text-slate-400 truncate max-w-xs">@mengocok_peserta</p>
+
       </div>
 
-      <!-- KARTU PROFIL DISCORD PEMENANG (Tampil persis seperti kartu roll tanpa banner oranye & tanpa official winner) -->
-      <div id="winner-display-info" class="hidden py-6 flex flex-col items-center justify-center space-y-4 animate-bounce">
-        <div id="winner-card-slot" class="w-36 sm:w-40 bg-slate-900 border-2 border-amber-500 rounded-2xl p-4 flex flex-col items-center space-y-3 shadow-[0_0_30px_rgba(234,179,8,0.5)]">
-          <img id="winner-profile-avatar" src="" class="w-16 h-16 rounded-full object-cover border-2 border-amber-400 shadow-lg">
-          <span id="winner-profile-globalname" class="text-xs font-bold text-white truncate w-full text-center">...</span>
-          <span id="winner-profile-username" class="text-[10px] font-mono text-slate-400 truncate w-full text-center">@...</span>
-        </div>
-        <div class="bg-slate-950 border border-slate-800 px-4 py-2 rounded-xl text-center space-y-0.5 max-w-xs mx-auto">
-          <p class="text-[10px] text-indigo-400 font-semibold uppercase tracking-wider">Hadiah Giveaway</p>
-          <p id="winner-profile-prize" class="text-xs text-white font-bold">...</p>
-        </div>
-      </div>
+
 
       <!-- Auto Refresh Timer Indicator -->
+
       <div id="refresh-indicator" class="hidden text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-xl py-2 px-4 animate-pulse">
+
         🔄 Halaman akan refresh otomatis dalam <span id="refresh-timer-val" class="font-bold">10</span> detik...
+
       </div>
 
+
+
     </div>
+
   </div>
+
+
 
   <!-- MODAL PARTICIPANTS -->
+
   <div id="participants-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+
     <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl p-6 space-y-4">
+
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+
         <h4 class="font-bold text-white text-base">👥 Daftar Peserta Giveaway (Siapa Cepat Dapat)</h4>
+
         <button onclick="closeModal()" class="text-slate-400 hover:text-white text-sm">✕</button>
+
       </div>
+
       <div id="modal-participants-list" class="max-h-60 overflow-y-auto space-y-2 pr-1"></div>
+
     </div>
+
   </div>
 
+
+
   <footer id="main-footer" class="border-t border-slate-800 py-6 bg-slate-900/40 text-center text-xs text-slate-500">
+
     <p>Rakan Aditya Community &bull; Hosted on Vercel</p>
+
   </footer>
 
+
+
   <script>
+
     const OWNER_ID = '628205121704296458';
+
     let currentUser = null;
+
     let timerIntervals = [];
+
     let isMuted = false;
+
     let isLiveMode = false;
+
     let isRollingActive = false;
-    let triggeredRollIds = new Set();
+
+    let triggeredRollIds = new Set(); // Mencegah pemanggilan ganda per giveaway ID
+
+
 
     function toggleAudioMute() {
+
       isMuted = !isMuted;
+
       document.getElementById('audio-icon').innerText = isMuted ? '🔇' : '🔊';
+
       document.getElementById('audio-text').innerText = isMuted ? 'Sound OFF' : 'Sound ON';
+
     }
+
+
 
     function playAudio(id) {
+
       if (isMuted) return;
+
       try {
+
         const audio = document.getElementById(id);
+
         if (audio) { audio.currentTime = 0; audio.play().catch(e => {}); }
+
       } catch(e) {}
+
     }
+
+
 
     function toggleLiveDisplayMode() {
+
       isLiveMode = !isLiveMode;
+
       const header = document.getElementById('main-header');
+
       const footer = document.getElementById('main-footer');
+
       const mainContent = document.getElementById('main-content');
 
+
+
       if (isLiveMode) {
+
         header.classList.add('hidden');
+
         footer.classList.add('hidden');
+
         mainContent.classList.add('hidden');
+
         if (document.documentElement.requestFullscreen) {
+
           document.documentElement.requestFullscreen().catch(e => {});
+
         }
+
       } else {
+
         header.classList.remove('hidden');
+
         footer.classList.remove('hidden');
+
         mainContent.classList.remove('hidden');
+
         if (document.exitFullscreen && document.fullscreenElement) {
+
           document.exitFullscreen().catch(e => {});
+
         }
+
       }
+
     }
+
+
 
     document.addEventListener('keydown', (e) => {
+
       if (e.key === 'Escape' && isLiveMode) {
+
         toggleLiveDisplayMode();
+
       }
+
     });
+
+
 
     document.addEventListener('fullscreenchange', () => {
+
       if (!document.fullscreenElement && isLiveMode) {
+
         isLiveMode = false;
+
         document.getElementById('main-header').classList.remove('hidden');
+
         document.getElementById('main-footer').classList.remove('hidden');
+
         document.getElementById('main-content').classList.remove('hidden');
+
       }
+
     });
 
+
+
     function showToast(msg, isError = false) {
+
       const existingToast = document.getElementById('custom-toast');
+
       if (existingToast) existingToast.remove();
 
+
+
       const toast = document.createElement('div');
+
       toast.id = 'custom-toast';
+
       toast.className = `fixed bottom-5 right-5 z-50 ${isError ? 'bg-rose-600 border-rose-400' : 'bg-emerald-600 border-emerald-400'} text-white px-5 py-3 rounded-xl shadow-2xl border text-xs sm:text-sm font-medium flex items-center space-x-2 animate-bounce`;
+
       toast.innerHTML = `<span>${isError ? '❌' : '✅'}</span><span>${msg}</span>`;
+
       document.body.appendChild(toast);
+
       setTimeout(() => toast.remove(), 4000);
+
     }
+
+
 
     async function safeFetchJson(url, options = {}) {
+
       try {
+
         const res = await fetch(url, options);
+
         const text = await res.text();
-        try { return JSON.parse(text); } catch (e) { return { success: false, error: `Server Error (${res.status})` }; }
-      } catch (err) { return { success: false, error: "Gagal menghubungkan ke jaringan." }; }
+
+        try { 
+
+          return JSON.parse(text); 
+
+        } catch (e) { 
+
+          return { success: false, error: `Server Error (${res.status}): Respon tidak valid.` }; 
+
+        }
+
+      } catch (err) { 
+
+        return { success: false, error: "Gagal menghubungkan ke jaringan." }; 
+
+      }
+
     }
+
+
 
     function triggerWebhook(payload) {
+
       fetch('/api/webhooks', {
+
         method: 'POST',
+
         headers: { 'Content-Type': 'application/json' },
+
         body: JSON.stringify(payload)
+
       }).catch(e => {});
+
     }
+
+
 
     function initAuth() {
+
       const urlParams = new URLSearchParams(window.location.search);
+
       const userParam = urlParams.get('user');
 
+
+
       if (userParam) {
+
         try {
+
           currentUser = JSON.parse(decodeURIComponent(userParam));
+
           localStorage.setItem('discord_user', JSON.stringify(currentUser));
+
         } catch (e) {}
+
       } else {
+
         const saved = localStorage.getItem('discord_user');
+
         if (saved) currentUser = JSON.parse(saved);
+
       }
+
+
 
       if (currentUser && currentUser.id) {
+
         document.getElementById('login-alert').classList.add('hidden');
+
         document.getElementById('user-badge').classList.remove('hidden');
+
         document.getElementById('nav-name').innerText = currentUser.global_name || currentUser.username;
+
         document.getElementById('nav-avatar').src = currentUser.avatar 
+
           ? `https://cdn.discordapp.com/avatars/${currentUser.id}/${currentUser.avatar}.png`
+
           : 'https://cdn.discordapp.com/embed/avatars/0.png';
 
+
+
         if (currentUser.id === OWNER_ID) {
+
           document.getElementById('owner-panel').classList.remove('hidden');
+
         }
+
       }
+
     }
+
+
 
     function logoutSession() {
+
       localStorage.removeItem('discord_user');
+
       window.location.reload();
+
     }
+
+
 
     function getAvatarUrl(p) {
+
       return p.avatar 
+
         ? `https://cdn.discordapp.com/avatars/${p.id}/${p.avatar}.png` 
+
         : 'https://cdn.discordapp.com/embed/avatars/0.png';
+
     }
+
+
 
     function runCountdownSequence(onComplete) {
+
       const overlay = document.getElementById('countdown-overlay');
+
       const numElem = document.getElementById('countdown-number');
-      overlay.classList.remove('hidden');
+
       
+
+      overlay.classList.remove('hidden');
+
+      
+
       const steps = [
+
         { text: '5', sound: 'audio-tick', class: 'animate-zoom-glow' },
+
         { text: '4', sound: 'audio-tick', class: 'animate-zoom-glow' },
-        { text: '3', sound: 'audio-shake', class: 'animate-shake' },
+
+        { text: '3', sound: 'audio-tick', class: 'animate-shake' },
+
         { text: '2', sound: 'audio-tick', class: 'animate-zoom-glow' },
+
         { text: '1', sound: 'audio-dramatic', class: 'animate-flash' },
+
         { text: 'GET READY...', sound: 'audio-pop', class: 'animate-pulse' }
+
       ];
 
+
+
       let index = 0;
+
+
+
       function nextStep() {
+
         if (index >= steps.length) {
+
           overlay.classList.add('hidden');
+
           if (onComplete) onComplete();
+
           return;
+
         }
+
+
+
         const step = steps[index];
+
         numElem.innerText = step.text;
+
         playAudio(step.sound);
+
+
+
         numElem.className = "text-5xl sm:text-8xl font-black text-white tracking-tighter drop-shadow-[0_0_35px_rgba(234,179,8,0.8)] " + step.class;
+
+
+
         index++;
+
         setTimeout(nextStep, step.text === 'GET READY...' ? 1200 : 1000);
+
       }
+
+
+
       nextStep();
+
     }
+
+
 
     function startRollingAnimation(participants, winners, giveawayTitle, prize, onFinish) {
+
       isRollingActive = true;
+
       const modal = document.getElementById('rolling-modal');
-      const track = document.getElementById('roll-track');
+
+      const rollAvatar = document.getElementById('roll-avatar');
+
+      const rollName = document.getElementById('roll-name');
+
+      const rollTag = document.getElementById('roll-tag');
+
+      const rollNumberTag = document.getElementById('roll-number-tag');
+
       const statusBadge = document.getElementById('status-badge');
-      const winnerInfo = document.getElementById('winner-display-info');
-      const carouselBox = document.getElementById('carousel-box');
-      const centerLine = document.getElementById('center-indicator-line');
+
       const refreshIndicator = document.getElementById('refresh-indicator');
+
       const refreshTimerVal = document.getElementById('refresh-timer-val');
 
+
+
       modal.classList.remove('hidden');
-      winnerInfo.classList.add('hidden');
-      carouselBox.classList.remove('hidden');
-      centerLine.style.opacity = '1';
+
       refreshIndicator.classList.add('hidden');
-      statusBadge.innerText = 'ROLLING...';
+
+      statusBadge.innerText = 'ROLLING';
+
       statusBadge.className = 'inline-block px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full text-xs font-bold animate-pulse';
 
-      // Pastikan semua peserta (anggota) masuk ke deretan rolling
-      let displayList = [];
-      for (let i = 0; i < 35; i++) {
-        const shuffled = [...participants].sort(() => 0.5 - Math.random());
-        displayList = displayList.concat(shuffled);
-      }
-      const firstWinner = winners[0];
-      displayList.push(firstWinner);
 
-      track.innerHTML = displayList.map((p, idx) => `
-        <div class="roll-card flex-shrink-0 w-24 sm:w-28 bg-slate-900 border border-slate-700 rounded-xl p-3 flex flex-col items-center space-y-2 shadow-lg">
-          <img src="${getAvatarUrl(p)}" class="w-14 h-14 rounded-full object-cover border-2 border-indigo-500 shadow-md">
-          <span class="text-[10px] font-bold text-slate-300 truncate w-full text-center">${p.global_name || p.username}</span>
-          <span class="text-[9px] font-mono text-slate-500 truncate w-full text-center">@${p.username}</span>
-        </div>
-      `).join('');
-
-      let currentPos = 0;
-      const totalItems = displayList.length;
-      const itemWidth = 128; // Lebar card + gap
-      const maxScroll = (totalItems - 4) * itemWidth;
 
       const rollInterval = setInterval(() => {
+
         playAudio('audio-pop');
-        currentPos += 50;
-        if (currentPos >= maxScroll) currentPos = 0;
-        track.style.transform = `translateX(-${currentPos}px)`;
-      }, 50);
+
+        const randomIndex = Math.floor(Math.random() * participants.length);
+
+        const randomP = participants[randomIndex];
+
+        
+
+        rollAvatar.src = getAvatarUrl(randomP);
+
+        rollName.innerText = randomP.global_name || randomP.username;
+
+        rollTag.innerText = `@${randomP.username}`;
+
+        rollNumberTag.innerText = `#${randomIndex + 1}`;
+
+      }, 80);
+
+
 
       setTimeout(() => {
+
         clearInterval(rollInterval);
 
-        const targetScroll = (totalItems - 3.2) * itemWidth;
-        track.style.transition = 'transform 0.9s cubic-bezier(0.1, 0.9, 0.2, 1)';
-        track.style.transform = `translateX(-${targetScroll}px)`;
 
-        setTimeout(() => {
-          playAudio('audio-win');
-          statusBadge.innerText = 'WINNER SELECTED';
-          statusBadge.className = 'inline-block px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-bold animate-bounce';
 
-          // Hilangkan garis kuning penanda saat berhenti
-          centerLine.style.opacity = '0';
+        const firstWinner = winners[0];
 
-          // Sembunyikan carousel dan tampilkan Kartu Profil Pemenang (mirip kartu roll)
-          carouselBox.classList.add('hidden');
-          winnerInfo.classList.remove('hidden');
+        const winnerIndex = participants.findIndex(p => p.id === firstWinner.id);
 
-          document.getElementById('winner-profile-avatar').src = getAvatarUrl(firstWinner);
-          document.getElementById('winner-profile-globalname').innerText = firstWinner.global_name || firstWinner.username;
-          document.getElementById('winner-profile-username').innerText = `@${firstWinner.username}`;
-          document.getElementById('winner-profile-prize').innerText = prize;
 
-          refreshIndicator.classList.remove('hidden');
-          let refreshSeconds = 10;
+
+        playAudio('audio-win');
+
+        rollAvatar.src = getAvatarUrl(firstWinner);
+
+        rollName.innerText = firstWinner.global_name || firstWinner.username;
+
+        rollTag.innerText = `@${firstWinner.username}`;
+
+        rollNumberTag.innerText = `#${winnerIndex !== -1 ? winnerIndex + 1 : 1}`;
+
+
+
+        statusBadge.innerText = 'WINNER SELECTED';
+
+        statusBadge.className = 'inline-block px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-bold animate-bounce';
+
+
+
+        refreshIndicator.classList.remove('hidden');
+
+        let refreshSeconds = 10;
+
+        refreshTimerVal.innerText = refreshSeconds;
+
+
+
+        const refreshCountdown = setInterval(() => {
+
+          refreshSeconds--;
+
           refreshTimerVal.innerText = refreshSeconds;
 
-          const refreshCountdown = setInterval(() => {
-            refreshSeconds--;
-            refreshTimerVal.innerText = refreshSeconds;
-            if (refreshSeconds <= 0) {
-              clearInterval(refreshCountdown);
-              window.location.href = 'https://demo-profile-dun.vercel.app/giveaway';
-            }
-          }, 1000);
+          if (refreshSeconds <= 0) {
 
-          localStorage.setItem('recent_winner_notification', JSON.stringify({
-            winnerName: firstWinner.global_name || firstWinner.username,
-            prize: prize,
-            title: giveawayTitle,
-            timestamp: Date.now()
-          }));
+            clearInterval(refreshCountdown);
 
-          if (onFinish) onFinish();
-        }, 900);
+            window.location.href = 'https://demo-profile-dun.vercel.app/giveaway';
 
-      }, 4500);
+          }
+
+        }, 1000);
+
+
+
+        const allWinnerNames = winners.map(w => w.global_name || w.username).join(', ');
+
+        localStorage.setItem('recent_winner_notification', JSON.stringify({
+
+          winnerName: allWinnerNames,
+
+          prize: prize,
+
+          title: giveawayTitle,
+
+          timestamp: Date.now()
+
+        }));
+
+
+
+        if (onFinish) onFinish();
+
+
+
+      }, 5000);
+
     }
 
+
+
     async function loadGiveaways() {
+
+      // KUNCI UI: Jika sedang rolling, jangan ubah tampilan HTML
+
       if (isRollingActive) return;
+
+
+
       timerIntervals.forEach(clearInterval);
+
       timerIntervals = [];
 
+
+
       const container = document.getElementById('giveaway-list');
+
       const data = await safeFetchJson('/api/giveaway');
 
+
+
       if (data.success && data.data && data.data.length > 0) {
+
         container.innerHTML = '';
+
         data.data.forEach(gw => {
+
           const isOwner = currentUser && currentUser.id === OWNER_ID;
+
           const participants = gw.participants || [];
+
           const isJoined = currentUser && participants.some(p => p.id === currentUser.id);
+
           const isEnded = gw.status === 'ended';
 
+
+
           let statusText = 'READY';
+
           let statusStyle = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+
+
+
           if (isEnded) {
+
             statusText = 'COMPLETED';
+
             statusStyle = 'bg-slate-800 text-slate-400 border-slate-700';
+
           }
+
+
 
           const card = document.createElement('div');
+
           card.className = 'bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between space-y-4 relative overflow-hidden shadow-lg';
 
+
+
           let winnersHTML = '';
+
           if (isEnded && gw.winners && gw.winners.length > 0) {
+
             winnersHTML = `
+
               <div class="bg-gradient-to-r from-emerald-950/80 to-slate-900 border border-emerald-500/40 p-3 rounded-xl space-y-2">
+
                 <span class="font-bold text-xs text-emerald-400 flex items-center space-x-1">
+
                   <span>🏆 WINNER SELECTED:</span>
+
                 </span>
+
                 <div class="flex flex-wrap gap-2">
+
                   ${gw.winners.map(w => {
+
                     const wIndex = participants.findIndex(p => p.id === w.id);
+
                     return `
+
                       <div class="flex items-center space-x-2 bg-emerald-900/40 border border-emerald-500/30 px-2.5 py-1 rounded-full">
+
                         <span class="text-[10px] bg-emerald-500 text-slate-950 font-black px-1.5 py-0.5 rounded-full">#${wIndex !== -1 ? wIndex + 1 : 1}</span>
+
                         <img src="${getAvatarUrl(w)}" class="w-5 h-5 rounded-full object-cover">
+
                         <span class="text-xs font-semibold text-white">${w.global_name || w.username}</span>
+
                       </div>
+
                     `;
+
                   }).join('')}
+
                 </div>
+
               </div>
+
             `;
+
           }
+
+
 
           let avatarsPreviewHTML = '';
+
           if (participants.length > 0) {
+
             avatarsPreviewHTML = `
+
               <div class="flex items-center space-x-2 pt-1">
+
                 <div class="flex -space-x-2 overflow-hidden">
+
                   ${participants.slice(0, 5).map((p, idx) => `
+
                     <div class="relative inline-block">
+
                       <img class="h-6 w-6 rounded-full ring-2 ring-slate-900 object-cover" src="${getAvatarUrl(p)}" title="#${idx + 1} - ${p.global_name || p.username}">
+
                     </div>
+
                   `).join('')}
+
                 </div>
+
                 ${participants.length > 5 ? `<span class="text-[10px] text-slate-400">+${participants.length - 5} lainnya</span>` : ''}
+
               </div>
+
             `;
+
           }
 
+
+
           card.innerHTML = `
+
             <div class="space-y-3">
+
               <div class="flex justify-between items-start">
+
                 <h4 class="font-bold text-lg text-white leading-tight">${gw.title}</h4>
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${statusStyle}">${statusText}</span>
+
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${statusStyle}">
+
+                  ${statusText}
+
+                </span>
+
               </div>
+
               <p class="text-xs text-indigo-400 font-medium">🎁 Hadiah: ${gw.prize}</p>
+
               <p class="text-xs text-slate-400">${gw.description || 'Tidak ada deskripsi.'}</p>
+
               
+
               ${gw.endsAt && !isEnded ? `<div id="timer-${gw._id}" class="text-xs font-mono text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg w-fit">⏳ Menghitung...</div>` : ''}
 
+
+
               <div class="flex items-center justify-between border-t border-slate-800/60 pt-2">
+
                 <div class="space-y-1">
+
                   <p class="text-[11px] text-slate-400">👥 Total Peserta: <span class="font-bold text-white">${participants.length}</span></p>
+
                   ${avatarsPreviewHTML}
+
                 </div>
+
+
+
                 <button onclick="openParticipantsModal('${encodeURIComponent(JSON.stringify(participants))}')" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs transition border border-slate-700 flex items-center space-x-1">
+
                   <span>ℹ️ Participants</span>
+
                 </button>
+
               </div>
+
+
+
               ${winnersHTML}
+
             </div>
+
+
 
             <div class="space-y-2 pt-2 border-t border-slate-800/60">
+
               ${!isEnded ? `
+
                 <button onclick="joinGiveaway('${gw._id}')" ${isJoined ? 'disabled' : ''} class="w-full py-2 px-4 ${isJoined ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/20'} rounded-xl text-xs font-semibold transition">
+
                   ${isJoined ? '✓ Sudah Mengikuti (Nomor Terdaftar)' : '🎉 Ikuti Giveaway (Siapa Cepat Dapat)'}
+
                 </button>
+
               ` : ''}
 
+
+
               ${isOwner ? `
+
                 <div class="flex space-x-2">
+
                   ${!isEnded ? `<button onclick="triggerRollStart('${gw._id}')" class="flex-1 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-medium transition">🎲 START ROLL</button>` : ''}
+
                   <button onclick="deleteGiveaway('${gw._id}')" class="flex-1 py-1.5 bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white rounded-lg text-xs font-medium transition border border-rose-500/30">🗑️ Hapus</button>
+
                 </div>
+
               ` : ''}
+
             </div>
+
           `;
+
+
 
           container.appendChild(card);
 
+
+
+          // PENGATURAN HITUNG MUNDUR & AUTO-ROLL OTOMATIS
+
           if (gw.endsAt && !isEnded) {
+
             const timerElem = document.getElementById(`timer-${gw._id}`);
+
             const endTime = new Date(gw.endsAt).getTime();
 
+
+
             const interval = setInterval(() => {
+
               const now = new Date().getTime();
+
               const distance = endTime - now;
 
+
+
               if (distance <= 0) {
+
                 clearInterval(interval);
+
                 timerElem.innerText = '🎲 Waktu Habis! Mengocok Pemenang...';
+
+                
+
                 if (!triggeredRollIds.has(gw._id)) {
+
                   triggeredRollIds.add(gw._id);
+
+                  // Eksekusi Roll Otomatis
+
                   triggerAutoRoll(gw._id);
+
                 }
+
               } else {
+
                 const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+
                 const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
                 const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+
                 const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
+
+
                 let timerStr = '⏳ Sisa Waktu: ';
+
                 if (days > 0) timerStr += `${days}h `;
+
                 if (hours > 0 || days > 0) timerStr += `${hours}j `;
+
                 timerStr += `${minutes}m ${seconds}s`;
+
                 timerElem.innerText = timerStr;
+
               }
+
             }, 1000);
+
+
+
             timerIntervals.push(interval);
+
           }
+
         });
+
       } else if (data.success && data.data.length === 0) {
+
         container.innerHTML = '<p class="text-slate-500 text-sm col-span-2">Belum ada giveaway yang dibuat.</p>';
+
       } else {
-        container.innerHTML = `<p class="text-rose-400 text-sm col-span-2">Gagal memuat data giveaway.</p>`;
+
+        container.innerHTML = `<p class="text-rose-400 text-sm col-span-2">Gagal memuat data giveaway: ${data.error || 'Terjadi kesalahan.'}</p>`;
+
       }
+
     }
+
+
+
+    // Trigger Roll Manual dari Tombol Owner (Countdown 5 detik terlebih dahulu)
 
     async function triggerRollStart(id) {
+
       triggerWebhook({ type: 'roll_start' });
-      runCountdownSequence(() => { rollGiveaway(id, true); });
+
+      runCountdownSequence(() => {
+
+        rollGiveaway(id, true);
+
+      });
+
     }
+
+
+
+    // Trigger Roll Otomatis ketika Timer Hitung Mundur Habis
 
     async function triggerAutoRoll(id) {
+
       triggerWebhook({ type: 'roll_auto' });
+
       rollGiveaway(id, false);
+
     }
+
+
+
+    // Eksekusi Roll ke Backend dan jalankan animasi modal
 
     async function rollGiveaway(id, isManual = true) {
+
       const data = await safeFetchJson('/api/giveaway', {
+
         method: 'PUT',
+
         headers: { 'Content-Type': 'application/json' },
+
         body: JSON.stringify({ action: 'roll', giveawayId: id, userId: currentUser ? currentUser.id : OWNER_ID, isAuto: !isManual })
+
       });
+
+
 
       if (data.success && data.data && data.data.winners && data.data.winners.length > 0) {
+
         const gw = data.data;
+
         const winners = gw.winners;
+
         const participants = gw.participants || winners;
 
+
+
+        // Memulai animasi rolling avatar & profil peserta selama 5 detik
+
         startRollingAnimation(participants, winners, gw.title, gw.prize, () => {
+
+          // Kirim Webhook Pemenang ke Discord setelah animasi selesai
+
           triggerWebhook({ type: 'winner', giveaway: gw, winners: winners });
+
           const winnerNames = winners.map(w => w.global_name || w.username).join(', ');
+
           showToast(`Selamat! ${winnerNames} menang ${gw.prize}!`);
+
         });
+
       } else {
+
         showToast(data.error || 'Gagal mengocok pemenang.', true);
+
       }
+
     }
+
+
 
     document.getElementById('create-giveaway-form').addEventListener('submit', async (e) => {
+
       e.preventDefault();
+
       if (!currentUser || currentUser.id !== OWNER_ID) {
+
         return showToast("Hanya owner yang dapat membuat giveaway!", true);
+
       }
+
+
 
       const payload = {
+
         title: document.getElementById('gw-title').value,
+
         prize: document.getElementById('gw-prize').value,
+
         winnersCount: document.getElementById('gw-winners').value,
+
         durationValue: document.getElementById('gw-duration-val').value,
+
         durationUnit: document.getElementById('gw-duration-unit').value,
+
         description: document.getElementById('gw-desc').value,
+
         userId: currentUser.id
+
       };
 
+
+
       const data = await safeFetchJson('/api/giveaway', {
+
         method: 'POST',
+
         headers: { 'Content-Type': 'application/json' },
+
         body: JSON.stringify(payload)
+
       });
 
+
+
       if (data.success) {
+
         triggerWebhook({ type: 'create', giveaway: data.data });
-        showToast('Giveaway berhasil dibuat!');
+
+        showToast(data.message || 'Giveaway berhasil dibuat!');
+
         document.getElementById('create-giveaway-form').reset();
+
         loadGiveaways();
+
       } else {
+
         showToast(data.error || 'Gagal membuat giveaway.', true);
+
       }
+
     });
+
+
 
     async function joinGiveaway(id) {
+
       if (!currentUser) return showToast('Silakan login terlebih dahulu!', true);
+
       
+
+      // ✅ DIPERBAIKI: Menggunakan endpoint /api/giveaway yang tepat
+
       const data = await safeFetchJson('/api/giveaway', {
+
         method: 'PUT',
+
         headers: { 'Content-Type': 'application/json' },
+
         body: JSON.stringify({ action: 'join', giveawayId: id, user: currentUser })
+
       });
 
+
+
       if (data.success) {
+
         playAudio('audio-chime');
+
         showToast('Berhasil mendaftar giveaway! Nomor urut Anda telah dicatat.');
+
         loadGiveaways();
+
       } else {
+
         showToast(data.error, true);
+
       }
+
     }
+
+
 
     async function deleteGiveaway(id) {
+
       if (!confirm('Yakin ingin menghapus giveaway ini?')) return;
+
       const data = await safeFetchJson('/api/giveaway', {
+
         method: 'DELETE',
+
         headers: { 'Content-Type': 'application/json' },
+
         body: JSON.stringify({ giveawayId: id, userId: currentUser.id })
+
       });
 
+
+
       if (data.success) {
+
         showToast('Giveaway berhasil dihapus!');
+
         loadGiveaways();
+
       } else {
+
         showToast(data.error, true);
+
       }
+
     }
+
+
 
     function openParticipantsModal(encodedData) {
+
       const participants = JSON.parse(decodeURIComponent(encodedData));
+
       const listContainer = document.getElementById('modal-participants-list');
+
       listContainer.innerHTML = '';
 
+
+
       if (participants.length === 0) {
+
         listContainer.innerHTML = '<p class="text-xs text-slate-500 text-center py-4">Belum ada peserta yang mendaftar.</p>';
+
       } else {
+
         participants.forEach((p, index) => {
+
           const item = document.createElement('div');
+
           item.className = 'flex items-center justify-between bg-slate-950 p-2.5 rounded-xl border border-slate-800';
+
           item.innerHTML = `
+
             <div class="flex items-center space-x-3">
+
               <span class="w-6 h-6 rounded-full bg-amber-500/20 text-amber-400 font-mono font-bold text-xs flex items-center justify-center border border-amber-500/30">#${index + 1}</span>
+
               <img src="${getAvatarUrl(p)}" class="w-8 h-8 rounded-full object-cover border border-slate-700">
+
               <div>
+
                 <p class="text-xs font-bold text-white leading-tight">${p.global_name || p.username}</p>
+
                 <p class="text-[10px] text-slate-400">@${p.username}</p>
+
               </div>
+
             </div>
+
             <span class="text-[10px] text-emerald-400 font-mono">Urutan #${index + 1}</span>
+
           `;
+
           listContainer.appendChild(item);
+
         });
+
       }
-      document.getElementById('participants-modal').classList.add('hidden');
+
+      document.getElementById('participants-modal').classList.remove('hidden');
+
     }
+
+
 
     function closeModal() {
+
       document.getElementById('participants-modal').classList.add('hidden');
+
     }
 
+
+
     window.addEventListener('DOMContentLoaded', () => {
+
       initAuth();
+
       loadGiveaways();
-      setInterval(() => { loadGiveaways(); }, 30000);
+      // Auto Refresh Data Setiap 30 Detik secara halus di background
+
+      setInterval(() => {
+
+        loadGiveaways();
+
+      }, 30000);
+
     });
+
   </script>
+
 </body>
-</html>
+
+</html> 
