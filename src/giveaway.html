@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Giveaway - Rakan Aditya Community</title>
+  <title>Giveaway Live Panel - Rakan Aditya Community</title>
   
   <script>
     const origConsoleWarn = console.warn;
@@ -27,19 +27,46 @@
   <link href="https://fonts.googleapis.com/css2?family=gg+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'gg Sans', sans-serif; }
+    
+    /* Animation Keyframes */
     @keyframes pulse-fast { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
     .animate-pulse-fast { animation: pulse-fast 0.15s infinite; }
+
+    @keyframes zoom-in-glow {
+      0% { transform: scale(0.3); opacity: 0; filter: drop-shadow(0 0 0px #eab308); }
+      50% { opacity: 1; filter: drop-shadow(0 0 35px #eab308); }
+      100% { transform: scale(1.3); opacity: 0; filter: drop-shadow(0 0 50px #eab308); }
+    }
+    .animate-zoom-glow { animation: zoom-in-glow 0.9s ease-out forwards; }
+
+    @keyframes shake-light {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      20% { transform: translate(-4px, 4px) rotate(-2deg); }
+      40% { transform: translate(4px, -4px) rotate(2deg); }
+      60% { transform: translate(-3px, -2px) rotate(-1deg); }
+      80% { transform: translate(3px, 2px) rotate(1deg); }
+    }
+    .animate-shake { animation: shake-light 0.5s ease-in-out; }
+
+    @keyframes flash-dramatic {
+      0% { opacity: 0; background-color: rgba(255, 255, 255, 0.8); }
+      30% { opacity: 1; background-color: transparent; }
+      100% { opacity: 1; }
+    }
+    .animate-flash { animation: flash-dramatic 0.8s ease-out forwards; }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white relative">
 
   <!-- Audio Sound Effects -->
   <audio id="audio-chime" preload="auto" src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3"></audio>
   <audio id="audio-pop" preload="auto" src="https://assets.mixkit.co/active_storage/sfx/2578/2578-preview.mp3"></audio>
   <audio id="audio-win" preload="auto" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"></audio>
+  <audio id="audio-tick" preload="auto" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"></audio>
+  <audio id="audio-dramatic" preload="auto" src="https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3"></audio>
 
-  <!-- Header -->
-  <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-40">
+  <!-- Header (Disembunyikan saat Fullscreen Live Display) -->
+  <header id="main-header" class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-40 transition-all">
     <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
       <div class="flex items-center space-x-3">
         <a href="/" class="w-10 h-10 rounded-2xl overflow-hidden flex items-center justify-center shadow-lg shadow-indigo-600/30 hover:scale-105 transition border border-slate-700">
@@ -47,12 +74,23 @@
         </a>
         <div>
           <h1 class="font-bold text-lg text-white leading-none">Rakan Aditya Community</h1>
-          <span class="text-xs text-slate-400">Giveaway & Event Panel</span>
+          <span class="text-xs text-slate-400">Giveaway & Live Stream Panel</span>
         </div>
       </div>
       
       <div class="flex items-center space-x-3">
-        <a href="/" class="text-xs text-slate-400 hover:text-white transition">← Beranda</a>
+        <!-- Control Audio & Sound -->
+        <button onclick="toggleAudioMute()" id="btn-audio-toggle" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold border border-slate-700 transition flex items-center space-x-1">
+          <span id="audio-icon">🔊</span> <span id="audio-text">Sound ON</span>
+        </button>
+
+        <!-- Button Live OBS Fullscreen -->
+        <button onclick="toggleLiveDisplayMode()" class="px-3 py-1.5 bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition shadow-lg shadow-indigo-600/30 flex items-center space-x-1">
+          <span>🖥️ Live Display</span>
+        </button>
+
+        <a href="/" class="text-xs text-slate-400 hover:text-white transition hidden sm:inline-block">← Beranda</a>
+        
         <div id="user-badge" class="hidden flex items-center space-x-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full">
           <img id="nav-avatar" class="w-5 h-5 rounded-full object-cover" src="" alt="Avatar">
           <span id="nav-name" class="text-xs font-semibold text-white">User</span>
@@ -63,7 +101,7 @@
   </header>
 
   <!-- Main Content -->
-  <main class="max-w-4xl mx-auto px-4 py-10 w-full flex-grow space-y-8">
+  <main id="main-content" class="max-w-4xl mx-auto px-4 py-10 w-full flex-grow space-y-8">
     
     <div class="text-center space-y-2">
       <h2 class="text-3xl font-extrabold text-white">🎁 Event & Giveaway Komunitas</h2>
@@ -137,28 +175,44 @@
 
   </main>
 
-  <!-- MODAL ANIMASI ROLLING GIVEAWAY (10 DETIK) -->
-  <div id="rolling-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+  <!-- OVERLAY COUNTDOWN DRAMATIS (5, 4, 3, 2, 1 -> GET READY) -->
+  <div id="countdown-overlay" class="hidden fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-xl flex flex-col items-center justify-center p-4 transition-all">
+    <div id="countdown-card" class="text-center space-y-6">
+      <p id="countdown-subtext" class="text-amber-400 font-bold tracking-widest uppercase text-sm sm:text-base animate-pulse">🎯 PREPARING GIVEAWAY ROLL</p>
+      
+      <!-- Display Angka Countdown -->
+      <div class="relative flex items-center justify-center w-48 h-48 sm:w-64 sm:h-64">
+        <div id="countdown-glow-ring" class="absolute inset-0 rounded-full border-4 border-amber-500/40 animate-ping opacity-50"></div>
+        <h1 id="countdown-number" class="text-7xl sm:text-9xl font-black text-white tracking-tighter drop-shadow-[0_0_35px_rgba(234,179,8,0.8)]">5</h1>
+      </div>
+
+      <p class="text-xs text-slate-400 font-mono">LIVE DISPLAY MODE &bull; RAKAN ADITYA COMMUNITY</p>
+    </div>
+  </div>
+
+  <!-- MODAL ANIMASI ROLLING GIVEAWAY -->
+  <div id="rolling-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-amber-500/50 w-full max-w-sm rounded-3xl p-6 text-center space-y-6 shadow-2xl relative overflow-hidden">
       
+      <!-- Status Badge -->
       <div id="rolling-status" class="space-y-1">
-        <span class="inline-block px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full text-xs font-bold animate-pulse">🎲 ROLLING WINNER...</span>
+        <span id="status-badge" class="inline-block px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full text-xs font-bold animate-pulse">ROLLING</span>
         <h3 id="rolling-title" class="text-lg font-extrabold text-white">Mengocok Pemenang</h3>
       </div>
 
-      <!-- Display Rolling Profile Avatar & Name -->
+      <!-- Display Rolling Profile Avatar, Nomor Urut, & Name -->
       <div class="flex flex-col items-center justify-center space-y-3 py-2">
-        <div class="relative w-24 h-24">
-          <img id="roll-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" class="w-24 h-24 rounded-full border-4 border-indigo-500 object-cover shadow-2xl animate-pulse-fast">
-          <div class="absolute inset-0 rounded-full border-2 border-amber-400 animate-ping opacity-75"></div>
+        <div class="relative w-28 h-28">
+          <img id="roll-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" class="w-28 h-28 rounded-full border-4 border-indigo-500 object-cover shadow-2xl animate-pulse-fast">
+          <span id="roll-number-tag" class="absolute -top-1 -right-1 bg-amber-500 text-slate-950 text-xs font-black px-2.5 py-1 rounded-full border-2 border-slate-900 shadow-lg">#1</span>
         </div>
         <p id="roll-name" class="font-black text-xl text-white tracking-wide">...</p>
         <p id="roll-tag" class="text-xs font-mono text-slate-400">@mengocok_peserta</p>
       </div>
 
-      <!-- Countdown Timer 10 Detik -->
-      <div class="bg-slate-950 border border-slate-800 rounded-2xl py-2 px-4 inline-block">
-        <p class="text-xs text-slate-400">Sisa Waktu Rolling: <span id="roll-countdown" class="font-mono font-bold text-amber-400 text-sm">10</span> detik</p>
+      <!-- Live Display Toggle Button inside Modal -->
+      <div class="pt-2 flex justify-center">
+        <button onclick="exitLiveDisplay()" id="btn-exit-live" class="hidden text-xs text-slate-400 hover:text-white underline">Keluar Live Display</button>
       </div>
 
     </div>
@@ -168,14 +222,14 @@
   <div id="participants-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl p-6 space-y-4">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h4 class="font-bold text-white text-base">👥 Daftar Peserta Giveaway</h4>
+        <h4 class="font-bold text-white text-base">👥 Daftar Peserta Giveaway (Siapa Cepat Dapat)</h4>
         <button onclick="closeModal()" class="text-slate-400 hover:text-white text-sm">✕</button>
       </div>
       <div id="modal-participants-list" class="max-h-60 overflow-y-auto space-y-2 pr-1"></div>
     </div>
   </div>
 
-  <footer class="border-t border-slate-800 py-6 bg-slate-900/40 text-center text-xs text-slate-500">
+  <footer id="main-footer" class="border-t border-slate-800 py-6 bg-slate-900/40 text-center text-xs text-slate-500">
     <p>Rakan Aditya Community &bull; Hosted on Vercel</p>
   </footer>
 
@@ -183,12 +237,53 @@
     const OWNER_ID = '628205121704296458';
     let currentUser = null;
     let timerIntervals = [];
+    let isMuted = false;
+    let isLiveMode = false;
+
+    // Control Sound System
+    function toggleAudioMute() {
+      isMuted = !isMuted;
+      document.getElementById('audio-icon').innerText = isMuted ? '🔇' : '🔊';
+      document.getElementById('audio-text').innerText = isMuted ? 'Sound OFF' : 'Sound ON';
+    }
 
     function playAudio(id) {
+      if (isMuted) return;
       try {
         const audio = document.getElementById(id);
         if (audio) { audio.currentTime = 0; audio.play().catch(e => {}); }
       } catch(e) {}
+    }
+
+    // Toggle Fullscreen Live Display Mode (Cocok untuk OBS / Streaming)
+    function toggleLiveDisplayMode() {
+      isLiveMode = !isLiveMode;
+      const header = document.getElementById('main-header');
+      const footer = document.getElementById('main-footer');
+      const mainContent = document.getElementById('main-content');
+      const btnExit = document.getElementById('btn-exit-live');
+
+      if (isLiveMode) {
+        header.classList.add('hidden');
+        footer.classList.add('hidden');
+        mainContent.classList.add('hidden');
+        btnExit.classList.remove('hidden');
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen().catch(e => {});
+        }
+      } else {
+        header.classList.remove('hidden');
+        footer.classList.remove('hidden');
+        mainContent.classList.remove('hidden');
+        btnExit.classList.add('hidden');
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(e => {});
+        }
+      }
+    }
+
+    function exitLiveDisplay() {
+      if (isLiveMode) toggleLiveDisplayMode();
     }
 
     function showToast(msg, isError = false) {
@@ -259,53 +354,90 @@
         : 'https://cdn.discordapp.com/embed/avatars/0.png';
     }
 
-    // ANIMASI ROLLING GIVEAWAY (10 DETIK)
-    function startRollingAnimation(participants, winner, giveawayTitle, prize, onFinish) {
+    // COUNTDOWN SEQUENCE ANIMATION (5 -> 4 -> 3 -> 2 -> 1 -> GET READY)
+    function runCountdownSequence(onComplete) {
+      const overlay = document.getElementById('countdown-overlay');
+      const numElem = document.getElementById('countdown-number');
+      const card = document.getElementById('countdown-card');
+      
+      overlay.classList.remove('hidden');
+      
+      const steps = [
+        { text: '5', sound: 'audio-tick', class: 'animate-zoom-glow' },
+        { text: '4', sound: 'audio-tick', class: 'animate-zoom-glow' },
+        { text: '3', sound: 'audio-tick', class: 'animate-shake' },
+        { text: '2', sound: 'audio-tick', class: 'animate-zoom-glow' },
+        { text: '1', sound: 'audio-dramatic', class: 'animate-flash' },
+        { text: 'GET READY...', sound: 'audio-pop', class: 'animate-pulse' }
+      ];
+
+      let index = 0;
+
+      function nextStep() {
+        if (index >= steps.length) {
+          overlay.classList.add('hidden');
+          if (onComplete) onComplete();
+          return;
+        }
+
+        const step = steps[index];
+        numElem.innerText = step.text;
+        playAudio(step.sound);
+
+        numElem.className = "text-5xl sm:text-8xl font-black text-white tracking-tighter drop-shadow-[0_0_35px_rgba(234,179,8,0.8)] " + step.class;
+
+        index++;
+        setTimeout(nextStep, step.text === 'GET READY...' ? 1200 : 1000);
+      }
+
+      nextStep();
+    }
+
+    // ANIMASI ROLLING GIVEAWAY DENGAN PROFIL & NOMOR PESERTA
+    function startRollingAnimation(participants, winners, giveawayTitle, prize, onFinish) {
       const modal = document.getElementById('rolling-modal');
       const rollAvatar = document.getElementById('roll-avatar');
       const rollName = document.getElementById('roll-name');
       const rollTag = document.getElementById('roll-tag');
-      const rollCountdown = document.getElementById('roll-countdown');
-      const rollStatus = document.getElementById('rolling-status');
+      const rollNumberTag = document.getElementById('roll-number-tag');
+      const statusBadge = document.getElementById('status-badge');
 
       modal.classList.remove('hidden');
-      rollStatus.innerHTML = '<span class="inline-block px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full text-xs font-bold animate-pulse">🎲 ROLLING WINNER...</span>';
+      statusBadge.innerText = 'ROLLING';
+      statusBadge.className = 'inline-block px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full text-xs font-bold animate-pulse';
 
-      let timeLeft = 10;
-      rollCountdown.innerText = timeLeft;
-
-      const countdownInterval = setInterval(() => {
-        timeLeft--;
-        rollCountdown.innerText = timeLeft;
-        if (timeLeft <= 0) clearInterval(countdownInterval);
-      }, 1000);
-
+      // Acak tampilan peserta selama 5 detik
       const rollInterval = setInterval(() => {
         playAudio('audio-pop');
-        const randomP = participants[Math.floor(Math.random() * participants.length)];
+        const randomIndex = Math.floor(Math.random() * participants.length);
+        const randomP = participants[randomIndex];
+        
         rollAvatar.src = getAvatarUrl(randomP);
         rollName.innerText = randomP.global_name || randomP.username;
         rollTag.innerText = `@${randomP.username}`;
+        rollNumberTag.innerText = `#${randomIndex + 1}`; // Nomor Urut Partisipasi Siapa Cepat Dapat
       }, 80);
 
+      // Selesai Rolling -> Tampilkan Pemenang
       setTimeout(() => {
         clearInterval(rollInterval);
-        clearInterval(countdownInterval);
+
+        const firstWinner = winners[0];
+        const winnerIndex = participants.findIndex(p => p.id === firstWinner.id);
 
         playAudio('audio-win');
-        rollAvatar.src = getAvatarUrl(winner);
-        rollName.innerText = winner.global_name || winner.username;
-        rollTag.innerText = `@${winner.username}`;
+        rollAvatar.src = getAvatarUrl(firstWinner);
+        rollName.innerText = firstWinner.global_name || firstWinner.username;
+        rollTag.innerText = `@${firstWinner.username}`;
+        rollNumberTag.innerText = `#${winnerIndex !== -1 ? winnerIndex + 1 : 1}`;
 
-        rollStatus.innerHTML = `
-          <div class="space-y-1 animate-bounce">
-            <span class="inline-block px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-bold">🎉 PEMENANG DIUMUMKAN!</span>
-            <h3 class="text-xl font-black text-emerald-400">Selamat Anda Pemenang Giveaway!</h3>
-          </div>
-        `;
+        statusBadge.innerText = 'WINNER SELECTED';
+        statusBadge.className = 'inline-block px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-bold animate-bounce';
 
+        // Simpan notifikasi ke localStorage untuk index.html
+        const allWinnerNames = winners.map(w => w.global_name || w.username).join(', ');
         localStorage.setItem('recent_winner_notification', JSON.stringify({
-          winnerName: winner.global_name || winner.username,
+          winnerName: allWinnerNames,
           prize: prize,
           title: giveawayTitle,
           timestamp: Date.now()
@@ -316,7 +448,7 @@
           if (onFinish) onFinish();
         }, 4000);
 
-      }, 10000);
+      }, 5000);
     }
 
     async function loadGiveaways() {
@@ -334,23 +466,36 @@
           const isJoined = currentUser && participants.some(p => p.id === currentUser.id);
           const isEnded = gw.status === 'ended';
 
+          // Status Badge Giveaway: READY, ROLLING, WINNER SELECTED, COMPLETED
+          let statusText = 'READY';
+          let statusStyle = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+
+          if (isEnded) {
+            statusText = 'COMPLETED';
+            statusStyle = 'bg-slate-800 text-slate-400 border-slate-700';
+          }
+
           const card = document.createElement('div');
-          card.className = 'bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between space-y-4 relative overflow-hidden';
+          card.className = 'bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between space-y-4 relative overflow-hidden shadow-lg';
 
           let winnersHTML = '';
           if (isEnded && gw.winners && gw.winners.length > 0) {
             winnersHTML = `
               <div class="bg-gradient-to-r from-emerald-950/80 to-slate-900 border border-emerald-500/40 p-3 rounded-xl space-y-2">
                 <span class="font-bold text-xs text-emerald-400 flex items-center space-x-1">
-                  <span>🎉 PEMENANG:</span>
+                  <span>🏆 WINNER SELECTED:</span>
                 </span>
                 <div class="flex flex-wrap gap-2">
-                  ${gw.winners.map(w => `
-                    <div class="flex items-center space-x-2 bg-emerald-900/40 border border-emerald-500/30 px-2.5 py-1 rounded-full">
-                      <img src="${getAvatarUrl(w)}" class="w-5 h-5 rounded-full object-cover">
-                      <span class="text-xs font-semibold text-white">${w.global_name || w.username}</span>
-                    </div>
-                  `).join('')}
+                  ${gw.winners.map(w => {
+                    const wIndex = participants.findIndex(p => p.id === w.id);
+                    return `
+                      <div class="flex items-center space-x-2 bg-emerald-900/40 border border-emerald-500/30 px-2.5 py-1 rounded-full">
+                        <span class="text-[10px] bg-emerald-500 text-slate-950 font-black px-1.5 py-0.5 rounded-full">#${wIndex !== -1 ? wIndex + 1 : 1}</span>
+                        <img src="${getAvatarUrl(w)}" class="w-5 h-5 rounded-full object-cover">
+                        <span class="text-xs font-semibold text-white">${w.global_name || w.username}</span>
+                      </div>
+                    `;
+                  }).join('')}
                 </div>
               </div>
             `;
@@ -361,8 +506,10 @@
             avatarsPreviewHTML = `
               <div class="flex items-center space-x-2 pt-1">
                 <div class="flex -space-x-2 overflow-hidden">
-                  ${participants.slice(0, 5).map(p => `
-                    <img class="inline-block h-6 w-6 rounded-full ring-2 ring-slate-900 object-cover" src="${getAvatarUrl(p)}" title="${p.global_name || p.username}">
+                  ${participants.slice(0, 5).map((p, idx) => `
+                    <div class="relative inline-block">
+                      <img class="h-6 w-6 rounded-full ring-2 ring-slate-900 object-cover" src="${getAvatarUrl(p)}" title="#${idx + 1} - ${p.global_name || p.username}">
+                    </div>
                   `).join('')}
                 </div>
                 ${participants.length > 5 ? `<span class="text-[10px] text-slate-400">+${participants.length - 5} lainnya</span>` : ''}
@@ -374,8 +521,8 @@
             <div class="space-y-3">
               <div class="flex justify-between items-start">
                 <h4 class="font-bold text-lg text-white leading-tight">${gw.title}</h4>
-                <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${isEnded ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}">
-                  ${isEnded ? 'Selesai' : 'Aktif'}
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${statusStyle}">
+                  ${statusText}
                 </span>
               </div>
               <p class="text-xs text-indigo-400 font-medium">🎁 Hadiah: ${gw.prize}</p>
@@ -400,13 +547,13 @@
             <div class="space-y-2 pt-2 border-t border-slate-800/60">
               ${!isEnded ? `
                 <button onclick="joinGiveaway('${gw._id}')" ${isJoined ? 'disabled' : ''} class="w-full py-2 px-4 ${isJoined ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/20'} rounded-xl text-xs font-semibold transition">
-                  ${isJoined ? '✓ Sudah Mengikuti' : '🎉 Ikuti Giveaway'}
+                  ${isJoined ? '✓ Sudah Mengikuti (Nomor Terdaftar)' : '🎉 Ikuti Giveaway (Siapa Cepat Dapat)'}
                 </button>
               ` : ''}
 
               ${isOwner ? `
                 <div class="flex space-x-2">
-                  ${!isEnded ? `<button onclick="triggerRollStart('${gw._id}')" class="flex-1 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-medium transition">🎲 Roll Start</button>` : ''}
+                  ${!isEnded ? `<button onclick="triggerRollStart('${gw._id}')" class="flex-1 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-medium transition">🎲 START ROLL</button>` : ''}
                   <button onclick="deleteGiveaway('${gw._id}')" class="flex-1 py-1.5 bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white rounded-lg text-xs font-medium transition border border-rose-500/30">🗑️ Hapus</button>
                 </div>
               ` : ''}
@@ -451,12 +598,15 @@
       }
     }
 
+    // Trigger Roll Start oleh Owner (Jalankan Countdown 5,4,3,2,1 terlebih dahulu)
     async function triggerRollStart(id) {
       triggerWebhook({ type: 'roll_start' });
-      await rollGiveaway(id, true);
+      runCountdownSequence(() => {
+        rollGiveaway(id, true);
+      });
     }
 
-    // FUNGSI ROLL GIVEAWAY YANG SUDAH DIPERBAIKI (MENDUKUNG BANYAK PEMENANG)
+    // FUNGSI ROLL GIVEAWAY (PEMENANG & ANIMASI)
     async function rollGiveaway(id, isManual = true) {
       const data = await safeFetchJson('/api/giveaway', {
         method: 'PUT',
@@ -466,14 +616,11 @@
 
       if (data.success && data.data && data.data.winners && data.data.winners.length > 0) {
         const gw = data.data;
-        const winners = gw.winners; // Array seluruh pemenang
-        const firstWinner = winners[0];
+        const winners = gw.winners;
         const participants = gw.participants || winners;
 
-        startRollingAnimation(participants, firstWinner, gw.title, gw.prize, () => {
-          // ✅ Mengirim array 'winners' ke Webhook Discord
+        startRollingAnimation(participants, winners, gw.title, gw.prize, () => {
           triggerWebhook({ type: 'winner', giveaway: gw, winners: winners });
-          
           const winnerNames = winners.map(w => w.global_name || w.username).join(', ');
           showToast(`Selamat! ${winnerNames} menang ${gw.prize}!`);
           loadGiveaways();
@@ -525,7 +672,7 @@
 
       if (data.success) {
         playAudio('audio-chime');
-        showToast('Berhasil mendaftar giveaway!');
+        showToast('Berhasil mendaftar giveaway! Nomor urut Anda telah dicatat.');
         loadGiveaways();
       } else {
         showToast(data.error, true);
@@ -548,6 +695,7 @@
       }
     }
 
+    // MODAL PARTICIPANTS MENAMPILKAN NOMOR URUT SIAPA CEPAT DAPAT
     function openParticipantsModal(encodedData) {
       const participants = JSON.parse(decodeURIComponent(encodedData));
       const listContainer = document.getElementById('modal-participants-list');
@@ -556,15 +704,19 @@
       if (participants.length === 0) {
         listContainer.innerHTML = '<p class="text-xs text-slate-500 text-center py-4">Belum ada peserta yang mendaftar.</p>';
       } else {
-        participants.forEach(p => {
+        participants.forEach((p, index) => {
           const item = document.createElement('div');
-          item.className = 'flex items-center space-x-3 bg-slate-950 p-2.5 rounded-xl border border-slate-800';
+          item.className = 'flex items-center justify-between bg-slate-950 p-2.5 rounded-xl border border-slate-800';
           item.innerHTML = `
-            <img src="${getAvatarUrl(p)}" class="w-8 h-8 rounded-full object-cover border border-slate-700">
-            <div>
-              <p class="text-xs font-bold text-white leading-tight">${p.global_name || p.username}</p>
-              <p class="text-[10px] text-slate-400">@${p.username}</p>
+            <div class="flex items-center space-x-3">
+              <span class="w-6 h-6 rounded-full bg-amber-500/20 text-amber-400 font-mono font-bold text-xs flex items-center justify-center border border-amber-500/30">#${index + 1}</span>
+              <img src="${getAvatarUrl(p)}" class="w-8 h-8 rounded-full object-cover border border-slate-700">
+              <div>
+                <p class="text-xs font-bold text-white leading-tight">${p.global_name || p.username}</p>
+                <p class="text-[10px] text-slate-400">@${p.username}</p>
+              </div>
             </div>
+            <span class="text-[10px] text-emerald-400 font-mono">Urutan #${index + 1}</span>
           `;
           listContainer.appendChild(item);
         });
