@@ -65,9 +65,7 @@ export default async function handler(req, res) {
     payload = {
       embeds: [{
         title: `🎁 Giveaway Baru: ${giveaway.title}`,
-        url: 'https://demo-profile-dun.vercel.app/giveaway',
         description: `${giveaway.description || 'Tidak ada deskripsi.'}\n\n**🎁 Hadiah:** ${giveaway.prize}\n**🏆 Jumlah Pemenang:** ${giveaway.winnersCount || 1}`,
-        thumbnail: { url: 'https://i.imgur.com/xskt3CA.gif',
         color: 0x5865F2,
         footer: { text: "Rakan Aditya Community • Giveaway System" },
         timestamp: new Date()
