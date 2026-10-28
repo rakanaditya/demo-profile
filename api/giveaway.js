@@ -1,4 +1,3 @@
-// api/giveaway.js
 import { connectToDatabase } from './db.js';
 import { ObjectId } from 'mongodb';
 
@@ -44,12 +43,10 @@ export default async function handler(req, res) {
       if (req.query.type === 'leaderboard') {
         const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-        // Filter giveaway yang selesai dalam 7 hari terakhir untuk Top Pemenang Mingguan
         const weeklyEndedGiveaways = giveaways.filter(gw => 
           gw.status === 'ended' && gw.endedAt && new Date(gw.endedAt) >= oneWeekAgo
         );
 
-        // Hitung Kemenangan Per User (Mingguan)
         const winnerStats = {};
         weeklyEndedGiveaways.forEach(gw => {
           if (gw.winners && gw.winners.length > 0) {
@@ -70,7 +67,7 @@ export default async function handler(req, res) {
 
         const topWinners = Object.values(winnerStats)
           .sort((a, b) => b.winsCount - a.winsCount)
-          .slice(0, 10); // Top 10
+          .slice(0, 10);
 
         return res.status(200).json({ 
           success: true, 
@@ -87,8 +84,8 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       const { title, description, prize, winnersCount, durationValue, durationUnit, userId } = body;
 
-      if (!userId || userId !== OWNER_ID) {
-        return res.status(403).json({ success: false, error: 'Akses ditolak.' });
+      if (!userId || String(userId) !== String(OWNER_ID)) {
+        return res.status(403).json({ success: false, error: 'Akses ditolak. Anda bukan Owner!' });
       }
 
       let endsAt = null;
@@ -111,11 +108,15 @@ export default async function handler(req, res) {
         status: 'active',
         createdAt: new Date(),
         endsAt: endsAt,
-        createdBy: userId
+        createdBy: String(userId)
       };
 
       const result = await giveawaysCol.insertOne(newGiveaway);
-      return res.status(200).json({ success: true, message: 'Giveaway dibuat!', data: { ...newGiveaway, _id: result.insertedId } });
+      return res.status(200).json({ 
+        success: true, 
+        message: 'Giveaway dibuat!', 
+        data: { ...newGiveaway, _id: result.insertedId } 
+      });
     }
 
     // 3. PUT: Join / Manual Roll
@@ -142,34 +143,49 @@ export default async function handler(req, res) {
       }
 
       if (action === 'roll') {
-        if (!userId || userId !== OWNER_ID) return res.status(403).json({ success: false, error: 'Akses ditolak.' });
+        if (!userId || String(userId) !== String(OWNER_ID)) {
+          return res.status(403).json({ success: false, error: 'Akses ditolak. Anda bukan Owner!' });
+        }
 
         const giveaway = await giveawaysCol.findOne({ _id: new ObjectId(giveawayId) });
-        if (!giveaway || !giveaway.participants.length) {
-          return res.status(400).json({ success: false, error: 'Tidak ada peserta.' });
+        if (!giveaway || !giveaway.participants || !giveaway.participants.length) {
+          return res.status(400).json({ success: false, error: 'Tidak ada peserta untuk dikocok.' });
         }
 
         const shuffled = [...giveaway.participants].sort(() => 0.5 - Math.random());
         const selectedWinners = shuffled.slice(0, Math.min(giveaway.winnersCount || 1, giveaway.participants.length));
+        const endedAt = new Date();
 
         await giveawaysCol.updateOne(
           { _id: new ObjectId(giveawayId) },
-          { $set: { winners: selectedWinners, status: 'ended', endedAt: new Date() } }
+          { $set: { winners: selectedWinners, status: 'ended', endedAt: endedAt } }
         );
 
-        return res.status(200).json({ success: true, winners: selectedWinners });
+        // ✅ Mengembalikan data utuh giveaway agar Webhook Discord di frontend memiliki detail judul & hadiah
+        const updatedGiveaway = {
+          ...giveaway,
+          winners: selectedWinners,
+          status: 'ended',
+          endedAt: endedAt
+        };
+
+        return res.status(200).json({ 
+          success: true, 
+          winners: selectedWinners,
+          data: updatedGiveaway 
+        });
       }
     }
 
     // 4. DELETE: Hapus
     if (req.method === 'DELETE') {
-  const { giveawayId, userId } = body;
-  if (!userId || String(userId) !== String(OWNER_ID)) {
-    return res.status(403).json({ success: false, error: 'Akses ditolak. Anda bukan Owner!' });
-  }
-  await giveawaysCol.deleteOne({ _id: new ObjectId(giveawayId) });
-  return res.status(200).json({ success: true, message: 'Giveaway berhasil dihapus!' });
-}
+      const { giveawayId, userId } = body;
+      if (!userId || String(userId) !== String(OWNER_ID)) {
+        return res.status(403).json({ success: false, error: 'Akses ditolak. Anda bukan Owner!' });
+      }
+      await giveawaysCol.deleteOne({ _id: new ObjectId(giveawayId) });
+      return res.status(200).json({ success: true, message: 'Giveaway berhasil dihapus!' });
+    }
 
     return res.status(405).json({ success: false, error: 'Method Not Allowed' });
   } catch (error) {
