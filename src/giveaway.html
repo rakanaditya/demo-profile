@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Giveaway - Rakan Aditya Community</title>
+  
   <script>
     tailwind = {
       config: {
@@ -32,11 +33,12 @@
   <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-40">
     <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
       <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-600/30">
-          <svg class="w-6 h-6 fill-white" viewBox="0 0 127.14 96.36">
-            <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.69,1.76,1.37,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1,105.25,105.25,0,0,0,32.19-16.14c2.64-27.38-4.51-51.11-18.91-72.15ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,45.92,53.87,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,45.92,96.1,53,91.08,65.69,84.69,65.69Z"/>
-          </svg>
-        </div>
+        
+        <!-- ICON DARI FOLDER Assets/server.png -->
+        <a href="/" class="w-10 h-10 rounded-2xl overflow-hidden flex items-center justify-center shadow-lg shadow-indigo-600/30 hover:scale-105 transition border border-slate-700">
+          <img src="/Assets/server.png" alt="Server Icon" class="w-full h-full object-cover">
+        </a>
+        
         <div>
           <h1 class="font-bold text-lg text-white leading-none">Rakan Aditya Community</h1>
           <span class="text-xs text-slate-400">Giveaway & Event Panel</span>
@@ -44,10 +46,7 @@
       </div>
       
       <div class="flex items-center space-x-3">
-       <!-- ICON DARI FOLDER Assets/server.png -->
-        <a href="/" class="w-10 h-10 rounded-2xl overflow-hidden flex items-center justify-center shadow-lg shadow-indigo-600/30 hover:scale-105 transition border border-slate-700">
-          <img src="/Assets/server.png" alt="Server Icon" class="w-full h-full object-cover">
-        </a>
+        <a href="/" class="text-xs text-slate-400 hover:text-white transition">← Beranda</a>
         <div id="user-badge" class="hidden flex items-center space-x-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full">
           <img id="nav-avatar" class="w-5 h-5 rounded-full object-cover" src="" alt="Avatar">
           <span id="nav-name" class="text-xs font-semibold text-white">User</span>
@@ -233,7 +232,6 @@
           const card = document.createElement('div');
           card.className = 'bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between space-y-4 relative overflow-hidden';
 
-          // Tampilan Pemenang dengan Avatar HD
           let winnersHTML = '';
           if (isEnded && gw.winners && gw.winners.length > 0) {
             winnersHTML = `
@@ -253,7 +251,6 @@
             `;
           }
 
-          // Deretan Avatar Peserta yang bergabung
           let avatarsPreviewHTML = '';
           if (participants.length > 0) {
             avatarsPreviewHTML = `
@@ -279,17 +276,14 @@
               <p class="text-xs text-indigo-400 font-medium">🎁 Hadiah: ${gw.prize}</p>
               <p class="text-xs text-slate-400">${gw.description || 'Tidak ada deskripsi.'}</p>
               
-              <!-- Countdown Timer -->
               ${gw.endsAt && !isEnded ? `<div id="timer-${gw._id}" class="text-xs font-mono text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg w-fit">⏳ Menghitung...</div>` : ''}
 
-              <!-- Total & Preview Avatar Peserta -->
               <div class="flex items-center justify-between border-t border-slate-800/60 pt-2">
                 <div class="space-y-1">
                   <p class="text-[11px] text-slate-400">👥 Total Peserta: <span class="font-bold text-white">${participants.length}</span></p>
                   ${avatarsPreviewHTML}
                 </div>
 
-                <!-- Tombol Info Participants -->
                 <button onclick="openParticipantsModal('${encodeURIComponent(JSON.stringify(participants))}')" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs transition border border-slate-700 flex items-center space-x-1">
                   <span>ℹ️ Participants</span>
                 </button>
@@ -316,7 +310,6 @@
 
           container.appendChild(card);
 
-          // Setup Countdown Timer JavaScript Real-time
           if (gw.endsAt && !isEnded) {
             const timerElem = document.getElementById(`timer-${gw._id}`);
             const endTime = new Date(gw.endsAt).getTime();
@@ -353,7 +346,6 @@
       }
     }
 
-    // Handlers Modal Participants
     function openParticipantsModal(encodedData) {
       const participants = JSON.parse(decodeURIComponent(encodedData));
       const listContainer = document.getElementById('modal-participants-list');
@@ -383,7 +375,6 @@
       document.getElementById('participants-modal').classList.add('hidden');
     }
 
-    // Submit Buat Giveaway dengan Custom Timer
     document.getElementById('create-giveaway-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!currentUser || currentUser.id !== OWNER_ID) {
