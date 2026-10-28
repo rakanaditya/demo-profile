@@ -105,9 +105,22 @@
     let currentUser = null;
 
     function getAvatarUrl(user) {
+      if (!user) return 'https://cdn.discordapp.com/embed/avatars/0.png';
       return user.avatar 
         ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` 
         : 'https://cdn.discordapp.com/embed/avatars/0.png';
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return 'Selesai';
+      const d = new Date(dateStr);
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'];
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = months[d.getMonth()];
+      const year = d.getFullYear();
+      const hours = String(d.getHours()).padStart(2, '0');
+      const mins = String(d.getMinutes()).padStart(2, '0');
+      return `${day} ${month} ${year}, ${hours}.${mins}`;
     }
 
     // Pengecekan Sesi Authentikasi & Hak Akses Owner
@@ -151,15 +164,45 @@
 
     async function loadLeaderboardData() {
       try {
-        const res = await fetch('/api/giveaway?type=leaderboard');
+        const res = await fetch('/api/giveaway');
         const data = await res.json();
 
-        if (data.success) {
-          // 1. Render Top Pemenang (Seminggu)
+        if (data.success && data.data) {
+          const allGiveaways = data.data;
+          const endedGiveaways = allGiveaways.filter(gw => gw.status === 'ended');
+
+          // ----------------------------------------------------
+          // 1. HITUNG TOP PEMENANG MINGGUAN (7 HARI TERAKHIR)
+          // ----------------------------------------------------
+          const now = new Date();
+          const sevenDaysAgo = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
+          const winnerMap = {};
+
+          endedGiveaways.forEach(gw => {
+            const gwDate = new Date(gw.endedAt || gw.createdAt);
+            if (gwDate >= sevenDaysAgo && gw.winners && gw.winners.length > 0) {
+              gw.winners.forEach(w => {
+                if (!winnerMap[w.id]) {
+                  winnerMap[w.id] = {
+                    id: w.id,
+                    username: w.username,
+                    global_name: w.global_name,
+                    avatar: w.avatar,
+                    winsCount: 0
+                  };
+                }
+                winnerMap[w.id].winsCount += 1;
+              });
+            }
+          });
+
+          const topWinners = Object.values(winnerMap).sort((a, b) => b.winsCount - a.winsCount);
+
+          // Render Top Pemenang
           const topContainer = document.getElementById('top-winners-list');
-          if (data.topWinners && data.topWinners.length > 0) {
+          if (topWinners.length > 0) {
             topContainer.innerHTML = '';
-            data.topWinners.forEach((w, index) => {
+            topWinners.forEach((w, index) => {
               let badgeIcon = '🏅';
               let borderColor = 'border-slate-800';
               if (index === 0) { badgeIcon = '👑'; borderColor = 'border-amber-500/60 bg-amber-950/20'; }
@@ -186,10 +229,10 @@
             topContainer.innerHTML = '<p class="text-slate-500 text-sm col-span-3">Belum ada pemenang dalam 7 hari terakhir.</p>';
           }
 
-          // 2. Render History Giveaway
+          // ----------------------------------------------------
+          // 2. RENDER HISTORY GIVEAWAY SELESAI
+          // ----------------------------------------------------
           const historyContainer = document.getElementById('history-giveaways-list');
-          const endedGiveaways = (data.allGiveaways || []).filter(gw => gw.status === 'ended');
-
           if (endedGiveaways.length > 0) {
             historyContainer.innerHTML = '';
             endedGiveaways.forEach(gw => {
@@ -210,9 +253,7 @@
                 `;
               }
 
-              const endedDateStr = gw.endedAt ? new Date(gw.endedAt).toLocaleDateString('id-ID', {
-                day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
-              }) : 'Selesai';
+              const endedDateStr = formatDate(gw.endedAt || gw.createdAt);
 
               card.innerHTML = `
                 <div class="space-y-2">
@@ -225,7 +266,7 @@
                 </div>
 
                 <div class="border-t border-slate-800 pt-3 space-y-1">
-                  <span class="text-xs font-bold text-slate-400 block">🎉 Pemenang Resmi:</span>
+                  <span class="text-xs font-bold text-slate-400 block">🎉 Pemenang</span>
                   ${winnersHTML}
                 </div>
               `;
