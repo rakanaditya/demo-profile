@@ -120,7 +120,7 @@
       <p class="text-sm text-indigo-200">Anda harus masuk dengan akun Discord terlebih dahulu untuk mengikuti giveaway.</p>
       <a href="https://discord.com/api/oauth2/authorize?client_id=1380868700688613416&redirect_uri=https%3A%2F%2Fdemo-profile-dun.vercel.app%2Fapi%2Fcallback&response_type=code&scope=identify%20guilds&state=giveaway" 
          class="inline-flex items-center space-x-2 py-2.5 px-6 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition text-sm">
-         <span>Login dengan Discord</span>
+        <span>Login dengan Discord</span>
       </a>
     </div>
 
@@ -218,11 +218,25 @@
         </div>
       </div>
 
-      <!-- Info Pemenang Terpilih (Ditampilkan saat berhenti) -->
-      <div id="winner-display-info" class="hidden flex flex-col items-center justify-center space-y-2 animate-bounce">
-        <p class="text-xs text-amber-400 font-bold uppercase tracking-widest">🎉 PEMENANG TERpILIH 🎉</p>
-        <p id="winner-selected-name" class="font-black text-2xl text-white tracking-wide"></p>
-        <p id="winner-selected-tag" class="text-xs font-mono text-slate-400"></p>
+      <!-- DISCORD USER PROFILE CARD (Ditampilkan saat pemenang terpilih) -->
+      <div id="winner-display-info" class="hidden bg-[#2b2d31] border border-[#1e1f22] rounded-2xl p-4 max-w-sm mx-auto shadow-2xl text-left space-y-3 relative overflow-hidden animate-bounce">
+        <div class="h-16 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-xl relative">
+          <span class="absolute top-2 right-2 bg-emerald-500 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full shadow">OFFICIAL WINNER</span>
+        </div>
+        <div class="px-2 pb-2 relative flex items-start space-x-3 -mt-8">
+          <div class="relative">
+            <img id="winner-profile-avatar" src="" class="w-16 h-16 rounded-full border-4 border-[#2b2d31] object-cover bg-slate-800 shadow-xl">
+            <div class="absolute bottom-0 right-0 w-4 h-4 bg-emerald-500 border-2 border-[#2b2d31] rounded-full"></div>
+          </div>
+          <div class="pt-8">
+            <h4 id="winner-profile-globalname" class="font-bold text-white text-base leading-tight">...</h4>
+            <p id="winner-profile-username" class="text-xs text-slate-400 font-mono">@...</p>
+          </div>
+        </div>
+        <div class="bg-[#1e1f22] p-2.5 rounded-xl border border-slate-800 space-y-1">
+          <p class="text-[11px] text-indigo-400 font-semibold">🎁 Hadiah:</p>
+          <p id="winner-profile-prize" class="text-xs text-white font-bold">...</p>
+        </div>
       </div>
 
       <!-- Auto Refresh Timer Indicator -->
@@ -477,9 +491,12 @@
           statusBadge.innerText = 'WINNER SELECTED';
           statusBadge.className = 'inline-block px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-bold animate-bounce';
 
+          // Tampilkan Profil Discord Pemenang
           winnerInfo.classList.remove('hidden');
-          document.getElementById('winner-selected-name').innerText = firstWinner.global_name || firstWinner.username;
-          document.getElementById('winner-selected-tag').innerText = `@${firstWinner.username} • Hadiah: ${prize}`;
+          document.getElementById('winner-profile-avatar').src = getAvatarUrl(firstWinner);
+          document.getElementById('winner-profile-globalname').innerText = firstWinner.global_name || firstWinner.username;
+          document.getElementById('winner-profile-username').innerText = `@${firstWinner.username}`;
+          document.getElementById('winner-profile-prize').innerText = prize;
 
           refreshIndicator.classList.remove('hidden');
           let refreshSeconds = 10;
@@ -736,7 +753,6 @@
     async function joinGiveaway(id) {
       if (!currentUser) return showToast('Silakan login terlebih dahulu!', true);
       
-      // ✅ DIPERBAIKI: Menggunakan endpoint /api/giveaway yang tepat
       const data = await safeFetchJson('/api/giveaway', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
