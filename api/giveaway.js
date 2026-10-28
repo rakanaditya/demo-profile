@@ -10,7 +10,12 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     try {
-      const giveaways = await collection.find({}).sort({ createdAt: -1 }).toArray();
+      const { status } = req.query;
+      let filter = {};
+      if (status === 'ended') {
+        filter = { status: 'ended' };
+      }
+      const giveaways = await collection.find(filter).sort({ endedAt: -1, createdAt: -1 }).toArray();
       return res.status(200).json({ success: true, data: giveaways });
     } catch (e) {
       return res.status(500).json({ success: false, error: 'Gagal mengambil data giveaway.' });
@@ -25,8 +30,7 @@ export default async function handler(req, res) {
         return res.status(403).json({ success: false, error: 'Hanya Owner yang dapat membuat giveaway.' });
       }
 
-      // Hitung waktu selesai
-      let durationMs = parseInt(durationValue) * 60 * 1000; // Default menit
+      let durationMs = parseInt(durationValue) * 60 * 1000;
       if (durationUnit === 'hours') durationMs = parseInt(durationValue) * 60 * 60 * 1000;
       if (durationUnit === 'days') durationMs = parseInt(durationValue) * 24 * 60 * 60 * 1000;
       if (durationUnit === 'weeks') durationMs = parseInt(durationValue) * 7 * 24 * 60 * 60 * 1000;
@@ -39,6 +43,7 @@ export default async function handler(req, res) {
         status: 'active',
         participants: [],
         winners: [],
+        webhookSent: false,
         createdAt: new Date(),
         endsAt: new Date(Date.now() + durationMs)
       };
@@ -54,7 +59,7 @@ export default async function handler(req, res) {
 
   if (req.method === 'PUT') {
     try {
-      const { action, giveawayId, user, userId, isAuto } = req.body;
+      const { action, giveawayId, user, userId } = req.body;
 
       if (!giveawayId) {
         return res.status(400).json({ success: false, error: 'ID Giveaway wajib diisi.' });
@@ -65,7 +70,6 @@ export default async function handler(req, res) {
         return res.status(404).json({ success: false, error: 'Giveaway tidak ditemukan.' });
       }
 
-      // AKSI: USER JOIN GIVEAWAY
       if (action === 'join') {
         if (giveaway.status === 'ended') {
           return res.status(400).json({ success: false, error: 'Giveaway sudah berakhir.' });
@@ -84,11 +88,10 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, message: 'Berhasil mendaftar giveaway!' });
       }
 
-      // AKSI: ROLL PEMENANG (MANUAL ATAU OTOMATIS)
       if (action === 'roll') {
-        // Jika sudah di-roll sebelumnya, kembalikan data yang ada agar UI tetap bisa menjalankan animasi
+        // Jika sudah di-roll sebelumnya, kembalikan data tanpa mengubah pemenang lagi
         if (giveaway.status === 'ended') {
-          return res.status(200).json({ success: true, data: giveaway, message: 'Giveaway sudah memiliki pemenang.' });
+          return res.status(200).json({ success: true, data: giveaway, isAlreadyEnded: true, message: 'Giveaway sudah memiliki pemenang.' });
         }
 
         const participants = giveaway.participants || [];
@@ -96,20 +99,19 @@ export default async function handler(req, res) {
           return res.status(400).json({ success: false, error: 'Tidak ada peserta yang terdaftar untuk dikocok.' });
         }
 
-        // Acak pemenang
         const shuffled = [...participants].sort(() => 0.5 - Math.random());
         const count = Math.min(giveaway.winnersCount || 1, participants.length);
         const winners = shuffled.slice(0, count);
 
         await collection.updateOne(
           { _id: new ObjectId(giveawayId) },
-          { $set: { status: 'ended', winners: winners, endedAt: new Date() } }
+          { $set: { status: 'ended', winners: winners, endedAt: new Date(), webhookSent: false } }
         );
 
         giveaway.status = 'ended';
         giveaway.winners = winners;
 
-        return res.status(200).json({ success: true, data: giveaway });
+        return res.status(200).json({ success: true, data: giveaway, isAlreadyEnded: false });
       }
 
     } catch (e) {
