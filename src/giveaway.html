@@ -274,14 +274,12 @@
       let timeLeft = 10;
       rollCountdown.innerText = timeLeft;
 
-      // Timer 10s Countdown
       const countdownInterval = setInterval(() => {
         timeLeft--;
         rollCountdown.innerText = timeLeft;
         if (timeLeft <= 0) clearInterval(countdownInterval);
       }, 1000);
 
-      // Fast Rolling Switcher (Setiap 80ms)
       const rollInterval = setInterval(() => {
         playAudio('audio-pop');
         const randomP = participants[Math.floor(Math.random() * participants.length)];
@@ -290,12 +288,10 @@
         rollTag.innerText = `@${randomP.username}`;
       }, 80);
 
-      // Stop Rolling setelah 10 Detik
       setTimeout(() => {
         clearInterval(rollInterval);
         clearInterval(countdownInterval);
 
-        // Tampilkan Pemenang Asli
         playAudio('audio-win');
         rollAvatar.src = getAvatarUrl(winner);
         rollName.innerText = winner.global_name || winner.username;
@@ -308,7 +304,6 @@
           </div>
         `;
 
-        // Simpan notifikasi ke localStorage untuk index.html
         localStorage.setItem('recent_winner_notification', JSON.stringify({
           winnerName: winner.global_name || winner.username,
           prize: prize,
@@ -456,38 +451,37 @@
       }
     }
 
-    // Trigger Roll Manual dari Owner
     async function triggerRollStart(id) {
       triggerWebhook({ type: 'roll_start' });
       await rollGiveaway(id, true);
     }
 
+    // FUNGSI ROLL GIVEAWAY YANG SUDAH DIPERBAIKI (MENDUKUNG BANYAK PEMENANG)
     async function rollGiveaway(id, isManual = true) {
-  const data = await safeFetchJson('/api/giveaway', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'roll', giveawayId: id, userId: currentUser ? currentUser.id : OWNER_ID })
-  });
+      const data = await safeFetchJson('/api/giveaway', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'roll', giveawayId: id, userId: currentUser ? currentUser.id : OWNER_ID })
+      });
 
-  if (data.success && data.data && data.data.winners && data.data.winners.length > 0) {
-    const gw = data.data;
-    const winners = gw.winners; // ✅ Mengambil SELURUH pemenang (Array)
-    const firstWinner = winners[0];
-    const participants = gw.participants || winners;
+      if (data.success && data.data && data.data.winners && data.data.winners.length > 0) {
+        const gw = data.data;
+        const winners = gw.winners; // Array seluruh pemenang
+        const firstWinner = winners[0];
+        const participants = gw.participants || winners;
 
-    // Jalankan Animasi Rolling 10s dengan pemenang utama
-    startRollingAnimation(participants, firstWinner, gw.title, gw.prize, () => {
-      // ✅ Mengirimkan seluruh array pemenang ke API Webhook
-      triggerWebhook({ type: 'winner', giveaway: gw, winners: winners });
-      
-      const winnerNames = winners.map(w => w.global_name || w.username).join(', ');
-      showToast(`Selamat! ${winnerNames} menang ${gw.prize}!`);
-      loadGiveaways();
-    });
-  } else {
-    showToast(data.error || 'Gagal mengocok pemenang.', true);
-  }
-}
+        startRollingAnimation(participants, firstWinner, gw.title, gw.prize, () => {
+          // ✅ Mengirim array 'winners' ke Webhook Discord
+          triggerWebhook({ type: 'winner', giveaway: gw, winners: winners });
+          
+          const winnerNames = winners.map(w => w.global_name || w.username).join(', ');
+          showToast(`Selamat! ${winnerNames} menang ${gw.prize}!`);
+          loadGiveaways();
+        });
+      } else {
+        showToast(data.error || 'Gagal mengocok pemenang.', true);
+      }
+    }
 
     document.getElementById('create-giveaway-form').addEventListener('submit', async (e) => {
       e.preventDefault();
