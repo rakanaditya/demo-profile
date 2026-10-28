@@ -111,6 +111,16 @@
         : 'https://cdn.discordapp.com/embed/avatars/0.png';
     }
 
+// Tambahkan fungsi ini di dalam tag <script> giveawayleaderboard.html
+function updateResetCountdown() {
+  const now = new Date();
+  // Hitung hari Minggu terdekat atau sisa waktu 7 hari
+  const nextReset = new Date();
+  nextReset.setHours(23, 59, 59, 999);
+  // Contoh menampilkan keterangan waktu aktif
+  const options = { weekday: 'long', hour: '2-digit', minute: '2-digit' };
+}
+    
     function formatDate(dateStr) {
       if (!dateStr) return 'Selesai';
       const d = new Date(dateStr);
