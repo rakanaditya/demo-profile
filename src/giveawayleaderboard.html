@@ -3,161 +3,217 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Giveaway Leaderboard & History - Rakan Aditya Community</title>
+  <title>Leaderboard & History Giveaway - Rakan Aditya Community</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=gg+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=gg+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'gg Sans', sans-serif; }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+<body class="bg-[#0b0e14] text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
 
-  <!-- Header -->
-  <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-40">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <a href="/" class="w-10 h-10 rounded-2xl overflow-hidden flex items-center justify-center shadow-lg shadow-indigo-600/30 hover:scale-105 transition border border-slate-700">
-          <img src="/Assets/server.png" alt="Server Icon" class="w-full h-full object-cover">
-        </a>
+  <!-- Main Container -->
+  <main class="max-w-4xl mx-auto px-4 py-12 w-full flex-grow space-y-8">
+    
+    <!-- Judul Header Utama -->
+    <div class="text-center space-y-2">
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-white flex items-center justify-center gap-3">
+        <span>🏆</span> Leaderboard & History Giveaway
+      </h1>
+      <p class="text-sm text-slate-400">Daftar peringkat pemenang teratas dan riwayat partisipasi giveaway komunitas.</p>
+    </div>
+
+    <!-- BOX TOP PEMENANG GIVEAWAY (WEEKLY LEADERBOARD) -->
+    <div class="bg-[#121721] border border-slate-800/80 rounded-2xl p-6 space-y-6 shadow-2xl relative">
+      
+      <!-- Top Bar Box -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 class="font-bold text-lg text-white leading-none">Rakan Aditya Community</h1>
-          <span class="text-xs text-slate-400">Giveaway Winner History & Leaderboard</span>
+          <div class="flex items-center space-x-2">
+            <span class="text-xl">🏅</span>
+            <h2 class="text-xl font-bold text-white">Top Pemenang Giveaway</h2>
+            <span class="px-2.5 py-0.5 bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[11px] font-bold rounded-full">Mingguan</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-1">Peringkat dihitung berdasarkan total kemenangan selama 7 hari terakhir (Reset Otomatis).</p>
+        </div>
+
+        <!-- Status Leaderboard Badge -->
+        <div class="text-left sm:text-right self-end sm:self-auto">
+          <span class="text-[10px] text-slate-400 block mb-1">Status Leaderboard:</span>
+          <div class="inline-flex items-center space-x-1.5 px-3 py-1 bg-emerald-950/60 text-emerald-400 border border-emerald-500/30 text-xs font-semibold rounded-lg shadow-inner">
+            <span>🔄</span>
+            <span>Reset Tiap 7 Hari</span>
+          </div>
         </div>
       </div>
-      
-      <div class="flex items-center space-x-3">
-        <a href="/giveaway" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold border border-slate-700 transition">🎁 Kembali ke Panel Giveaway</a>
-      </div>
-    </div>
-  </header>
 
-  <!-- Main Content -->
-  <main class="max-w-4xl mx-auto px-4 py-10 w-full flex-grow space-y-8">
-    
-    <div class="text-center space-y-2">
-      <h2 class="text-3xl font-extrabold text-white">🏆 Hall of Fame & Riwayat Pemenang</h2>
-      <p class="text-sm text-slate-400">Daftar pemenang event dan giveaway resmi dari komunitas Rakan Aditya.</p>
-    </div>
-
-    <!-- Ringkasan Statistik -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl text-center space-y-1 shadow-lg">
-        <span class="text-2xl">🎉</span>
-        <h4 class="text-xs text-slate-400 font-medium uppercase tracking-wider">Total Giveaway Selesai</h4>
-        <p id="stat-total-gw" class="text-2xl font-black text-amber-400">0</p>
-      </div>
-      <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl text-center space-y-1 shadow-lg">
-        <span class="text-2xl">👑</span>
-        <h4 class="text-xs text-slate-400 font-medium uppercase tracking-wider">Total Pemenang</h4>
-        <p id="stat-total-winners" class="text-2xl font-black text-emerald-400">0</p>
-      </div>
-      <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl text-center space-y-1 shadow-lg">
-        <span class="text-2xl">🎁</span>
-        <h4 class="text-xs text-slate-400 font-medium uppercase tracking-wider">Hadiah Terbanyak</h4>
-        <p id="stat-top-prize" class="text-sm font-bold text-indigo-400 truncate">Nitro / Robux</p>
+      <!-- Container Card Juara Leaderboard -->
+      <div id="top-winners-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <p class="text-xs text-slate-500 col-span-full">Memuat daftar peringkat...</p>
       </div>
     </div>
 
-    <!-- Container Riwayat Pemenang -->
-    <div class="space-y-4">
-      <h3 class="font-bold text-lg text-white flex items-center space-x-2">
-        <span>📜 Riwayat Event yang Selesai</span>
+    <!-- BAGIAN HISTORY GIVEAWAY SELESAI -->
+    <div class="space-y-4 pt-2">
+      <h3 class="text-xl font-bold text-white flex items-center space-x-2">
+        <span>📜</span>
+        <span>History Giveaway Selesai</span>
       </h3>
-      <div id="leaderboard-list" class="space-y-4">
-        <p class="text-slate-500 text-sm">Memuat data riwayat pemenang...</p>
+
+      <div id="history-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <p class="text-xs text-slate-500 col-span-full">Memuat riwayat giveaway...</p>
       </div>
     </div>
 
   </main>
 
-  <footer class="border-t border-slate-800 py-6 bg-slate-900/40 text-center text-xs text-slate-500">
+  <!-- Footer -->
+  <footer class="border-t border-slate-800/60 py-6 bg-[#090b10] text-center text-xs text-slate-500">
     <p>Rakan Aditya Community &bull; Hosted on Vercel</p>
   </footer>
 
   <script>
     function getAvatarUrl(p) {
+      if (!p) return 'https://cdn.discordapp.com/embed/avatars/0.png';
       return p.avatar 
         ? `https://cdn.discordapp.com/avatars/${p.id}/${p.avatar}.png` 
         : 'https://cdn.discordapp.com/embed/avatars/0.png';
     }
 
-    async function loadLeaderboard() {
-      const container = document.getElementById('leaderboard-list');
+    function formatDate(dateStr) {
+      if (!dateStr) return '';
+      const d = new Date(dateStr);
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'];
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = months[d.getMonth()];
+      const year = d.getFullYear();
+      const hours = String(d.getHours()).padStart(2, '0');
+      const mins = String(d.getMinutes()).padStart(2, '0');
+      return `${day} ${month} ${year}, ${hours}.${mins}`;
+    }
+
+    async function loadData() {
+      const topContainer = document.getElementById('top-winners-container');
+      const historyContainer = document.getElementById('history-container');
+
       try {
         const res = await fetch('/api/giveaway?status=ended');
         const data = await res.json();
 
-        if (data.success && data.data && data.data.length > 0) {
-          const endedGiveaways = data.data;
-          container.innerHTML = '';
+        if (data.success && data.data) {
+          const endedList = data.data;
 
-          let totalWinnersCount = 0;
-          endedGiveaways.forEach(gw => {
-            const winners = gw.winners || [];
-            totalWinnersCount += winners.length;
+          // ----------------------------------------------------
+          // 1. HITUNG TOP PEMENANG MINGGUAN (7 HARI TERAKHIR)
+          // ----------------------------------------------------
+          const now = new Date();
+          const sevenDaysAgo = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
+          const winnerCounts = {};
 
-            const card = document.createElement('div');
-            card.className = 'bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-xl relative overflow-hidden';
-
-            const formattedDate = gw.endedAt ? new Date(gw.endedAt).toLocaleDateString('id-ID', {
-              day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
-            }) : 'Selesai';
-
-            let winnersListHTML = '';
-            if (winners.length > 0) {
-              winnersListHTML = winners.map((w, index) => `
-                <div class="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800 hover:border-emerald-500/40 transition">
-                  <div class="flex items-center space-x-3">
-                    <span class="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 font-mono font-black text-xs flex items-center justify-center border border-emerald-500/30">#${index + 1}</span>
-                    <img src="${getAvatarUrl(w)}" class="w-9 h-9 rounded-full object-cover border border-slate-700">
-                    <div>
-                      <p class="text-sm font-bold text-white leading-tight">${w.global_name || w.username}</p>
-                      <p class="text-xs text-slate-400">@${w.username}</p>
-                    </div>
-                  </div>
-                  <span class="text-xs font-semibold px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg">🏆 Pemenang</span>
-                </div>
-              `).join('');
-            } else {
-              winnersListHTML = '<p class="text-xs text-slate-500">Tidak ada pemenang tercatat.</p>';
+          endedList.forEach(gw => {
+            const gwDate = new Date(gw.endedAt || gw.createdAt);
+            if (gwDate >= sevenDaysAgo && gw.winners && gw.winners.length > 0) {
+              gw.winners.forEach(w => {
+                if (!winnerCounts[w.id]) {
+                  winnerCounts[w.id] = {
+                    user: w,
+                    count: 0
+                  };
+                }
+                winnerCounts[w.id].count += 1;
+              });
             }
-
-            card.innerHTML = `
-              <div class="flex flex-col sm:flex-row justify-between sm:items-center border-b border-slate-800 pb-3 gap-2">
-                <div>
-                  <h4 class="font-extrabold text-lg text-white leading-tight">${gw.title}</h4>
-                  <p class="text-xs text-indigo-400 font-medium">🎁 Hadiah: ${gw.prize}</p>
-                </div>
-                <div class="text-left sm:text-right">
-                  <span class="px-2.5 py-1 bg-slate-800 text-slate-400 rounded-full text-[10px] font-bold border border-slate-700">COMPLETED</span>
-                  <p class="text-[11px] text-slate-500 mt-1">📅 ${formattedDate}</p>
-                </div>
-              </div>
-
-              <div class="space-y-2">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Pemenang Terpilih (${winners.length}):</p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  ${winnersListHTML}
-                </div>
-              </div>
-            `;
-
-            container.appendChild(card);
           });
 
-          // Update Ringkasan Statistik
-          document.getElementById('stat-total-gw').innerText = endedGiveaways.length;
-          document.getElementById('stat-total-winners').innerText = totalWinnersCount;
+          const sortedLeaderboard = Object.values(winnerCounts).sort((a, b) => b.count - a.count);
+
+          if (sortedLeaderboard.length > 0) {
+            topContainer.innerHTML = sortedLeaderboard.map((item, index) => {
+              const user = item.user;
+              const rank = index + 1;
+              const name = user.global_name || user.username;
+              const tag = `@${user.username}`;
+              
+              return `
+                <div class="bg-[#171d2a] border border-amber-500/40 rounded-xl p-3.5 flex items-center justify-between shadow-lg relative overflow-hidden">
+                  <div class="flex items-center space-x-3">
+                    <div class="relative w-11 h-11 rounded-full overflow-hidden border border-slate-700 flex-shrink-0">
+                      <img src="${getAvatarUrl(user)}" class="w-full h-full object-cover">
+                    </div>
+                    <div class="space-y-0.5">
+                      <div class="flex items-center space-x-1">
+                        <span class="text-amber-400 text-xs">👑</span>
+                        <p class="text-sm font-extrabold text-white leading-tight truncate max-w-[130px]">${name}</p>
+                      </div>
+                      <p class="text-[11px] text-slate-400 truncate max-w-[130px]">${tag}</p>
+                      <p class="text-xs font-bold text-amber-400 pt-0.5">🏆 Total Menang: ${item.count}x</p>
+                    </div>
+                  </div>
+                  <span class="text-xs font-mono font-bold text-slate-500">#${rank}</span>
+                </div>
+              `;
+            }).join('');
+          } else {
+            topContainer.innerHTML = '<p class="text-xs text-slate-500 col-span-full">Belum ada pemenang dalam 7 hari terakhir.</p>';
+          }
+
+          // ----------------------------------------------------
+          // 2. RENDER HISTORY GIVEAWAY SELESAI
+          // ----------------------------------------------------
+          if (endedList.length > 0) {
+            historyContainer.innerHTML = endedList.map(gw => {
+              const dateText = formatDate(gw.endedAt || gw.createdAt);
+              const participantsCount = gw.participants ? gw.participants.length : 0;
+              const winners = gw.winners || [];
+
+              let winnersBadgeHTML = '';
+              if (winners.length > 0) {
+                winnersBadgeHTML = winners.map(w => `
+                  <div class="inline-flex items-center space-x-1.5 bg-emerald-950/80 border border-emerald-500/40 px-2.5 py-1 rounded-full text-emerald-400 text-xs font-bold">
+                    <span>🏆</span>
+                    <span>${w.global_name || w.username}</span>
+                  </div>
+                `).join(' ');
+              } else {
+                winnersBadgeHTML = '<span class="text-xs text-slate-500">-</span>';
+              }
+
+              return `
+                <div class="bg-[#121721] border border-slate-800/80 rounded-2xl p-5 space-y-3 shadow-lg relative">
+                  <div class="flex justify-between items-start gap-2">
+                    <h4 class="font-extrabold text-white text-base leading-snug">${gw.title}</h4>
+                    <span class="text-[10px] text-slate-400 font-mono bg-slate-900 border border-slate-800 px-2 py-0.5 rounded">${dateText}</span>
+                  </div>
+
+                  <div class="space-y-1 text-xs">
+                    <p class="text-indigo-400 font-semibold">🎁 Hadiah: ${gw.prize}</p>
+                    <p class="text-slate-400">👥 Total Peserta yang mengikuti: ${participantsCount} Orang</p>
+                  </div>
+
+                  <div class="pt-2 border-t border-slate-800/60 space-y-1.5">
+                    <p class="text-[11px] text-slate-400 font-medium">🎗️ Pemenang Resmi:</p>
+                    <div class="flex flex-wrap gap-1.5">
+                      ${winnersBadgeHTML}
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('');
+          } else {
+            historyContainer.innerHTML = '<p class="text-xs text-slate-500 col-span-full">Belum ada history giveaway yang selesai.</p>';
+          }
 
         } else {
-          container.innerHTML = '<p class="text-slate-500 text-sm text-center py-8">Belum ada riwayat giveaway yang selesai.</p>';
+          topContainer.innerHTML = '<p class="text-xs text-slate-500 col-span-full">Gagal memuat data.</p>';
+          historyContainer.innerHTML = '<p class="text-xs text-slate-500 col-span-full">Gagal memuat data.</p>';
         }
       } catch (err) {
-        container.innerHTML = `<p class="text-rose-400 text-sm text-center py-8">Gagal memuat riwayat pemenang.</p>`;
+        topContainer.innerHTML = '<p class="text-xs text-rose-400 col-span-full">Terjadi kesalahan koneksi.</p>';
+        historyContainer.innerHTML = '<p class="text-xs text-rose-400 col-span-full">Terjadi kesalahan koneksi.</p>';
       }
     }
 
-    window.addEventListener('DOMContentLoaded', loadLeaderboard);
+    window.addEventListener('DOMContentLoaded', loadData);
   </script>
 </body>
 </html>
