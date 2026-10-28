@@ -86,7 +86,7 @@
 
         <!-- Button Live OBS Fullscreen -->
         <button onclick="toggleLiveDisplayMode()" class="px-3 py-1.5 bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition shadow-lg shadow-indigo-600/30 flex items-center space-x-1">
-          <span>🖥️ Live Display</span>
+          <span>🖥️ Live Display (Press ESC to Exit)</span>
         </button>
 
         <a href="/" class="text-xs text-slate-400 hover:text-white transition hidden sm:inline-block">← Beranda</a>
@@ -192,7 +192,7 @@
 
   <!-- MODAL ANIMASI ROLLING GIVEAWAY -->
   <div id="rolling-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-amber-500/50 w-full max-w-sm rounded-3xl p-6 text-center space-y-6 shadow-2xl relative overflow-hidden">
+    <div class="bg-slate-900 border border-amber-500/50 w-full max-w-md rounded-3xl p-6 text-center space-y-6 shadow-2xl relative overflow-hidden">
       
       <!-- Status Badge -->
       <div id="rolling-status" class="space-y-1">
@@ -202,17 +202,17 @@
 
       <!-- Display Rolling Profile Avatar, Nomor Urut, & Name -->
       <div class="flex flex-col items-center justify-center space-y-3 py-2">
-        <div class="relative w-28 h-28">
-          <img id="roll-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" class="w-28 h-28 rounded-full border-4 border-indigo-500 object-cover shadow-2xl animate-pulse-fast">
+        <div class="relative w-28 h-28 sm:w-32 sm:h-32">
+          <img id="roll-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" class="w-full h-full rounded-full border-4 border-indigo-500 object-cover shadow-2xl animate-pulse-fast">
           <span id="roll-number-tag" class="absolute -top-1 -right-1 bg-amber-500 text-slate-950 text-xs font-black px-2.5 py-1 rounded-full border-2 border-slate-900 shadow-lg">#1</span>
         </div>
-        <p id="roll-name" class="font-black text-xl text-white tracking-wide">...</p>
-        <p id="roll-tag" class="text-xs font-mono text-slate-400">@mengocok_peserta</p>
+        <p id="roll-name" class="font-black text-xl sm:text-2xl text-white tracking-wide truncate max-w-xs">...</p>
+        <p id="roll-tag" class="text-xs font-mono text-slate-400 truncate max-w-xs">@mengocok_peserta</p>
       </div>
 
-      <!-- Live Display Toggle Button inside Modal -->
-      <div class="pt-2 flex justify-center">
-        <button onclick="exitLiveDisplay()" id="btn-exit-live" class="hidden text-xs text-slate-400 hover:text-white underline">Keluar Live Display</button>
+      <!-- Auto Refresh Timer Indicator -->
+      <div id="refresh-indicator" class="hidden text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-xl py-2 px-4 animate-pulse">
+        🔄 Halaman akan refresh otomatis dalam <span id="refresh-timer-val" class="font-bold">10</span> detik...
       </div>
 
     </div>
@@ -239,6 +239,7 @@
     let timerIntervals = [];
     let isMuted = false;
     let isLiveMode = false;
+    let isRollingActive = false;
 
     // Control Sound System
     function toggleAudioMute() {
@@ -255,19 +256,17 @@
       } catch(e) {}
     }
 
-    // Toggle Fullscreen Live Display Mode (Cocok untuk OBS / Streaming)
+    // Toggle Fullscreen Live Display Mode (Bisa tekan ESC untuk keluar)
     function toggleLiveDisplayMode() {
       isLiveMode = !isLiveMode;
       const header = document.getElementById('main-header');
       const footer = document.getElementById('main-footer');
       const mainContent = document.getElementById('main-content');
-      const btnExit = document.getElementById('btn-exit-live');
 
       if (isLiveMode) {
         header.classList.add('hidden');
         footer.classList.add('hidden');
         mainContent.classList.add('hidden');
-        btnExit.classList.remove('hidden');
         if (document.documentElement.requestFullscreen) {
           document.documentElement.requestFullscreen().catch(e => {});
         }
@@ -275,16 +274,27 @@
         header.classList.remove('hidden');
         footer.classList.remove('hidden');
         mainContent.classList.remove('hidden');
-        btnExit.classList.add('hidden');
-        if (document.exitFullscreen) {
+        if (document.exitFullscreen && document.fullscreenElement) {
           document.exitFullscreen().catch(e => {});
         }
       }
     }
 
-    function exitLiveDisplay() {
-      if (isLiveMode) toggleLiveDisplayMode();
-    }
+    // Mendengarkan tombol ESC untuk keluar dari Live Display
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isLiveMode) {
+        toggleLiveDisplayMode();
+      }
+    });
+
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement && isLiveMode) {
+        isLiveMode = false;
+        document.getElementById('main-header').classList.remove('hidden');
+        document.getElementById('main-footer').classList.remove('hidden');
+        document.getElementById('main-content').classList.remove('hidden');
+      }
+    });
 
     function showToast(msg, isError = false) {
       const existingToast = document.getElementById('custom-toast');
@@ -358,7 +368,6 @@
     function runCountdownSequence(onComplete) {
       const overlay = document.getElementById('countdown-overlay');
       const numElem = document.getElementById('countdown-number');
-      const card = document.getElementById('countdown-card');
       
       overlay.classList.remove('hidden');
       
@@ -393,16 +402,20 @@
       nextStep();
     }
 
-    // ANIMASI ROLLING GIVEAWAY DENGAN PROFIL & NOMOR PESERTA
+    // ANIMASI ROLLING GIVEAWAY DENGAN PROFIL & AUTO REFRESH IN 10s
     function startRollingAnimation(participants, winners, giveawayTitle, prize, onFinish) {
+      isRollingActive = true;
       const modal = document.getElementById('rolling-modal');
       const rollAvatar = document.getElementById('roll-avatar');
       const rollName = document.getElementById('roll-name');
       const rollTag = document.getElementById('roll-tag');
       const rollNumberTag = document.getElementById('roll-number-tag');
       const statusBadge = document.getElementById('status-badge');
+      const refreshIndicator = document.getElementById('refresh-indicator');
+      const refreshTimerVal = document.getElementById('refresh-timer-val');
 
       modal.classList.remove('hidden');
+      refreshIndicator.classList.add('hidden');
       statusBadge.innerText = 'ROLLING';
       statusBadge.className = 'inline-block px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full text-xs font-bold animate-pulse';
 
@@ -415,7 +428,7 @@
         rollAvatar.src = getAvatarUrl(randomP);
         rollName.innerText = randomP.global_name || randomP.username;
         rollTag.innerText = `@${randomP.username}`;
-        rollNumberTag.innerText = `#${randomIndex + 1}`; // Nomor Urut Partisipasi Siapa Cepat Dapat
+        rollNumberTag.innerText = `#${randomIndex + 1}`;
       }, 80);
 
       // Selesai Rolling -> Tampilkan Pemenang
@@ -434,6 +447,21 @@
         statusBadge.innerText = 'WINNER SELECTED';
         statusBadge.className = 'inline-block px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-bold animate-bounce';
 
+        // Tampilkan Hitung Mundur Auto Refresh 10 Detik
+        refreshIndicator.classList.remove('hidden');
+        let refreshSeconds = 10;
+        refreshTimerVal.innerText = refreshSeconds;
+
+        const refreshCountdown = setInterval(() => {
+          refreshSeconds--;
+          refreshTimerVal.innerText = refreshSeconds;
+          if (refreshSeconds <= 0) {
+            clearInterval(refreshCountdown);
+            // Auto refresh dan redirect ke halaman giveaway secara penuh
+            window.location.href = 'https://demo-profile-dun.vercel.app/giveaway';
+          }
+        }, 1000);
+
         // Simpan notifikasi ke localStorage untuk index.html
         const allWinnerNames = winners.map(w => w.global_name || w.username).join(', ');
         localStorage.setItem('recent_winner_notification', JSON.stringify({
@@ -443,15 +471,15 @@
           timestamp: Date.now()
         }));
 
-        setTimeout(() => {
-          modal.classList.add('hidden');
-          if (onFinish) onFinish();
-        }, 4000);
+        if (onFinish) onFinish();
 
       }, 5000);
     }
 
     async function loadGiveaways() {
+      // Jangan timpa tampilan jika sedang ada animasi rolling yang aktif
+      if (isRollingActive) return;
+
       timerIntervals.forEach(clearInterval);
       timerIntervals = [];
 
@@ -466,7 +494,6 @@
           const isJoined = currentUser && participants.some(p => p.id === currentUser.id);
           const isEnded = gw.status === 'ended';
 
-          // Status Badge Giveaway: READY, ROLLING, WINNER SELECTED, COMPLETED
           let statusText = 'READY';
           let statusStyle = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
 
@@ -598,7 +625,6 @@
       }
     }
 
-    // Trigger Roll Start oleh Owner (Jalankan Countdown 5,4,3,2,1 terlebih dahulu)
     async function triggerRollStart(id) {
       triggerWebhook({ type: 'roll_start' });
       runCountdownSequence(() => {
@@ -606,7 +632,6 @@
       });
     }
 
-    // FUNGSI ROLL GIVEAWAY (PEMENANG & ANIMASI)
     async function rollGiveaway(id, isManual = true) {
       const data = await safeFetchJson('/api/giveaway', {
         method: 'PUT',
@@ -623,7 +648,6 @@
           triggerWebhook({ type: 'winner', giveaway: gw, winners: winners });
           const winnerNames = winners.map(w => w.global_name || w.username).join(', ');
           showToast(`Selamat! ${winnerNames} menang ${gw.prize}!`);
-          loadGiveaways();
         });
       } else {
         showToast(data.error || 'Gagal mengocok pemenang.', true);
@@ -695,7 +719,6 @@
       }
     }
 
-    // MODAL PARTICIPANTS MENAMPILKAN NOMOR URUT SIAPA CEPAT DAPAT
     function openParticipantsModal(encodedData) {
       const participants = JSON.parse(decodeURIComponent(encodedData));
       const listContainer = document.getElementById('modal-participants-list');
@@ -731,6 +754,11 @@
     window.addEventListener('DOMContentLoaded', () => {
       initAuth();
       loadGiveaways();
+
+      // Auto Refresh Data Setiap 5 Detik secara halus di background
+      setInterval(() => {
+        loadGiveaways();
+      }, 5000);
     });
   </script>
 </body>
