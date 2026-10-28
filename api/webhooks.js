@@ -17,37 +17,57 @@ export default async function handler(req, res) {
   const { db } = await connectToDatabase();
   const collection = db.collection('giveaways');
 
-  // 🔍 VALIDASI CEK DUPLIKASI PESAN DENGAN DATABASE
+  // 🛡️ ATOMIC LOCKING UNTUK MENCEGAH DUPLIKASI KHUSUS WEBHOOK DUPLIKAT
   if (giveaway && giveaway._id) {
-    const existingGw = await collection.findOne({ _id: new ObjectId(giveaway._id) });
+    const gwId = new ObjectId(giveaway._id);
 
-    if (existingGw) {
-      // 1. Cegah kirim ganda untuk pesan WINNER
-      if (type === 'winner' && existingGw.webhookWinnerSent) {
-        return res.status(200).json({ success: true, message: 'Webhook pemenang sudah dikirim sebelumnya.' });
+    // 1. Kunci Pesan ROLL_AUTO (Hanya 1 request pertama yang lolos)
+    if (type === 'roll_auto') {
+      const lockResult = await collection.findOneAndUpdate(
+        { _id: gwId, webhookAutoRollSent: { $ne: true } },
+        { $set: { webhookAutoRollSent: true } }
+      );
+
+      if (!lockResult || (!lockResult.value && !lockResult._id)) {
+        return res.status(200).json({ success: true, message: 'Webhook roll_auto sudah dikirim oleh request lain.' });
       }
+    }
 
-      // 2. Cegah kirim ganda untuk pesan ROLL_AUTO (Waktu Habis)
-      if (type === 'roll_auto' && existingGw.webhookAutoRollSent) {
-        return res.status(200).json({ success: true, message: 'Webhook roll otomatis sudah dikirim sebelumnya.' });
+    // 2. Kunci Pesan ROLL_START (Hanya 1 request pertama yang lolos)
+    if (type === 'roll_start') {
+      const lockResult = await collection.findOneAndUpdate(
+        { _id: gwId, webhookManualRollSent: { $ne: true } },
+        { $set: { webhookManualRollSent: true } }
+      );
+
+      if (!lockResult || (!lockResult.value && !lockResult._id)) {
+        return res.status(200).json({ success: true, message: 'Webhook roll_start sudah dikirim oleh request lain.' });
       }
+    }
 
-      // 3. Cegah kirim ganda untuk pesan ROLL_START (Roll Manual Host)
-      if (type === 'roll_start' && existingGw.webhookManualRollSent) {
-        return res.status(200).json({ success: true, message: 'Webhook roll manual sudah dikirim sebelumnya.' });
+    // 3. Kunci Pesan WINNER (Hanya 1 request pertama yang lolos)
+    if (type === 'winner') {
+      const lockResult = await collection.findOneAndUpdate(
+        { _id: gwId, webhookWinnerSent: { $ne: true } },
+        { $set: { webhookWinnerSent: true } }
+      );
+
+      if (!lockResult || (!lockResult.value && !lockResult._id)) {
+        return res.status(200).json({ success: true, message: 'Webhook winner sudah dikirim oleh request lain.' });
       }
     }
   }
 
+  // 📦 PERSIAPAN PAYLOAD UNTUK DISCORD
   let payload = {};
 
   if (type === 'create') {
     payload = {
       embeds: [{
-        title: `🎁 Giveaway Baru ${giveaway.title}`,
+        title: `🎁 Giveaway Baru: ${giveaway.title}`,
         url: 'https://demo-profile-dun.vercel.app/giveaway',
         description: `${giveaway.description || 'Tidak ada deskripsi.'}\n\n**🎁 Hadiah:** ${giveaway.prize}\n**🏆 Jumlah Pemenang:** ${giveaway.winnersCount || 1}`,
-        thumbnail: { url: 'https://i.imgur.com/XDLY64r.mp4',},
+        thumbnail: { url: 'https://i.imgur.com/xskt3CA.gif',
         color: 0x5865F2,
         footer: { text: "Rakan Aditya Community • Giveaway System" },
         timestamp: new Date()
@@ -90,21 +110,6 @@ export default async function handler(req, res) {
     });
 
     if (discordRes.ok) {
-      // 📝 TANDAI DI DATABASE SETELAH BERHASIL DIKIRIM KE DISCORD
-      if (giveaway && giveaway._id) {
-        let updateField = {};
-        if (type === 'winner') updateField = { webhookWinnerSent: true };
-        if (type === 'roll_auto') updateField = { webhookAutoRollSent: true };
-        if (type === 'roll_start') updateField = { webhookManualRollSent: true };
-
-        if (Object.keys(updateField).length > 0) {
-          await collection.updateOne(
-            { _id: new ObjectId(giveaway._id) },
-            { $set: updateField }
-          );
-        }
-      }
-
       return res.status(200).json({ success: true, message: 'Webhook terkirim.' });
     } else {
       return res.status(500).json({ success: false, error: 'Gagal mengirim ke Discord Webhook.' });
