@@ -52,96 +52,112 @@
       <p class="text-sm text-slate-400">Pemantauan performa infrastruktur serverless serta status aktivitas Discord Owner secara real-time.</p>
     </div>
 
-    <!-- SECTION 1: DISCORD OWNER LIVE PRESENCE CARD -->
+    <!-- SECTION 1: DISCORD OWNER LIVE PRESENCE & SERVER WIDGET GRID -->
     <div class="space-y-4">
       <div class="flex items-center justify-between border-b border-slate-800 pb-2">
         <h3 class="text-lg font-bold text-white flex items-center space-x-2">
-          <span>👑 Community Owner Presence</span>
+          <span>👑 Community Owner & Server Widget</span>
           <span class="text-[10px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded-full font-mono">Realtime WebSocket</span>
         </h3>
         <span id="presence-uptime-counter" class="text-xs font-mono text-emerald-400">Loading counter...</span>
       </div>
 
-      <!-- Kartu Profil Discord Native -->
-      <div class="max-w-sm mx-auto">
-        <div class="bg-[#232428] rounded-2xl overflow-hidden shadow-2xl border border-slate-800">
-          
-          <!-- Custom GIF Banner Owner -->
-          <div id="owner-banner" class="h-32 sm:h-36 w-full relative overflow-hidden bg-slate-900">
-            <img 
-              src="https://static2.klipy.com/ii/2f34308bfc69e8c858753b83566e3ab4/94/e9/33CSaeSh7LuRD.gif" 
-              alt="Owner Banner GIF" 
-              class="w-full h-full object-cover object-center"
-              loading="lazy"
-            >
-            <div class="absolute top-3 right-3 px-2 py-1 bg-black/60 backdrop-blur rounded-full text-[10px] font-mono text-slate-300 border border-white/10 z-10">
-              ID: 628205121704296458
-            </div>
-          </div>
-
-          <!-- Detail Profil & Avatar -->
-          <div class="px-4 pt-0 pb-4 relative">
-            <div class="flex justify-between items-end -mt-12 mb-3 px-2">
-              
-              <div class="relative w-20 h-20 flex items-center justify-center">
-                <img id="owner-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Avatar Discord" class="w-20 h-20 rounded-full border-4 border-[#232428] bg-[#232428] object-cover shadow-lg relative z-0">
-                <span id="owner-status-dot" class="w-5 h-5 bg-slate-500 border-4 border-[#232428] rounded-full absolute bottom-0 right-0 z-20" title="Offline / Invisible"></span>
+      <!-- Grid Layout: Kartu Owner di Kiri & Widget Discord Server di Kanan -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+        
+        <!-- Kartu Profil Discord Owner -->
+        <div class="w-full">
+          <div class="bg-[#232428] rounded-2xl overflow-hidden shadow-2xl border border-slate-800">
+            
+            <!-- Custom GIF Banner Owner -->
+            <div id="owner-banner" class="h-32 sm:h-36 w-full relative overflow-hidden bg-slate-900">
+              <img 
+                src="https://static2.klipy.com/ii/2f34308bfc69e8c858753b83566e3ab4/94/e9/33CSaeSh7LuRD.gif" 
+                alt="Owner Banner GIF" 
+                class="w-full h-full object-cover object-center"
+                loading="lazy"
+              >
+              <div class="absolute top-3 right-3 px-2 py-1 bg-black/60 backdrop-blur rounded-full text-[10px] font-mono text-slate-300 border border-white/10 z-10">
+                ID: 628205121704296458
               </div>
-
-              <div id="owner-badges-container" class="bg-[#111214] px-2.5 py-1.5 rounded-lg flex items-center space-x-2 border border-slate-800 flex-wrap gap-y-1 z-10">
-              </div>
-
             </div>
 
-            <div class="bg-[#111214] rounded-xl p-4 space-y-3">
-              <div>
-                <div class="flex items-center space-x-2 flex-wrap">
-                  <h3 id="owner-global-name" class="text-lg font-bold text-white leading-tight">! Lufas Maphaahl</h3>
-                  <span id="owner-clan-tag" class="hidden px-1.5 py-0.5 bg-slate-800 border border-slate-700 text-slate-300 font-semibold text-[11px] rounded tracking-wide"></span>
-                </div>
-                <p id="owner-username" class="text-xs text-slate-400 mt-0.5">@rakanaditya</p>
-              </div>
-
-              <hr class="border-slate-800">
-
-              <!-- Custom Status Text -->
-              <div id="owner-custom-status-box" class="hidden text-xs text-slate-300 bg-[#1e1f22] p-2.5 rounded-lg border border-slate-800 flex items-center space-x-2">
-                <span id="owner-custom-emoji" class="text-sm">💬</span>
-                <span id="owner-custom-text" class="italic truncate">...</span>
-              </div>
-
-              <!-- Rich Presence Activity Section (Custom Assets Support) -->
-              <div id="owner-activity-box" class="hidden bg-[#1e1f22] p-3 rounded-xl border border-slate-800 space-y-2">
-                <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                  <span id="activity-header-title">PLAYING A GAME</span>
-                  <span id="activity-timer-badge" class="font-mono text-emerald-400 font-normal">00:00 elapsed</span>
+            <!-- Detail Profil & Avatar -->
+            <div class="px-4 pt-0 pb-4 relative">
+              <div class="flex justify-between items-end -mt-12 mb-3 px-2">
+                
+                <div class="relative w-20 h-20 flex items-center justify-center">
+                  <img id="owner-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Avatar Discord" class="w-20 h-20 rounded-full border-4 border-[#232428] bg-[#232428] object-cover shadow-lg relative z-0">
+                  <span id="owner-status-dot" class="w-5 h-5 bg-slate-500 border-4 border-[#232428] rounded-full absolute bottom-0 right-0 z-20" title="Offline / Invisible"></span>
                 </div>
 
-                <div class="flex items-center space-x-3">
-                  <div class="relative flex-shrink-0">
-                    <img id="activity-icon" src="https://cdn.discordapp.com/embed/avatars/0.png" class="w-12 h-12 rounded-lg object-cover bg-slate-900 border border-slate-700">
-                    <img id="activity-small-icon" class="hidden w-4 h-4 rounded-full absolute -bottom-1 -right-1 border-2 border-[#1e1f22]">
-                  </div>
-                  <div class="overflow-hidden">
-                    <h4 id="activity-name" class="font-bold text-xs text-white truncate">Activity Name</h4>
-                    <p id="activity-details" class="text-[11px] text-slate-300 truncate">Details...</p>
-                    <p id="activity-state" class="text-[11px] text-slate-400 truncate">State...</p>
-                  </div>
+                <div id="owner-badges-container" class="bg-[#111214] px-2.5 py-1.5 rounded-lg flex items-center space-x-2 border border-slate-800 flex-wrap gap-y-1 z-10">
                 </div>
+
               </div>
 
-              <div class="flex justify-between items-center text-xs pt-1">
+              <div class="bg-[#111214] rounded-xl p-4 space-y-3">
                 <div>
-                  <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">ID Pengguna</h4>
-                  <p id="owner-id" class="font-mono text-slate-400">628205121704296458</p>
+                  <div class="flex items-center space-x-2 flex-wrap">
+                    <h3 id="owner-global-name" class="text-lg font-bold text-white leading-tight">! Lufas Maphaahl</h3>
+                    <span id="owner-clan-tag" class="hidden px-1.5 py-0.5 bg-slate-800 border border-slate-700 text-slate-300 font-semibold text-[11px] rounded tracking-wide"></span>
+                  </div>
+                  <p id="owner-username" class="text-xs text-slate-400 mt-0.5">@rakanaditya</p>
                 </div>
-                <span id="owner-status-label" class="px-2 py-0.5 bg-slate-800 text-slate-400 border border-slate-700 rounded text-[10px]">Checking...</span>
+
+                <hr class="border-slate-800">
+
+                <!-- Custom Status Text -->
+                <div id="owner-custom-status-box" class="hidden text-xs text-slate-300 bg-[#1e1f22] p-2.5 rounded-lg border border-slate-800 flex items-center space-x-2">
+                  <span id="owner-custom-emoji" class="text-sm">💬</span>
+                  <span id="owner-custom-text" class="italic truncate">...</span>
+                </div>
+
+                <!-- Rich Presence Activity Section -->
+                <div id="owner-activity-box" class="hidden bg-[#1e1f22] p-3 rounded-xl border border-slate-800 space-y-2">
+                  <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    <span id="activity-header-title">PLAYING A GAME</span>
+                    <span id="activity-timer-badge" class="font-mono text-emerald-400 font-normal">00:00 elapsed</span>
+                  </div>
+
+                  <div class="flex items-center space-x-3">
+                    <div class="relative flex-shrink-0">
+                      <img id="activity-icon" src="https://cdn.discordapp.com/embed/avatars/0.png" class="w-12 h-12 rounded-lg object-cover bg-slate-900 border border-slate-700">
+                      <img id="activity-small-icon" class="hidden w-4 h-4 rounded-full absolute -bottom-1 -right-1 border-2 border-[#1e1f22]">
+                    </div>
+                    <div class="overflow-hidden">
+                      <h4 id="activity-name" class="font-bold text-xs text-white truncate">Activity Name</h4>
+                      <p id="activity-details" class="text-[11px] text-slate-300 truncate">Details...</p>
+                      <p id="activity-state" class="text-[11px] text-slate-400 truncate">State...</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex justify-between items-center text-xs pt-1">
+                  <div>
+                    <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">ID Pengguna</h4>
+                    <p id="owner-id" class="font-mono text-slate-400">628205121704296458</p>
+                  </div>
+                  <span id="owner-status-label" class="px-2 py-0.5 bg-slate-800 text-slate-400 border border-slate-700 rounded text-[10px]">Checking...</span>
+                </div>
               </div>
+
             </div>
 
           </div>
-
         </div>
+
+        <!-- Discord Server Widget (iframe) -->
+        <div class="w-full flex justify-center">
+          <div class="bg-[#232428] rounded-2xl overflow-hidden shadow-2xl border border-slate-800 p-2 w-full max-w-sm flex flex-col items-center">
+            <div class="w-full px-3 py-2 text-xs font-bold text-slate-300 border-b border-slate-800 mb-2 flex items-center justify-between">
+              <span>💬 Rakan Aditya Community Server</span>
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+            </div>
+            <iframe src="https://discord.com/widget?id=798751181508837376&theme=dark" width="100%" height="458" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts" class="rounded-xl"></iframe>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -221,7 +237,6 @@
       return `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
     }
 
-    // Helper untuk mengolah URL gambar dari Lanyard (PreMid / Ext / Discord Asset)
     function getLanyardImageUrl(activity) {
       if (!activity || !activity.assets || !activity.assets.large_image) {
         return 'https://cdn.discordapp.com/embed/avatars/0.png';
@@ -229,24 +244,20 @@
 
       const imgKey = activity.assets.large_image;
 
-      // 1. Link kustom Spotify
       if (imgKey.startsWith('spotify:')) {
         return `https://i.scdn.co/image/${imgKey.replace('spotify:', '')}`;
       }
 
-      // 2. Format PreMid / External Discord Proxy (misal Otakudesu, Web Extension)
       if (imgKey.startsWith('mp:external/')) {
         const match = imgKey.match(/https?:\/\/.*/);
         if (match) return match[0];
         return `https://media.discordapp.net/${imgKey.replace('mp:', '')}`;
       }
 
-      // 3. Link HTTP/HTTPS langsung
       if (imgKey.startsWith('http://') || imgKey.startsWith('https://')) {
         return imgKey;
       }
 
-      // 4. Standard Discord Application Asset
       return `https://cdn.discordapp.com/app-assets/${activity.application_id}/${imgKey}.png`;
     }
 
@@ -334,12 +345,10 @@
           const user = lData.discord_user;
           const status = lData.discord_status;
 
-          // 1. User Profil Header
           document.getElementById('owner-global-name').innerText = user.global_name || user.username;
           document.getElementById('owner-username').innerText = `@${user.username}`;
           document.getElementById('owner-id').innerText = user.id;
 
-          // Clan Tag
           const clanTagElem = document.getElementById('owner-clan-tag');
           const clanTag = (user.clan && user.clan.tag) || (user.primary_guild && user.primary_guild.tag) || (lData.kv && lData.kv.clan);
           if (clanTag) {
@@ -349,7 +358,6 @@
             clanTagElem.classList.add('hidden');
           }
 
-          // Avatar (Animasi GIF atau PNG)
           let avatarUrl = "https://cdn.discordapp.com/embed/avatars/0.png";
           if (user.avatar) {
             const format = user.avatar.startsWith('a_') ? 'gif' : 'png';
@@ -357,7 +365,6 @@
           }
           document.getElementById('owner-avatar').src = avatarUrl;
 
-          // Avatar Decoration Frame
           const avatarContainer = document.getElementById('owner-avatar').parentElement;
           const existingFrame = document.getElementById('avatar-decoration-frame');
           if (existingFrame) existingFrame.remove();
@@ -370,7 +377,6 @@
             avatarContainer.appendChild(frameImg);
           }
 
-          // Status Dot Indicator
           const statusDot = document.getElementById('owner-status-dot');
           const statusLabel = document.getElementById('owner-status-label');
           
@@ -394,10 +400,8 @@
             statusLabel.innerText = '⚪ Offline / Invisible';
           }
 
-          // Badges Rendering
           renderBadges(user);
 
-          // Custom Status
           const customActivity = lData.activities.find(a => a.type === 4);
           const customStatusBox = document.getElementById('owner-custom-status-box');
           if (customActivity && (customActivity.state || customActivity.emoji)) {
@@ -410,7 +414,6 @@
             customStatusBox.classList.add('hidden');
           }
 
-          // Rich Presence Activity (YouTube, Spotify, Otakudesu, Facebook, Instagram, DLL)
           const primaryActivity = lData.activities.find(a => a.type !== 4);
           const activityBox = document.getElementById('owner-activity-box');
 
@@ -427,7 +430,6 @@
             const iconImg = document.getElementById('activity-icon');
             const fullTextSearch = `${actName} ${actDetails} ${actState}`.toLowerCase();
 
-            // SINKRONISASI DENGAN ASET LOKAL FOLDER /Assets/
             if (fullTextSearch.includes('youtube')) {
               iconImg.src = '/Assets/youtube.png';
               document.getElementById('activity-header-title').innerText = '📺 WATCHING YOUTUBE';
@@ -445,12 +447,9 @@
               document.getElementById('activity-header-title').innerText = '📸 BROWSING INSTAGRAM';
             } else {
               document.getElementById('activity-header-title').innerText = '🎮 PLAYING A GAME';
-              
-              // Jika tidak cocok dengan aset lokal, otomatis olah URL eksternal Lanyard
               iconImg.src = getLanyardImageUrl(primaryActivity);
             }
 
-            // Fallback otomatis jika gambar gagal dimuat
             iconImg.onerror = function() {
               this.onerror = null;
               this.src = 'https://cdn.discordapp.com/embed/avatars/0.png';
