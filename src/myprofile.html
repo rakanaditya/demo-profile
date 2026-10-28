@@ -28,10 +28,6 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
 
-  <!-- Audio Sound Effects -->
-  <audio id="audio-chime" preload="auto" src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3"></audio>
-  <audio id="audio-pop" preload="auto" src="https://assets.mixkit.co/active_storage/sfx/2578/2578-preview.mp3"></audio>
-
   <!-- Header -->
   <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-40">
     <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -66,7 +62,7 @@
         
         <!-- Banner -->
         <div id="user-banner" class="h-28 bg-gradient-to-r from-indigo-600 to-purple-600 relative bg-cover bg-center">
-          <button onclick="logoutSession()" class="absolute top-3 right-3 w-7 h-7 bg-rose-600/80 hover:bg-rose-600 text-white rounded-full flex items-center justify-center transition shadow-lg" title="Keluar / Logout">
+          <button onclick="logoutSession()" class="absolute top-3 right-3 w-7 h-7 bg-rose-600/80 hover:bg-rose-600 text-white rounded-full flex items-center justify-center transition shadow-lg font-bold text-xs" title="Keluar / Logout">
             ✕
           </button>
         </div>
