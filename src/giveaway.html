@@ -240,7 +240,7 @@
     let isMuted = false;
     let isLiveMode = false;
     let isRollingActive = false;
-    let triggeredRollIds = new Set(); // Menjaga agar pengocokan otomatis hanya dipanggil 1x per ID
+    let triggeredRollIds = new Set(); // Mencegah pemanggilan ganda per giveaway ID
 
     function toggleAudioMute() {
       isMuted = !isMuted;
@@ -310,9 +310,14 @@
       try {
         const res = await fetch(url, options);
         const text = await res.text();
-        try { return JSON.parse(text); } 
-        catch (e) { return { success: false, error: `Server Error (${res.status}).` }; }
-      } catch (err) { return { success: false, error: "Gagal jaringan." }; }
+        try { 
+          return JSON.parse(text); 
+        } catch (e) { 
+          return { success: false, error: `Server Error (${res.status}): Respon tidak valid.` }; 
+        }
+      } catch (err) { 
+        return { success: false, error: "Gagal menghubungkan ke jaringan." }; 
+      }
     }
 
     function triggerWebhook(payload) {
@@ -696,7 +701,7 @@
 
     async function joinGiveaway(id) {
       if (!currentUser) return showToast('Silakan login terlebih dahulu!', true);
-      const data = await safeFetchJson('/api/join', {
+      const data = await safeFetchJson('/api/giveaway', { // ✅ Menggunakan endpoint /api/giveaway yang benar
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'join', giveawayId: id, user: currentUser })
