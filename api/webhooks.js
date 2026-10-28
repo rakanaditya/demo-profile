@@ -1,4 +1,7 @@
 // api/webhooks.js
+import { connectToDatabase } from './db.js';
+import { ObjectId } from 'mongodb';
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ success: false, error: 'Method Not Allowed' });
@@ -9,6 +12,17 @@ export default async function handler(req, res) {
 
   if (!DISCORD_WEBHOOK_URL) {
     return res.status(500).json({ success: false, error: 'Webhook URL tidak dikonfigurasi.' });
+  }
+
+  const { db } = await connectToDatabase();
+  const collection = db.collection('giveaways');
+
+  // CEK DAN VALIDAIS PESAN GANGA UNTUK PEMENANG
+  if (type === 'winner' && giveaway && giveaway._id) {
+    const existingGw = await collection.findOne({ _id: new ObjectId(giveaway._id) });
+    if (existingGw && existingGw.webhookSent) {
+      return res.status(200).json({ success: true, message: 'Webhook pemenang sudah dikirim sebelumnya' });
+    }
   }
 
   let payload = {};
@@ -28,7 +42,6 @@ export default async function handler(req, res) {
       content: `🎲 **Host sedang mengocok giveaway (Manual)!**\nPengumuman pemenang akan keluar sebentar lagi!`
     };
   } else if (type === 'roll_auto') {
-    // 🎲 Versi Otomatis ketika Timer Giveaway Habis
     payload = {
       content: `🎲 **Waktu Habis! Giveaway sedang di-roll secara otomatis!**\nSistem sedang menentukan pemenang secara acak...`
     };
@@ -61,6 +74,13 @@ export default async function handler(req, res) {
     });
 
     if (discordRes.ok) {
+      // Tandai di Database bahwa Webhook Pemenang Sudah Terkirim
+      if (type === 'winner' && giveaway && giveaway._id) {
+        await collection.updateOne(
+          { _id: new ObjectId(giveaway._id) },
+          { $set: { webhookSent: true } }
+        );
+      }
       return res.status(200).json({ success: true, message: 'Webhook terkirim.' });
     } else {
       return res.status(500).json({ success: false, error: 'Gagal mengirim ke Discord Webhook.' });
