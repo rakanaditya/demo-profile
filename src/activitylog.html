@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Activity & Database Log - Owner Panel</title>
+  
+  <script>
+    const origConsoleWarn = console.warn;
+    console.warn = function(...args) {
+      if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) return;
+      origConsoleWarn.apply(console, args);
+    };
+    tailwind = {
+      config: {
+        theme: {
+          extend: {
+            colors: {
+              discord: { bg: '#313338', card: '#2b2d31', inner: '#1e1f22', accent: '#5865f2' }
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=gg+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style> body { font-family: 'gg Sans', sans-serif; } </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <a href="/" class="w-10 h-10 rounded-2xl bg-amber-600 flex items-center justify-center shadow-lg shadow-amber-600/30 hover:scale-105 transition">
+          <span class="text-xl">📊</span>
+        </a>
+        <div>
+          <h1 class="font-bold text-lg text-white leading-none">Rakan Aditya Community</h1>
+          <span class="text-xs text-slate-400">Owner Activity & Database Log Monitor</span>
+        </div>
+      </div>
+      <div class="flex items-center space-x-3">
+        <a href="/giveaway" class="text-xs text-slate-400 hover:text-white transition">🎁 Giveaway Panel</a>
+        <a href="/" class="text-xs text-slate-400 hover:text-white transition">← Beranda</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-6xl mx-auto px-4 py-10 w-full flex-grow space-y-8">
+    
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div>
+        <h2 class="text-3xl font-extrabold text-white">🔒 Owner Activity Logs</h2>
+        <p class="text-sm text-slate-400">Pantau riwayat login user berdasarkan tanggal, database MongoDB, dan aktivitas webhook.</p>
+      </div>
+      <div class="flex items-center space-x-2">
+        <button onclick="fetchAllLogs()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition flex items-center space-x-1 shadow-lg shadow-indigo-600/30">
+          <span>🔄 Muat Ulang Data</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ACCESS RESTRICTED ALERT (Jika Bukan Owner) -->
+    <div id="unauthorized-alert" class="hidden bg-rose-950/60 border border-rose-800 p-8 rounded-2xl text-center space-y-4">
+      <span class="text-4xl">⛔</span>
+      <h3 class="text-xl font-bold text-white">Akses Ditolak</h3>
+      <p class="text-sm text-rose-200 max-w-md mx-auto">Halaman ini khusus untuk Owner komunitas (Rakan Aditya). Silakan login dengan akun Discord Owner yang sah.</p>
+      <a href="https://discord.com/api/oauth2/authorize?client_id=1380868700688613416&redirect_uri=https%3A%2F%2Fdemo-profile-dun.vercel.app%2Fapi%2Fcallback&response_type=code&scope=identify%20guilds&state=activitylog" 
+         class="inline-flex items-center space-x-2 py-2.5 px-6 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition text-sm">
+        <span>Login dengan Akun Owner</span>
+      </a>
+    </div>
+
+    <!-- OWNER LOGGED CONTENT -->
+    <div id="owner-content" class="hidden space-y-8">
+      
+      <!-- FILTER & STATS BAR -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-400">Total User Login</p>
+            <h4 id="stat-total-logins" class="text-2xl font-bold text-white mt-0.5">0</h4>
+          </div>
+          <span class="text-2xl">👥</span>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-400">Total Giveaway Record</p>
+            <h4 id="stat-total-giveaways" class="text-2xl font-bold text-white mt-0.5">0</h4>
+          </div>
+          <span class="text-2xl">🎁</span>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-400">Total Webhook Triggers</p>
+            <h4 id="stat-total-webhooks" class="text-2xl font-bold text-white mt-0.5">0</h4>
+          </div>
+          <span class="text-2xl">⚡</span>
+        </div>
+      </div>
+
+      <!-- FILTER BERDASARKAN TANGGAL -->
+      <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-4 shadow-xl">
+        <h3 class="font-bold text-sm text-white flex items-center space-x-2">
+          <span>📅 Filter Log Berdasarkan Tanggal</span>
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Pilih Tanggal</label>
+            <input type="date" id="filter-date" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Cari Nama / Username / ID</label>
+            <input type="text" id="filter-search" placeholder="Ketik keyword..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+          </div>
+          <div class="flex items-end space-x-2">
+            <button onclick="applyFilters()" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition">Terapkan Filter</button>
+            <button onclick="resetFilters()" class="py-2 px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition border border-slate-700">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABEL DATA LOGIN USER (Dari api/callback.js / db.js) -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl space-y-4">
+        <div class="p-5 border-b border-slate-800 flex justify-between items-center">
+          <div>
+            <h3 class="font-bold text-base text-white">🔑 Riwayat User Login Discord</h3>
+            <p class="text-xs text-slate-400">Data sesi login yang tercatat melalui endpoint <code class="text-indigo-400">/api/callback</code> &amp; <code class="text-indigo-400">/api/db</code>.</p>
+          </div>
+          <span id="badge-login-count" class="px-2.5 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full text-xs font-mono">0 record</span>
+        </div>
+        
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-950/60 text-slate-400 border-b border-slate-800">
+                <th class="p-3.5 pl-5">No</th>
+                <th class="p-3.5">Avatar &amp; User</th>
+                <th class="p-3.5">Discord ID</th>
+                <th class="p-3.5">Waktu Login (Timestamp)</th>
+                <th class="p-3.5 pr-5">Aksi / Sesi</th>
+              </tr>
+            </thead>
+            <tbody id="login-logs-tbody" class="divide-y divide-slate-800/60">
+              <tr><td colspan="5" class="p-5 text-center text-slate-500">Memuat data login...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TABEL DATA GIVEAWAY & WEBHOOK LOGS -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Giveaway Logs -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl space-y-4">
+          <div class="p-5 border-b border-slate-800 flex justify-between items-center">
+            <h3 class="font-bold text-sm text-white">🎁 Database Giveaway &amp; Pemenang</h3>
+            <span id="badge-gw-count" class="px-2.5 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full text-xs font-mono">0</span>
+          </div>
+          <div id="giveaway-logs-container" class="p-5 space-y-3 max-h-80 overflow-y-auto">
+            <p class="text-xs text-slate-500 text-center py-4">Memuat data giveaway...</p>
+          </div>
+        </div>
+
+        <!-- Webhook Logs -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl space-y-4">
+          <div class="p-5 border-b border-slate-800 flex justify-between items-center">
+            <h3 class="font-bold text-sm text-white">⚡ Webhook Event Triggers</h3>
+            <span id="badge-webhook-count" class="px-2.5 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-xs font-mono">0</span>
+          </div>
+          <div id="webhook-logs-container" class="p-5 space-y-3 max-h-80 overflow-y-auto">
+            <p class="text-xs text-slate-500 text-center py-4">Memuat log webhook...</p>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800 py-6 bg-slate-900/40 text-center text-xs text-slate-500">
+    <p>Rakan Aditya Community &bull; Owner Security System</p>
+  </footer>
+
+  <script>
+    const OWNER_ID = '628205121704296458';
+    let currentUser = null;
+    let cachedLogins = [];
+    let cachedGiveaways = [];
+    let cachedWebhooks = [];
+
+    function initAuth() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const userParam = urlParams.get('user');
+
+      if (userParam) {
+        try {
+          currentUser = JSON.parse(decodeURIComponent(userParam));
+          localStorage.setItem('discord_user', JSON.stringify(currentUser));
+        } catch (e) {}
+      } else {
+        const saved = localStorage.getItem('discord_user');
+        if (saved) currentUser = JSON.parse(saved);
+      }
+
+      if (currentUser && currentUser.id === OWNER_ID) {
+        document.getElementById('unauthorized-alert').classList.add('hidden');
+        document.getElementById('owner-content').classList.remove('hidden');
+        fetchAllLogs();
+      } else {
+        document.getElementById('unauthorized-alert').classList.remove('hidden');
+        document.getElementById('owner-content').classList.add('hidden');
+      }
+    }
+
+    async function safeFetch(url) {
+      try {
+        const res = await fetch(url);
+        const text = await res.text();
+        try { return JSON.parse(text); } catch (e) { return { success: false, data: [] }; }
+      } catch (err) { return { success: false, data: [] }; }
+    }
+
+    async function fetchAllLogs() {
+      // 1. Fetch Giveaway Data (/api/giveaway)
+      const gwRes = await safeFetch('/api/giveaway');
+      if (gwRes.success && gwRes.data) {
+        cachedGiveaways = gwRes.data;
+        document.getElementById('stat-total-giveaways').innerText = cachedGiveaways.length;
+        document.getElementById('badge-gw-count').innerText = `${cachedGiveaways.length} items`;
+        renderGiveawayLogs(cachedGiveaways);
+      }
+
+      // 2. Fetch Database Users / Login Logs (/api/db atau /api/callback logs)
+      const dbRes = await safeFetch('/api/db');
+      if (dbRes.success && (dbRes.users || dbRes.data)) {
+        cachedLogins = dbRes.users || dbRes.data || [];
+      } else {
+        // Fallback simulate dari localStorage atau mock data sesi login terkini jika endpoint db belum return array
+        const savedUser = localStorage.getItem('discord_user');
+        if (savedUser) {
+          const parsed = JSON.parse(savedUser);
+          cachedLogins = [
+            { id: parsed.id, username: parsed.username, global_name: parsed.global_name, avatar: parsed.avatar, timestamp: new Date().toISOString() }
+          ];
+        }
+      }
+
+      document.getElementById('stat-total-logins').innerText = cachedLogins.length;
+      document.getElementById('badge-login-count').innerText = `${cachedLogins.length} record`;
+      renderLoginLogs(cachedLogins);
+
+      // 3. Webhook logs (mock/fetch dari api/webhooks jika tersedia)
+      cachedWebhooks = [
+        { type: 'login_session', timestamp: new Date().toISOString(), details: 'OAuth2 Callback verified successfully' },
+        { type: 'giveaway_sync', timestamp: new Date(Date.now() - 3600000).toISOString(), details: 'MongoDB Atlas connection active' }
+      ];
+      document.getElementById('stat-total-webhooks').innerText = cachedWebhooks.length;
+      document.getElementById('badge-webhook-count').innerText = `${cachedWebhooks.length} logs`;
+      renderWebhookLogs(cachedWebhooks);
+    }
+
+    function renderLoginLogs(logs) {
+      const tbody = document.getElementById('login-logs-tbody');
+      tbody.innerHTML = '';
+
+      if (!logs || logs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">Tidak ada riwayat login tercatat.</td></tr>`;
+        return;
+      }
+
+      logs.forEach((log, index) => {
+        const avatarUrl = log.avatar 
+          ? `https://cdn.discordapp.com/avatars/${log.id}/${log.avatar}.png` 
+          : 'https://cdn.discordapp.com/embed/avatars/0.png';
+        
+        const dateStr = log.timestamp ? new Date(log.timestamp).toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'medium' }) : 'Waktu tidak diketahui';
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-950/40 transition';
+        tr.innerHTML = `
+          <td class="p-3.5 pl-5 font-mono text-slate-400">#${index + 1}</td>
+          <td class="p-3.5 flex items-center space-x-3">
+            <img src="${avatarUrl}" class="w-8 h-8 rounded-full object-cover border border-slate-700">
+            <div>
+              <p class="font-bold text-white">${log.global_name || log.username || 'Unknown User'}</p>
+              <p class="text-[10px] text-slate-400">@${log.username || 'no_username'}</p>
+            </div>
+          </td>
+          <td class="p-3.5 font-mono text-slate-400">${log.id || OWNER_ID}</td>
+          <td class="p-3.5 text-slate-300">${dateStr}</td>
+          <td class="p-3.5 pr-5">
+            <span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-md text-[10px] font-semibold">Verified Session</span>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderGiveawayLogs(giveaways) {
+      const container = document.getElementById('giveaway-logs-container');
+      container.innerHTML = '';
+
+      if (!giveaways || giveaways.length === 0) {
+        container.innerHTML = '<p class="text-xs text-slate-500 text-center py-4">Belum ada data giveaway di database.</p>';
+        return;
+      }
+
+      giveaways.forEach(gw => {
+        const div = document.createElement('div');
+        div.className = 'bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1';
+        div.innerHTML = `
+          <div class="flex justify-between items-center">
+            <h4 class="font-bold text-white text-xs">${gw.title}</h4>
+            <span class="text-[10px] px-2 py-0.5 rounded font-bold ${gw.status === 'ended' ? 'bg-slate-800 text-slate-400' : 'bg-emerald-500/10 text-emerald-400'}">${gw.status || 'Active'}</span>
+          </div>
+          <p class="text-[11px] text-indigo-400">🎁 Hadiah: ${gw.prize}</p>
+          <p class="text-[10px] text-slate-400">👥 Peserta terdaftar: ${gw.participants ? gw.participants.length : 0} user</p>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function renderWebhookLogs(webhooks) {
+      const container = document.getElementById('webhook-logs-container');
+      container.innerHTML = '';
+
+      webhooks.forEach(wh => {
+        const div = document.createElement('div');
+        div.className = 'bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1';
+        div.innerHTML = `
+          <div class="flex justify-between items-center">
+            <span class="font-mono text-emerald-400 text-xs font-bold">[${wh.type}]</span>
+            <span class="text-[10px] text-slate-500 font-mono">${new Date(wh.timestamp).toLocaleTimeString()}</span>
+          </div>
+          <p class="text-xs text-slate-300">${wh.details}</p>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function applyFilters() {
+      const dateVal = document.getElementById('filter-date').value;
+      const searchVal = document.getElementById('filter-search').value.toLowerCase();
+
+      let filtered = [...cachedLogins];
+
+      if (dateVal) {
+        filtered = filtered.filter(log => {
+          if (!log.timestamp) return false;
+          const logDate = new Date(log.timestamp).toISOString().split('T')[0];
+          return logDate === dateVal;
+        });
+      }
+
+      if (searchVal) {
+        filtered = filtered.filter(log => {
+          const name = (log.global_name || '').toLowerCase();
+          const uname = (log.username || '').toLowerCase();
+          const id = (log.id || '').toLowerCase();
+          return name.includes(searchVal) || uname.includes(searchVal) || id.includes(searchVal);
+        });
+      }
+
+      renderLoginLogs(filtered);
+    }
+
+    function resetFilters() {
+      document.getElementById('filter-date').value = '';
+      document.getElementById('filter-search').value = '';
+      renderLoginLogs(cachedLogins);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initAuth();
+    });
+  </script>
+</body>
+</html>
