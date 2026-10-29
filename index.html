@@ -85,21 +85,23 @@
       </div>
       
      <!-- Nav Links -->
-    <div class="flex items-center space-x-3 sm:space-x-4">
-      <a href="/giveaway" class="text-xs font-medium text-slate-300 hover:text-indigo-400 transition flex items-center space-x-1">
-        <span>🎁 Giveaway</span>
-      </a>
-      <a href="/giveawayleaderboard" class="text-xs font-medium text-amber-400 hover:text-amber-300 transition flex items-center space-x-1">
-        <span>🏆 Top Leaderboard</span>
-      </a>
-      <a href="/activitylog" class="text-xs font-medium text-slate-300 hover:text-indigo-400 transition flex items-center space-x-1">
-        <span>📊 Activity Log</span>
-      </a>
-      <a href="/announcements" class="text-xs font-medium text-slate-300 hover:text-indigo-400 transition hidden sm:inline-block">
-        <span>📢 News</span>
-      </a>
-    </div>
+     <div class="flex items-center space-x-3 sm:space-x-4">
+       <a href="/giveaway" class="text-xs font-medium text-slate-300 hover:text-indigo-400 transition flex items-center space-x-1">
+         <span>🎁 Giveaway</span>
+       </a>
+       <a href="/giveawayleaderboard" class="text-xs font-medium text-amber-400 hover:text-amber-300 transition flex items-center space-x-1">
+         <span>🏆 Top Leaderboard</span>
+       </a>
+       <!-- Menu Activity Log disembunyikan secara default (hidden) -->
+       <a id="nav-activity-link" href="/activitylog" class="hidden text-xs font-medium text-amber-400 hover:text-amber-300 transition items-center space-x-1">
+         <span>📊 Activity Log</span>
+       </a>
+       <a href="/announcements" class="text-xs font-medium text-slate-300 hover:text-indigo-400 transition hidden sm:inline-block">
+         <span>📢 News</span>
+       </a>
+     </div>
 
+      <div class="flex items-center space-x-3">
         <!-- Language Switcher -->
         <button onclick="toggleLanguage()" id="lang-btn" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold border border-slate-700 transition">
           🇮🇩 ID
@@ -265,6 +267,7 @@
   </footer>
 
   <script>
+    const OWNER_ID = '628205121704296458';
     let currentLang = 'ID';
 
     function playAudio(soundId) {
@@ -382,12 +385,22 @@
       const dropTag = document.getElementById('dropdown-user-tag');
       const mainBtn = document.getElementById('login-main-btn');
       const btnText = document.getElementById('login-btn-text');
+      const navActivityLink = document.getElementById('nav-activity-link');
 
       if (user && user.id) {
         navBadge.classList.remove('hidden');
         navName.innerText = user.global_name || user.username;
         dropGlobal.innerText = user.global_name || user.username;
         dropTag.innerText = `@${user.username}`;
+
+        // Cek apakah user yang login adalah Owner
+        if (user.id === OWNER_ID) {
+          navActivityLink.classList.remove('hidden');
+          navActivityLink.classList.add('flex');
+        } else {
+          navActivityLink.classList.add('hidden');
+          navActivityLink.classList.remove('flex');
+        }
 
         const avatarUrl = user.avatar 
           ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` 
@@ -400,6 +413,9 @@
         }
       } else {
         navBadge.classList.add('hidden');
+        navActivityLink.classList.add('hidden');
+        navActivityLink.classList.remove('flex');
+
         if (mainBtn && btnText) {
           mainBtn.href = "https://discord.com/api/oauth2/authorize?client_id=1380868700688613416&redirect_uri=https%3A%2F%2Fdemo-profile-dun.vercel.app%2Fapi%2Fcallback&response_type=code&scope=identify%20guilds";
           btnText.innerText = 'Login dengan Discord';
@@ -438,7 +454,6 @@
       }
     });
 
-// Fungsi untuk menampilkan toast/notifikasi bawaan di index.html
     function showNotification(msg) {
       const toast = document.createElement('div');
       toast.className = 'fixed bottom-5 right-5 z-50 bg-emerald-600 border border-emerald-400 text-white px-5 py-3 rounded-xl shadow-2xl text-xs sm:text-sm font-medium flex items-center space-x-2 animate-bounce';
@@ -447,13 +462,11 @@
       setTimeout(() => toast.remove(), 5000);
     }
 
-    // Memeriksa dan memunculkan notifikasi Pemenang Giveaway Terbaru 
     function checkWinnerNotification() {
       const savedWinner = localStorage.getItem('recent_winner_notification');
       if (savedWinner) {
         try {
           const winData = JSON.parse(savedWinner);
-          // Hanya tampilkan jika event terjadi kurang dari 1 jam yang lalu
           if (Date.now() - winData.timestamp < 3600000) {
             showNotification(`🎉 SELAMAT! ${winData.winnerName} memenangkan ${winData.prize} pada ${winData.title}!`);
           }
@@ -465,7 +478,6 @@
     window.addEventListener('DOMContentLoaded', () => {
       checkWinnerNotification();
     });
-    
   </script>
 </body>
 </html>
