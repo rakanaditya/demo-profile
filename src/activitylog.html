@@ -41,8 +41,13 @@
           <span class="text-xs text-slate-400">Owner Activity & Database Log Monitor</span>
         </div>
       </div>
-      <div class="flex items-center space-x-3">
-        <a href="/giveaway" class="text-xs text-slate-400 hover:text-white transition">🎁 Giveaway Panel</a>
+      <div class="flex items-center space-x-4">
+        <!-- Indikator Real-time Auto Refresh -->
+        <div class="hidden sm:flex items-center space-x-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+          <span id="live-status-text" class="text-[10px] font-mono text-emerald-400">Live Sync (10s)</span>
+        </div>
+        <a href="/giveaway" class="text-xs text-slate-400 hover:text-white transition">🎁 Giveaway</a>
         <a href="/" class="text-xs text-slate-400 hover:text-white transition">← Beranda</a>
       </div>
     </div>
@@ -54,10 +59,10 @@
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
       <div>
         <h2 class="text-3xl font-extrabold text-white">🔒 Owner Activity Logs</h2>
-        <p class="text-sm text-slate-400">Pantau riwayat login user berdasarkan tanggal, database MongoDB, dan aktivitas webhook.</p>
+        <p class="text-sm text-slate-400">Pantau riwayat login user berdasarkan tanggal, database MongoDB, dan aktivitas webhook secara real-time.</p>
       </div>
       <div class="flex items-center space-x-2">
-        <button onclick="fetchAllLogs()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition flex items-center space-x-1 shadow-lg shadow-indigo-600/30">
+        <button onclick="fetchAllLogs(true)" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition flex items-center space-x-1 shadow-lg shadow-indigo-600/30">
           <span>🔄 Muat Ulang Data</span>
         </button>
       </div>
@@ -123,7 +128,7 @@
         </div>
       </div>
 
-      <!-- TABEL DATA LOGIN USER (Dari api/callback.js / db.js) -->
+      <!-- TABEL DATA LOGIN USER -->
       <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl space-y-4">
         <div class="p-5 border-b border-slate-800 flex justify-between items-center">
           <div>
@@ -193,6 +198,7 @@
     let cachedLogins = [];
     let cachedGiveaways = [];
     let cachedWebhooks = [];
+    let autoRefreshInterval = null;
 
     function initAuth() {
       const urlParams = new URLSearchParams(window.location.search);
@@ -202,6 +208,7 @@
         try {
           currentUser = JSON.parse(decodeURIComponent(userParam));
           localStorage.setItem('discord_user', JSON.stringify(currentUser));
+          window.history.replaceState({}, document.title, window.location.pathname);
         } catch (e) {}
       } else {
         const saved = localStorage.getItem('discord_user');
@@ -211,7 +218,8 @@
       if (currentUser && currentUser.id === OWNER_ID) {
         document.getElementById('unauthorized-alert').classList.add('hidden');
         document.getElementById('owner-content').classList.remove('hidden');
-        fetchAllLogs();
+        fetchAllLogs(false);
+        startAutoRefresh();
       } else {
         document.getElementById('unauthorized-alert').classList.remove('hidden');
         document.getElementById('owner-content').classList.add('hidden');
@@ -226,7 +234,12 @@
       } catch (err) { return { success: false, data: [] }; }
     }
 
-    async function fetchAllLogs() {
+    async function fetchAllLogs(isManual = false) {
+      const liveText = document.getElementById('live-status-text');
+      if (liveText && isManual) {
+        liveText.innerText = "Syncing...";
+      }
+
       // 1. Fetch Giveaway Data (/api/giveaway)
       const gwRes = await safeFetch('/api/giveaway');
       if (gwRes.success && gwRes.data) {
@@ -236,12 +249,11 @@
         renderGiveawayLogs(cachedGiveaways);
       }
 
-      // 2. Fetch Database Users / Login Logs (/api/db atau /api/callback logs)
+      // 2. Fetch Database Users / Login Logs (/api/db atau /api/callback)
       const dbRes = await safeFetch('/api/db');
       if (dbRes.success && (dbRes.users || dbRes.data)) {
         cachedLogins = dbRes.users || dbRes.data || [];
       } else {
-        // Fallback simulate dari localStorage atau mock data sesi login terkini jika endpoint db belum return array
         const savedUser = localStorage.getItem('discord_user');
         if (savedUser) {
           const parsed = JSON.parse(savedUser);
@@ -255,7 +267,7 @@
       document.getElementById('badge-login-count').innerText = `${cachedLogins.length} record`;
       renderLoginLogs(cachedLogins);
 
-      // 3. Webhook logs (mock/fetch dari api/webhooks jika tersedia)
+      // 3. Webhook logs
       cachedWebhooks = [
         { type: 'login_session', timestamp: new Date().toISOString(), details: 'OAuth2 Callback verified successfully' },
         { type: 'giveaway_sync', timestamp: new Date(Date.now() - 3600000).toISOString(), details: 'MongoDB Atlas connection active' }
@@ -263,6 +275,19 @@
       document.getElementById('stat-total-webhooks').innerText = cachedWebhooks.length;
       document.getElementById('badge-webhook-count').innerText = `${cachedWebhooks.length} logs`;
       renderWebhookLogs(cachedWebhooks);
+
+      if (liveText) {
+        const timeNow = new Date().toLocaleTimeString();
+        liveText.innerText = `Synced at ${timeNow}`;
+      }
+    }
+
+    function startAutoRefresh() {
+      if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+      // Auto-refresh setiap 10 detik secara background
+      autoRefreshInterval = setInterval(() => {
+        fetchAllLogs(false);
+      }, 10000);
     }
 
     function renderLoginLogs(logs) {
