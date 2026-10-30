@@ -59,7 +59,7 @@
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
       <div>
         <h2 class="text-3xl font-extrabold text-white">🔒 Owner Activity Logs</h2>
-        <p class="text-sm text-slate-400">Pantau riwayat login user berdasarkan tanggal, database MongoDB, dan aktivitas webhook secara real-time.</p>
+        <p class="text-sm text-slate-400">Pantau riwayat login user dari database MongoDB secara real-time.</p>
       </div>
       <div class="flex items-center space-x-2">
         <button onclick="fetchAllLogs(true)" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition flex items-center space-x-1 shadow-lg shadow-indigo-600/30">
@@ -82,7 +82,7 @@
     <!-- OWNER LOGGED CONTENT -->
     <div id="owner-content" class="hidden space-y-8">
       
-      <!-- FILTER & STATS BAR -->
+      <!-- STATS BAR -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center justify-between">
           <div>
@@ -100,21 +100,21 @@
         </div>
         <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center justify-between">
           <div>
-            <p class="text-xs text-slate-400">Total Webhook Triggers</p>
-            <h4 id="stat-total-webhooks" class="text-2xl font-bold text-white mt-0.5">0</h4>
+            <p class="text-xs text-slate-400">Database Status</p>
+            <h4 class="text-xl font-bold text-emerald-400 mt-0.5">Connected</h4>
           </div>
           <span class="text-2xl">⚡</span>
         </div>
       </div>
 
-      <!-- FILTER BERDASARKAN TANGGAL -->
+      <!-- FILTER BERDASARKAN TANGGAL & PENCARIAN -->
       <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-4 shadow-xl">
         <h3 class="font-bold text-sm text-white flex items-center space-x-2">
-          <span>📅 Filter Log Berdasarkan Tanggal</span>
+          <span>📅 Filter Log Berdasarkan Tanggal &amp; Keyword</span>
         </h3>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label class="block text-xs text-slate-400 mb-1">Pilih Tanggal</label>
+            <label class="block text-xs text-slate-400 mb-1">Pilih Tanggal Login</label>
             <input type="date" id="filter-date" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
           </div>
           <div>
@@ -132,8 +132,8 @@
       <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl space-y-4">
         <div class="p-5 border-b border-slate-800 flex justify-between items-center">
           <div>
-            <h3 class="font-bold text-base text-white">🔑 Riwayat User Login Discord</h3>
-            <p class="text-xs text-slate-400">Data sesi login yang tercatat melalui endpoint <code class="text-indigo-400">/api/callback</code> &amp; <code class="text-indigo-400">/api/db</code>.</p>
+            <h3 class="font-bold text-base text-white">🔑 Riwayat User Login Discord (Collection: users)</h3>
+            <p class="text-xs text-slate-400">Data otomatis tercatat saat user melakukan login Discord melalui <code class="text-indigo-400">/api/callback</code>.</p>
           </div>
           <span id="badge-login-count" class="px-2.5 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full text-xs font-mono">0 record</span>
         </div>
@@ -145,42 +145,26 @@
                 <th class="p-3.5 pl-5">No</th>
                 <th class="p-3.5">Avatar &amp; User</th>
                 <th class="p-3.5">Discord ID</th>
-                <th class="p-3.5">Waktu Login (Timestamp)</th>
-                <th class="p-3.5 pr-5">Aksi / Sesi</th>
+                <th class="p-3.5">Waktu Login Terakhir (last_login)</th>
+                <th class="p-3.5 pr-5">Status Sesi</th>
               </tr>
             </thead>
             <tbody id="login-logs-tbody" class="divide-y divide-slate-800/60">
-              <tr><td colspan="5" class="p-5 text-center text-slate-500">Memuat data login...</td></tr>
+              <tr><td colspan="5" class="p-5 text-center text-slate-500">Memuat data login dari database...</td></tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      <!-- TABEL DATA GIVEAWAY & WEBHOOK LOGS -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        
-        <!-- Giveaway Logs -->
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl space-y-4">
-          <div class="p-5 border-b border-slate-800 flex justify-between items-center">
-            <h3 class="font-bold text-sm text-white">🎁 Database Giveaway &amp; Pemenang</h3>
-            <span id="badge-gw-count" class="px-2.5 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full text-xs font-mono">0</span>
-          </div>
-          <div id="giveaway-logs-container" class="p-5 space-y-3 max-h-80 overflow-y-auto">
-            <p class="text-xs text-slate-500 text-center py-4">Memuat data giveaway...</p>
-          </div>
+      <!-- GIVEAWAY DATABASE PREVIEW -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl space-y-4">
+        <div class="p-5 border-b border-slate-800 flex justify-between items-center">
+          <h3 class="font-bold text-sm text-white">🎁 Database Giveaway Aktif / Selesai</h3>
+          <span id="badge-gw-count" class="px-2.5 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full text-xs font-mono">0</span>
         </div>
-
-        <!-- Webhook Logs -->
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl space-y-4">
-          <div class="p-5 border-b border-slate-800 flex justify-between items-center">
-            <h3 class="font-bold text-sm text-white">⚡ Webhook Event Triggers</h3>
-            <span id="badge-webhook-count" class="px-2.5 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-xs font-mono">0</span>
-          </div>
-          <div id="webhook-logs-container" class="p-5 space-y-3 max-h-80 overflow-y-auto">
-            <p class="text-xs text-slate-500 text-center py-4">Memuat log webhook...</p>
-          </div>
+        <div id="giveaway-logs-container" class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <p class="text-xs text-slate-500 col-span-2 text-center py-4">Memuat data giveaway...</p>
         </div>
-
       </div>
 
     </div>
@@ -197,7 +181,6 @@
     let currentUser = null;
     let cachedLogins = [];
     let cachedGiveaways = [];
-    let cachedWebhooks = [];
     let autoRefreshInterval = null;
 
     function initAuth() {
@@ -249,32 +232,17 @@
         renderGiveawayLogs(cachedGiveaways);
       }
 
-      // 2. Fetch Database Users / Login Logs (/api/db atau /api/callback)
-      const dbRes = await safeFetch('/api/db');
-      if (dbRes.success && (dbRes.users || dbRes.data)) {
-        cachedLogins = dbRes.users || dbRes.data || [];
+      // 2. Fetch Login Logs dari endpoint baru /api/logs.js
+      const logsRes = await safeFetch('/api/logs');
+      if (logsRes.success && logsRes.users) {
+        cachedLogins = logsRes.users;
       } else {
-        const savedUser = localStorage.getItem('discord_user');
-        if (savedUser) {
-          const parsed = JSON.parse(savedUser);
-          cachedLogins = [
-            { id: parsed.id, username: parsed.username, global_name: parsed.global_name, avatar: parsed.avatar, timestamp: new Date().toISOString() }
-          ];
-        }
+        cachedLogins = [];
       }
 
       document.getElementById('stat-total-logins').innerText = cachedLogins.length;
       document.getElementById('badge-login-count').innerText = `${cachedLogins.length} record`;
       renderLoginLogs(cachedLogins);
-
-      // 3. Webhook logs
-      cachedWebhooks = [
-        { type: 'login_session', timestamp: new Date().toISOString(), details: 'OAuth2 Callback verified successfully' },
-        { type: 'giveaway_sync', timestamp: new Date(Date.now() - 3600000).toISOString(), details: 'MongoDB Atlas connection active' }
-      ];
-      document.getElementById('stat-total-webhooks').innerText = cachedWebhooks.length;
-      document.getElementById('badge-webhook-count').innerText = `${cachedWebhooks.length} logs`;
-      renderWebhookLogs(cachedWebhooks);
 
       if (liveText) {
         const timeNow = new Date().toLocaleTimeString();
@@ -295,7 +263,7 @@
       tbody.innerHTML = '';
 
       if (!logs || logs.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">Tidak ada riwayat login tercatat.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">Belum ada akun lain yang tercatat login di database.</td></tr>`;
         return;
       }
 
@@ -304,7 +272,7 @@
           ? `https://cdn.discordapp.com/avatars/${log.id}/${log.avatar}.png` 
           : 'https://cdn.discordapp.com/embed/avatars/0.png';
         
-        const dateStr = log.timestamp ? new Date(log.timestamp).toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'medium' }) : 'Waktu tidak diketahui';
+        const dateStr = log.last_login ? new Date(log.last_login).toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'medium' }) : 'Waktu tidak diketahui';
 
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-950/40 transition';
@@ -317,10 +285,10 @@
               <p class="text-[10px] text-slate-400">@${log.username || 'no_username'}</p>
             </div>
           </td>
-          <td class="p-3.5 font-mono text-slate-400">${log.id || OWNER_ID}</td>
+          <td class="p-3.5 font-mono text-slate-400">${log.id}</td>
           <td class="p-3.5 text-slate-300">${dateStr}</td>
           <td class="p-3.5 pr-5">
-            <span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-md text-[10px] font-semibold">Verified Session</span>
+            <span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-md text-[10px] font-semibold">Active Session</span>
           </td>
         `;
         tbody.appendChild(tr);
@@ -332,13 +300,13 @@
       container.innerHTML = '';
 
       if (!giveaways || giveaways.length === 0) {
-        container.innerHTML = '<p class="text-xs text-slate-500 text-center py-4">Belum ada data giveaway di database.</p>';
+        container.innerHTML = '<p class="text-xs text-slate-500 col-span-2 text-center py-4">Belum ada data giveaway.</p>';
         return;
       }
 
       giveaways.forEach(gw => {
         const div = document.createElement('div');
-        div.className = 'bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1';
+        div.className = 'bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-1';
         div.innerHTML = `
           <div class="flex justify-between items-center">
             <h4 class="font-bold text-white text-xs">${gw.title}</h4>
@@ -346,24 +314,6 @@
           </div>
           <p class="text-[11px] text-indigo-400">🎁 Hadiah: ${gw.prize}</p>
           <p class="text-[10px] text-slate-400">👥 Peserta terdaftar: ${gw.participants ? gw.participants.length : 0} user</p>
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    function renderWebhookLogs(webhooks) {
-      const container = document.getElementById('webhook-logs-container');
-      container.innerHTML = '';
-
-      webhooks.forEach(wh => {
-        const div = document.createElement('div');
-        div.className = 'bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1';
-        div.innerHTML = `
-          <div class="flex justify-between items-center">
-            <span class="font-mono text-emerald-400 text-xs font-bold">[${wh.type}]</span>
-            <span class="text-[10px] text-slate-500 font-mono">${new Date(wh.timestamp).toLocaleTimeString()}</span>
-          </div>
-          <p class="text-xs text-slate-300">${wh.details}</p>
         `;
         container.appendChild(div);
       });
@@ -377,8 +327,8 @@
 
       if (dateVal) {
         filtered = filtered.filter(log => {
-          if (!log.timestamp) return false;
-          const logDate = new Date(log.timestamp).toISOString().split('T')[0];
+          if (!log.last_login) return false;
+          const logDate = new Date(log.last_login).toISOString().split('T')[0];
           return logDate === dateVal;
         });
       }
