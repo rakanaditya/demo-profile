@@ -61,14 +61,15 @@
         <h2 class="text-3xl font-extrabold text-white">🔒 Owner Activity Logs</h2>
         <p class="text-sm text-slate-400">Pantau riwayat login user dari database MongoDB secara real-time.</p>
       </div>
+      <!-- Tombol Muat Ulang (Disembunyikan secara default / hidden) -->
       <div class="flex items-center space-x-2">
-        <button onclick="fetchAllLogs(true)" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition flex items-center space-x-1 shadow-lg shadow-indigo-600/30">
+        <button id="btn-reload-logs" onclick="fetchAllLogs(true)" class="hidden px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition items-center space-x-1 shadow-lg shadow-indigo-600/30">
           <span>🔄 Muat Ulang Data</span>
         </button>
       </div>
     </div>
 
-    <!-- ACCESS RESTRICTED ALERT (Jika Bukan Owner) -->
+    <!-- ACCESS RESTRICTED ALERT (Jika Bukan Owner atau Belum Login) -->
     <div id="unauthorized-alert" class="hidden bg-rose-950/60 border border-rose-800 p-8 rounded-2xl text-center space-y-4">
       <span class="text-4xl">⛔</span>
       <h3 class="text-xl font-bold text-white">Akses Ditolak</h3>
@@ -201,11 +202,26 @@
       if (currentUser && currentUser.id === OWNER_ID) {
         document.getElementById('unauthorized-alert').classList.add('hidden');
         document.getElementById('owner-content').classList.remove('hidden');
+        
+        // Tampilkan tombol muat ulang khusus Owner
+        const reloadBtn = document.getElementById('btn-reload-logs');
+        if (reloadBtn) {
+          reloadBtn.classList.remove('hidden');
+          reloadBtn.classList.add('flex');
+        }
+
         fetchAllLogs(false);
         startAutoRefresh();
       } else {
         document.getElementById('unauthorized-alert').classList.remove('hidden');
         document.getElementById('owner-content').classList.add('hidden');
+        
+        // Sembunyikan tombol muat ulang jika bukan owner / belum login
+        const reloadBtn = document.getElementById('btn-reload-logs');
+        if (reloadBtn) {
+          reloadBtn.classList.add('hidden');
+          reloadBtn.classList.remove('flex');
+        }
       }
     }
 
@@ -232,7 +248,7 @@
         renderGiveawayLogs(cachedGiveaways);
       }
 
-      // 2. Fetch Login Logs dari endpoint baru /api/logs.js
+      // 2. Fetch Login Logs dari /api/logs
       const logsRes = await safeFetch('/api/logs');
       if (logsRes.success && logsRes.users) {
         cachedLogins = logsRes.users;
@@ -252,7 +268,6 @@
 
     function startAutoRefresh() {
       if (autoRefreshInterval) clearInterval(autoRefreshInterval);
-      // Auto-refresh setiap 10 detik secara background
       autoRefreshInterval = setInterval(() => {
         fetchAllLogs(false);
       }, 10000);
