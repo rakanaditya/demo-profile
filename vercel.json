@@ -9,6 +9,7 @@
     { "source": "/stats", "destination": "/src/stats.html" },
     { "source": "/announcements", "destination": "/src/announcements.html" },
      { "source": "/activitylog", "destination": "/src/activitylog.html" },
+    { "source": "/myprofile", "destination": "/src/rating.html" },
     { "source": "/myprofile", "destination": "/src/myprofile.html" }
   ]
 }
