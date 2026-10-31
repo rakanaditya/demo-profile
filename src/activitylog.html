@@ -25,6 +25,8 @@
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=gg+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome untuk ikon bintang & reaksi -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style> body { font-family: 'gg Sans', sans-serif; } </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
@@ -47,6 +49,7 @@
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
           <span id="live-status-text" class="text-[10px] font-mono text-emerald-400">Live Sync (10s)</span>
         </div>
+        <a href="/rating.html" class="text-xs text-purple-400 hover:text-purple-300 transition">⭐ Rating</a>
         <a href="/giveaway" class="text-xs text-slate-400 hover:text-white transition">🎁 Giveaway</a>
         <a href="/" class="text-xs text-slate-400 hover:text-white transition">← Beranda</a>
       </div>
@@ -58,10 +61,10 @@
     
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
       <div>
-        <h2 class="text-3xl font-extrabold text-white">🔒 Owner Activity Logs</h2>
-        <p class="text-sm text-slate-400">Pantau riwayat login user dari database MongoDB secara real-time.</p>
+        <h2 class="text-3xl font-extrabold text-white">🔒 Owner Activity & Rating Logs</h2>
+        <p class="text-sm text-slate-400">Pantau riwayat login user serta ulasan bintang & komentar secara real-time dari database.</p>
       </div>
-      <!-- Tombol Muat Ulang (Disembunyikan secara default / hidden) -->
+      <!-- Tombol Muat Ulang -->
       <div class="flex items-center space-x-2">
         <button id="btn-reload-logs" onclick="fetchAllLogs(true)" class="hidden px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition items-center space-x-1 shadow-lg shadow-indigo-600/30">
           <span>🔄 Muat Ulang Data</span>
@@ -84,13 +87,20 @@
     <div id="owner-content" class="hidden space-y-8">
       
       <!-- STATS BAR -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center justify-between">
           <div>
             <p class="text-xs text-slate-400">Total User Login</p>
             <h4 id="stat-total-logins" class="text-2xl font-bold text-white mt-0.5">0</h4>
           </div>
           <span class="text-2xl">👥</span>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-400">Total Ulasan Rating</p>
+            <h4 id="stat-total-ratings" class="text-2xl font-bold text-purple-400 mt-0.5">0</h4>
+          </div>
+          <span class="text-2xl">⭐</span>
         </div>
         <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center justify-between">
           <div>
@@ -108,14 +118,14 @@
         </div>
       </div>
 
-      <!-- FILTER BERDASARKAN TANGGAL & PENCARIAN -->
+      <!-- FILTER PENCARIAN -->
       <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-4 shadow-xl">
         <h3 class="font-bold text-sm text-white flex items-center space-x-2">
           <span>📅 Filter Log Berdasarkan Tanggal &amp; Keyword</span>
         </h3>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label class="block text-xs text-slate-400 mb-1">Pilih Tanggal Login</label>
+            <label class="block text-xs text-slate-400 mb-1">Pilih Tanggal</label>
             <input type="date" id="filter-date" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
           </div>
           <div>
@@ -134,7 +144,7 @@
         <div class="p-5 border-b border-slate-800 flex justify-between items-center">
           <div>
             <h3 class="font-bold text-base text-white">🔑 Riwayat User Login Discord (Collection: users)</h3>
-            <p class="text-xs text-slate-400">Data otomatis tercatat saat user melakukan login Discord melalui <code class="text-indigo-400">/api/callback</code>.</p>
+            <p class="text-xs text-slate-400">Data otomatis tercatat saat user melakukan login Discord.</p>
           </div>
           <span id="badge-login-count" class="px-2.5 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full text-xs font-mono">0 record</span>
         </div>
@@ -146,12 +156,40 @@
                 <th class="p-3.5 pl-5">No</th>
                 <th class="p-3.5">Avatar &amp; User</th>
                 <th class="p-3.5">Discord ID</th>
-                <th class="p-3.5">Waktu Login Terakhir (last_login)</th>
+                <th class="p-3.5">Waktu Login Terakhir</th>
                 <th class="p-3.5 pr-5">Status Sesi</th>
               </tr>
             </thead>
             <tbody id="login-logs-tbody" class="divide-y divide-slate-800/60">
               <tr><td colspan="5" class="p-5 text-center text-slate-500">Memuat data login dari database...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TABEL DETEKSI RATING & ULASAN BARU -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl space-y-4">
+        <div class="p-5 border-b border-slate-800 flex justify-between items-center">
+          <div>
+            <h3 class="font-bold text-base text-white">⭐ Deteksi Rating & Ulasan Member (Collection: ratings)</h3>
+            <p class="text-xs text-slate-400">Log aktivitas saat user memberikan rating bintang, reaksi, dan komentar ulasan.</p>
+          </div>
+          <span id="badge-rating-count" class="px-2.5 py-1 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-full text-xs font-mono">0 ulasan</span>
+        </div>
+        
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-950/60 text-slate-400 border-b border-slate-800">
+                <th class="p-3.5 pl-5">No</th>
+                <th class="p-3.5">User Pemberi Ulasan</th>
+                <th class="p-3.5">Bintang & Reaksi</th>
+                <th class="p-3.5">Komentar</th>
+                <th class="p-3.5 pr-5">Waktu Ulasan</th>
+              </tr>
+            </thead>
+            <tbody id="rating-logs-tbody" class="divide-y divide-slate-800/60">
+              <tr><td colspan="5" class="p-5 text-center text-slate-500">Memuat data ulasan...</td></tr>
             </tbody>
           </table>
         </div>
@@ -181,6 +219,7 @@
     const OWNER_ID = '628205121704296458';
     let currentUser = null;
     let cachedLogins = [];
+    let cachedRatings = [];
     let cachedGiveaways = [];
     let autoRefreshInterval = null;
 
@@ -203,7 +242,6 @@
         document.getElementById('unauthorized-alert').classList.add('hidden');
         document.getElementById('owner-content').classList.remove('hidden');
         
-        // Tampilkan tombol muat ulang khusus Owner
         const reloadBtn = document.getElementById('btn-reload-logs');
         if (reloadBtn) {
           reloadBtn.classList.remove('hidden');
@@ -216,7 +254,6 @@
         document.getElementById('unauthorized-alert').classList.remove('hidden');
         document.getElementById('owner-content').classList.add('hidden');
         
-        // Sembunyikan tombol muat ulang jika bukan owner / belum login
         const reloadBtn = document.getElementById('btn-reload-logs');
         if (reloadBtn) {
           reloadBtn.classList.add('hidden');
@@ -229,8 +266,8 @@
       try {
         const res = await fetch(url);
         const text = await res.text();
-        try { return JSON.parse(text); } catch (e) { return { success: false, data: [] }; }
-      } catch (err) { return { success: false, data: [] }; }
+        try { return JSON.parse(text); } catch (e) { return { success: false, data: [], ratings: [] }; }
+      } catch (err) { return { success: false, data: [], ratings: [] }; }
     }
 
     async function fetchAllLogs(isManual = false) {
@@ -239,7 +276,7 @@
         liveText.innerText = "Syncing...";
       }
 
-      // 1. Fetch Giveaway Data (/api/giveaway)
+      // 1. Fetch Giveaway Data
       const gwRes = await safeFetch('/api/giveaway');
       if (gwRes.success && gwRes.data) {
         cachedGiveaways = gwRes.data;
@@ -248,17 +285,27 @@
         renderGiveawayLogs(cachedGiveaways);
       }
 
-      // 2. Fetch Login Logs dari /api/logs
+      // 2. Fetch Login Logs
       const logsRes = await safeFetch('/api/logs');
       if (logsRes.success && logsRes.users) {
         cachedLogins = logsRes.users;
       } else {
         cachedLogins = [];
       }
-
       document.getElementById('stat-total-logins').innerText = cachedLogins.length;
       document.getElementById('badge-login-count').innerText = `${cachedLogins.length} record`;
       renderLoginLogs(cachedLogins);
+
+      // 3. Fetch Rating & Ulasan Logs (/api/ratings)
+      const ratingRes = await safeFetch('/api/ratings');
+      if (ratingRes.success && ratingRes.ratings) {
+        cachedRatings = ratingRes.ratings;
+      } else {
+        cachedRatings = [];
+      }
+      document.getElementById('stat-total-ratings').innerText = cachedRatings.length;
+      document.getElementById('badge-rating-count').innerText = `${cachedRatings.length} ulasan`;
+      renderRatingLogs(cachedRatings);
 
       if (liveText) {
         const timeNow = new Date().toLocaleTimeString();
@@ -310,6 +357,46 @@
       });
     }
 
+    function renderRatingLogs(ratings) {
+      const tbody = document.getElementById('rating-logs-tbody');
+      tbody.innerHTML = '';
+
+      if (!ratings || ratings.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">Belum ada ulasan atau rating yang dikirim oleh member.</td></tr>`;
+        return;
+      }
+
+      ratings.forEach((r, index) => {
+        const avatarUrl = r.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
+        const dateStr = r.createdAt ? new Date(r.createdAt).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) : 'Baru saja';
+        const starsHtml = '<i class="fa-solid fa-star text-amber-400"></i>'.repeat(r.rating);
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-950/40 transition';
+        tr.innerHTML = `
+          <td class="p-3.5 pl-5 font-mono text-slate-400">#${index + 1}</td>
+          <td class="p-3.5 flex items-center space-x-3">
+            <img src="${avatarUrl}" class="w-8 h-8 rounded-full object-cover border border-purple-500/40">
+            <div>
+              <p class="font-bold text-white">${r.username || 'Discord User'}</p>
+              <p class="text-[10px] font-mono text-slate-400">ID: ${r.userId}</p>
+            </div>
+          </td>
+          <td class="p-3.5">
+            <div class="flex items-center gap-1.5 text-sm">
+              <span class="flex gap-0.5">${starsHtml}</span>
+              <span class="text-base ml-1">${r.reaction || '❤️'}</span>
+            </div>
+          </td>
+          <td class="p-3.5 text-slate-300 max-w-xs truncate" title="${r.comment || ''}">
+            ${r.comment ? escapeHtml(r.comment) : '<span class="text-slate-500 italic">Tanpa komentar</span>'}
+          </td>
+          <td class="p-3.5 pr-5 text-slate-400 text-[11px]">${dateStr}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
     function renderGiveawayLogs(giveaways) {
       const container = document.getElementById('giveaway-logs-container');
       container.innerHTML = '';
@@ -338,32 +425,47 @@
       const dateVal = document.getElementById('filter-date').value;
       const searchVal = document.getElementById('filter-search').value.toLowerCase();
 
-      let filtered = [...cachedLogins];
+      let filteredLogins = [...cachedLogins];
+      let filteredRatings = [...cachedRatings];
 
       if (dateVal) {
-        filtered = filtered.filter(log => {
+        filteredLogins = filteredLogins.filter(log => {
           if (!log.last_login) return false;
-          const logDate = new Date(log.last_login).toISOString().split('T')[0];
-          return logDate === dateVal;
+          return new Date(log.last_login).toISOString().split('T')[0] === dateVal;
+        });
+        filteredRatings = filteredRatings.filter(r => {
+          if (!r.createdAt) return false;
+          return new Date(r.createdAt).toISOString().split('T')[0] === dateVal;
         });
       }
 
       if (searchVal) {
-        filtered = filtered.filter(log => {
-          const name = (log.global_name || '').toLowerCase();
-          const uname = (log.username || '').toLowerCase();
-          const id = (log.id || '').toLowerCase();
-          return name.includes(searchVal) || uname.includes(searchVal) || id.includes(searchVal);
+        filteredLogins = filteredLogins.filter(log => {
+          return (log.global_name || '').toLowerCase().includes(searchVal) ||
+                 (log.username || '').toLowerCase().includes(searchVal) ||
+                 (log.id || '').toLowerCase().includes(searchVal);
+        });
+        filteredRatings = filteredRatings.filter(r => {
+          return (r.username || '').toLowerCase().includes(searchVal) ||
+                 (r.userId || '').toLowerCase().includes(searchVal) ||
+                 (r.comment || '').toLowerCase().includes(searchVal);
         });
       }
 
-      renderLoginLogs(filtered);
+      renderLoginLogs(filteredLogins);
+      renderRatingLogs(filteredRatings);
     }
 
     function resetFilters() {
       document.getElementById('filter-date').value = '';
       document.getElementById('filter-search').value = '';
       renderLoginLogs(cachedLogins);
+      renderRatingLogs(cachedRatings);
+    }
+
+    function escapeHtml(text) {
+      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+      return text.replace(/[&<>"']/g, function(m) { return map[m]; });
     }
 
     window.addEventListener('DOMContentLoaded', () => {
