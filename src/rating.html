@@ -220,6 +220,8 @@
   </div>
 
   <script>
+    const OWNER_ID = '628205121704296458';
+    
     // Set Discord Login URL secara dinamis berdasarkan Client ID
     const clientIdEnv = "1380868700688613416";
     const currentRedirectUri = encodeURIComponent(window.location.origin + "/api/callback");
@@ -243,17 +245,18 @@
 
     // Cek Session dari localStorage
     const savedUser = localStorage.getItem('discord_user');
-    if (savedUser) {
-      const user = JSON.parse(savedUser);
+    let currentUser = savedUser ? JSON.parse(savedUser) : null;
+
+    if (currentUser) {
       document.getElementById('login-prompt').classList.add('hidden');
       document.getElementById('user-info').classList.remove('hidden');
       
-      const avatarUrl = user.avatar 
-        ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
-        : `https://cdn.discordapp.com/embed/avatars/${user.discriminator % 5}.png`;
+      const avatarUrl = currentUser.avatar 
+        ? `https://cdn.discordapp.com/avatars/${currentUser.id}/${currentUser.avatar}.png`
+        : `https://cdn.discordapp.com/embed/avatars/${currentUser.discriminator % 5}.png`;
       
       document.getElementById('user-avatar').src = avatarUrl;
-      document.getElementById('user-name').textContent = user.global_name || user.username;
+      document.getElementById('user-name').textContent = currentUser.global_name || currentUser.username;
 
       authLink.textContent = 'Logout';
       authLink.href = '#';
@@ -296,25 +299,60 @@
             return;
           }
 
+          // Cek apakah user yang login adalah owner
+          const isOwner = currentUser && currentUser.id === OWNER_ID;
+
           listContainer.innerHTML = data.ratings.map(r => `
-            <div class="glass rounded-xl p-4 flex items-start gap-4 transition hover:border-purple-500/30">
-              <img src="${r.avatar}" alt="${r.username}" class="w-10 h-10 rounded-full border border-gray-700 flex-shrink-0">
-              <div class="flex-1 space-y-1">
-                <div class="flex items-center justify-between">
-                  <span class="font-semibold text-white text-sm">${r.username}</span>
-                  <span class="text-xs text-gray-500">${new Date(r.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+            <div class="glass rounded-xl p-4 flex items-start gap-4 transition hover:border-purple-500/30 justify-between">
+              <div class="flex items-start gap-4 flex-1">
+                <img src="${r.avatar}" alt="${r.username}" class="w-10 h-10 rounded-full border border-gray-700 flex-shrink-0">
+                <div class="flex-1 space-y-1">
+                  <div class="flex items-center justify-between">
+                    <span class="font-semibold text-white text-sm">${r.username}</span>
+                    <span class="text-xs text-gray-500">${new Date(r.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                  </div>
+                  <div class="flex items-center gap-1 text-amber-400 text-sm">
+                    ${'<i class="fa-solid fa-star"></i>'.repeat(r.rating)}${'<i class="fa-regular fa-star text-gray-600"></i>'.repeat(5 - r.rating)}
+                    <span class="ml-2 text-lg">${r.reaction || ''}</span>
+                  </div>
+                  ${r.comment ? `<p class="text-gray-300 text-sm mt-1">${escapeHtml(r.comment)}</p>` : ''}
                 </div>
-                <div class="flex items-center gap-1 text-amber-400 text-sm">
-                  ${'<i class="fa-solid fa-star"></i>'.repeat(r.rating)}${'<i class="fa-regular fa-star text-gray-600"></i>'.repeat(5 - r.rating)}
-                  <span class="ml-2 text-lg">${r.reaction || ''}</span>
-                </div>
-                ${r.comment ? `<p class="text-gray-300 text-sm mt-1">${escapeHtml(r.comment)}</p>` : ''}
               </div>
+              
+              <!-- Tombol Hapus (Hanya muncul jika Owner) -->
+              ${isOwner ? `
+                <button onclick="deleteReview('${r._id || r.id}')" class="ml-3 p-2 bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white rounded-lg transition text-xs flex items-center justify-center" title="Hapus Ulasan">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              ` : ''}
             </div>
           `).join('');
         }
       } catch (err) {
         console.error("Gagal memuat ulasan:", err);
+      }
+    }
+
+    // Fungsi Hapus Ulasan (Owner Only)
+    async function deleteReview(reviewId) {
+      if (!confirm('Apakah Anda yakin ingin menghapus ulasan ini?')) return;
+
+      try {
+        const res = await fetch(`/api/ratings?id=${reviewId}`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ownerId: currentUser.id })
+        });
+        const result = await res.json();
+        if (result.success) {
+          alert('Ulasan berhasil dihapus.');
+          loadReviews();
+        } else {
+          alert(result.message || 'Gagal menghapus ulasan.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Terjadi kesalahan koneksi.');
       }
     }
 
