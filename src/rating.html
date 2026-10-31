@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rating & Komunitas - Discord App</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            discord: '#5865F2',
+            discordHover: '#4752C4',
+            darkBg: '#0b0f19',
+          }
+        }
+      }
+    }
+  </script>
+  <!-- FontAwesome untuk ikon -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { background-color: #0b0f19; color: #f3f4f6; font-family: system-ui, -apple-system, sans-serif; }
+    .glass { background: rgba(17, 24, 39, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .star-rating input { display: none; }
+    .star-rating label { cursor: pointer; color: #4b5563; transition: color 0.2s; }
+    .star-rating input:checked ~ label,
+    .star-rating label:hover,
+    .star-rating label:hover ~ label { color: #f59e0b; }
+  </style>
+</head>
+<body class="min-h-screen py-10 px-4 sm:px-6 lg:px-8">
+
+  <div class="max-w-3xl mx-auto space-y-8">
+    
+    <!-- Nav / Kembali -->
+    <div class="flex justify-between items-center">
+      <a href="/" class="text-sm text-gray-400 hover:text-white transition flex items-center gap-2">
+        <i class="fa-solid fa-arrow-left"></i> Kembali ke Beranda
+      </a>
+    </div>
+
+    <!-- Header Title -->
+    <div class="text-center space-y-2">
+      <h1 class="text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-indigo-300 to-blue-400">
+        Rating & Ulasan Komunitas
+      </h1>
+      <p class="text-gray-400 text-sm">Masuk dengan Discord untuk memberikan ulasan, bintang 5, dan reaksi Anda!</p>
+    </div>
+
+    <!-- Card Login & Form -->
+    <div class="glass rounded-2xl p-6 shadow-xl space-y-6">
+      
+      <!-- Bagian Autentikasi -->
+      <div id="auth-section" class="flex flex-col sm:flex-row items-center justify-between gap-4 pb-6 border-b border-gray-800">
+        <div id="user-info" class="flex items-center space-x-3 hidden">
+          <img id="user-avatar" src="" alt="Avatar" class="w-12 h-12 rounded-full border-2 border-purple-500 shadow-md">
+          <div>
+            <p class="text-xs text-gray-400">Login sebagai</p>
+            <p id="user-name" class="font-semibold text-white"></p>
+          </div>
+        </div>
+        <div id="login-prompt" class="text-center sm:text-left">
+          <p class="text-sm text-gray-300">Anda belum login. Silakan login Discord untuk menulis ulasan.</p>
+        </div>
+        <div>
+          <!-- Menggunakan state=rating agar callback.js mengembalikan user ke /rating.html -->
+          <a id="auth-btn" href="https://discord.com/api/oauth2/authorize?client_id=YOUR_CLIENT_ID&redirect_uri=ENCODED_REDIRECT_URI&response_type=code&scope=identify&state=rating" 
+             class="inline-flex items-center gap-2 bg-discord hover:bg-discordHover text-white font-medium px-5 py-2.5 rounded-xl transition shadow-lg shadow-discord/20">
+            <i class="fa-brands fa-discord text-lg"></i> Login dengan Discord
+          </a>
+        </div>
+      </div>
+
+      <!-- Form Review (Hidden jika belum login) -->
+      <form id="review-form" class="space-y-4 hidden">
+        <h2 class="text-lg font-semibold text-purple-300">Tulis Ulasan Anda</h2>
+        
+        <!-- Bintang 5 -->
+        <div class="space-y-1">
+          <label class="block text-xs text-gray-400 uppercase tracking-wider">Rating Bintang</label>
+          <div class="star-rating flex flex-row-reverse justify-end gap-1 text-2xl">
+            <input type="radio" id="star5" name="rating" value="5" required />
+            <label for="star5" title="5 bintang"><i class="fa-solid fa-star"></i></label>
+            <input type="radio" id="star4" name="rating" value="4" />
+            <label for="star4" title="4 bintang"><i class="fa-solid fa-star"></i></label>
+            <input type="radio" id="star3" name="rating" value="3" />
+            <label for="star3" title="3 bintang"><i class="fa-solid fa-star"></i></label>
+            <input type="radio" id="star2" name="rating" value="2" />
+            <label for="star2" title="2 bintang"><i class="fa-solid fa-star"></i></label>
+            <input type="radio" id="star1" name="rating" value="1" />
+            <label for="star1" title="1 bintang"><i class="fa-solid fa-star"></i></label>
+          </div>
+        </div>
+
+        <!-- Pilihan Reaksi -->
+        <div class="space-y-1">
+          <label class="block text-xs text-gray-400 uppercase tracking-wider">Reaksi</label>
+          <div class="flex gap-3 text-2xl" id="reaction-picker">
+            <button type="button" class="reaction-btn p-2 rounded-lg bg-gray-800 hover:bg-purple-900/50 border border-transparent focus:border-purple-500 transition" data-reaction="🔥">🔥</button>
+            <button type="button" class="reaction-btn p-2 rounded-lg bg-gray-800 hover:bg-purple-900/50 border border-transparent focus:border-purple-500 transition" data-reaction="❤️">❤️</button>
+            <button type="button" class="reaction-btn p-2 rounded-lg bg-gray-800 hover:bg-purple-900/50 border border-transparent focus:border-purple-500 transition" data-reaction="⭐">⭐</button>
+            <button type="button" class="reaction-btn p-2 rounded-lg bg-gray-800 hover:bg-purple-900/50 border border-transparent focus:border-purple-500 transition" data-reaction="🚀">🚀</button>
+            <button type="button" class="reaction-btn p-2 rounded-lg bg-gray-800 hover:bg-purple-900/50 border border-transparent focus:border-purple-500 transition" data-reaction="🎉">🎉</button>
+          </div>
+          <input type="hidden" id="selected-reaction" value="⭐">
+        </div>
+
+        <!-- Textarea Komentar -->
+        <div class="space-y-1">
+          <label for="comment" class="block text-xs text-gray-400 uppercase tracking-wider">Komentar</label>
+          <textarea id="comment" rows="3" class="w-full bg-gray-900/80 border border-gray-700 rounded-xl p-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition" placeholder="Tulis komentar atau ulasan Anda di sini..."></textarea>
+        </div>
+
+        <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold py-3 rounded-xl shadow-lg transition duration-200">
+          Kirim Ulasan
+        </button>
+      </form>
+    </div>
+
+    <!-- Statistik & Daftar Ulasan -->
+    <div class="space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-bold text-white">Ulasan Komunitas</h2>
+        <div id="stats-badge" class="text-sm bg-purple-900/40 border border-purple-500/30 px-3 py-1 rounded-full text-purple-300">
+          ⭐ <span id="avg-rating">0.0</span> (<span id="total-reviews">0</span> ulasan)
+        </div>
+      </div>
+
+      <div id="reviews-list" class="space-y-3">
+        <p class="text-center text-gray-500 py-6">Memuat ulasan...</p>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Set Discord Login URL secara dinamis berdasarkan Client ID (bisa disesuaikan atau diambil dari env publik)
+    // Sesuai callback.js Anda, state='rating' akan mengembalikan user ke halaman ini membawa query parameter ?user=...
+    const clientIdEnv = "1380868700688613416"; // Ganti dengan Client ID Discord Anda atau biarkan sesuai Vercel config
+    const currentRedirectUri = encodeURIComponent(window.location.origin + "/api/callback");
+    
+    // Perbarui link tombol login agar state=rating
+    const authLink = document.getElementById('auth-btn');
+    // Jika Vercel environment otomatis menghandle, Anda bisa arahkan ke endpoint auth kustom jika ada, 
+    // atau langsung ke Discord OAuth2 URL berikut:
+    authLink.href = `https://discord.com/api/oauth2/authorize?client_id=${clientIdEnv}&redirect_uri=${currentRedirectUri}&response_type=code&scope=identify&state=rating`;
+
+    // Tangkap data user dari URL parameter yang dikirim oleh api/callback.js (?user=...)
+    const urlParams = new URLSearchParams(window.location.search);
+    const userParam = urlParams.get('user');
+
+    if (userParam) {
+      try {
+        const userData = JSON.parse(decodeURIComponent(userParam));
+        localStorage.setItem('discord_user', JSON.stringify(userData));
+        // Bersihkan URL dari parameter user agar bersih
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } catch (e) {
+        console.error("Gagal parsing user data:", e);
+      }
+    }
+
+    // Cek Session dari localStorage
+    const savedUser = localStorage.getItem('discord_user');
+    if (savedUser) {
+      const user = JSON.parse(savedUser);
+      document.getElementById('login-prompt').classList.add('hidden');
+      document.getElementById('user-info').classList.remove('hidden');
+      
+      const avatarUrl = user.avatar 
+        ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
+        : `https://cdn.discordapp.com/embed/avatars/${user.discriminator % 5}.png`;
+      
+      document.getElementById('user-avatar').src = avatarUrl;
+      document.getElementById('user-name').textContent = user.global_name || user.username;
+
+      // Ubah tombol jadi Logout
+      authLink.textContent = 'Logout';
+      authLink.href = '#';
+      authLink.className = 'inline-flex items-center gap-2 bg-red-600/80 hover:bg-red-600 text-white font-medium px-4 py-2 rounded-xl transition text-sm';
+      authLink.onclick = (e) => {
+        e.preventDefault();
+        localStorage.removeItem('discord_user');
+        window.location.reload();
+      };
+
+      document.getElementById('review-form').classList.remove('hidden');
+    }
+
+    // Pilihan Reaksi Emoji Interaktif
+    const reactionButtons = document.querySelectorAll('.reaction-btn');
+    const selectedReactionInput = document.getElementById('selected-reaction');
+    
+    reactionButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        reactionButtons.forEach(b => b.classList.remove('border-purple-500', 'bg-purple-900/50'));
+        btn.classList.add('border-purple-500', 'bg-purple-900/50');
+        selectedReactionInput.value = btn.dataset.reaction;
+      });
+    });
+    // Set default ke reaksi kedua (❤️)
+    reactionButtons[1].classList.add('border-purple-500', 'bg-purple-900/50');
+
+    // Load Ulasan dari Backend API (/api/ratings)
+    async function loadReviews() {
+      try {
+        const res = await fetch('/api/ratings');
+        const data = await res.json();
+
+        if (data.success) {
+          document.getElementById('avg-rating').textContent = data.stats.average;
+          document.getElementById('total-reviews').textContent = data.stats.total;
+
+          const listContainer = document.getElementById('reviews-list');
+          if (data.ratings.length === 0) {
+            listContainer.innerHTML = '<p class="text-center text-gray-500 py-6 glass rounded-xl">Belum ada ulasan. Jadilah yang pertama memberikan ulasan!</p>';
+            return;
+          }
+
+          listContainer.innerHTML = data.ratings.map(r => `
+            <div class="glass rounded-xl p-4 flex items-start gap-4 transition hover:border-purple-500/30">
+              <img src="${r.avatar}" alt="${r.username}" class="w-10 h-10 rounded-full border border-gray-700 flex-shrink-0">
+              <div class="flex-1 space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="font-semibold text-white text-sm">${r.username}</span>
+                  <span class="text-xs text-gray-500">${new Date(r.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                </div>
+                <div class="flex items-center gap-1 text-amber-400 text-sm">
+                  ${'<i class="fa-solid fa-star"></i>'.repeat(r.rating)}${'<i class="fa-regular fa-star text-gray-600"></i>'.repeat(5 - r.rating)}
+                  <span class="ml-2 text-lg">${r.reaction || ''}</span>
+                </div>
+                ${r.comment ? `<p class="text-gray-300 text-sm mt-1">${escapeHtml(r.comment)}</p>` : ''}
+              </div>
+            </div>
+          `).join('');
+        }
+      } catch (err) {
+        console.error("Gagal memuat ulasan:", err);
+      }
+    }
+
+    // Submit Ulasan Baru
+    document.getElementById('review-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const user = JSON.parse(localStorage.getItem('discord_user'));
+      const rating = document.querySelector('input[name="rating"]:checked')?.value;
+      const comment = document.getElementById('comment').value;
+      const reaction = document.getElementById('selected-reaction').value;
+
+      if (!user) {
+        alert('Silakan login Discord terlebih dahulu!');
+        return;
+      }
+      if (!rating) {
+        alert('Silakan pilih rating bintang terlebih dahulu!');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/ratings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: user.id,
+            username: user.global_name || user.username,
+            avatar: user.avatar,
+            discriminator: user.discriminator,
+            rating: Number(rating),
+            comment,
+            reaction
+          })
+        });
+
+        const result = await res.json();
+        if (result.success) {
+          alert('Ulasan berhasil dikirim!');
+          document.getElementById('comment').value = '';
+          loadReviews();
+        } else {
+          alert(result.message || 'Gagal mengirim ulasan.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Terjadi kesalahan koneksi.');
+      }
+    });
+
+    function escapeHtml(text) {
+      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+      return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+
+    // Jalankan saat halaman dimuat
+    loadReviews();
+  </script>
+</body>
+</html>
