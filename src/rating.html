@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rating & Komunitas - Discord App</title>
+  <title>Rating & Bukti Giveaway - Rakan Aditya Community</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -33,7 +33,7 @@
 </head>
 <body class="min-h-screen py-10 px-4 sm:px-6 lg:px-8">
 
-  <div class="max-w-3xl mx-auto space-y-8">
+  <div class="max-w-4xl mx-auto space-y-10">
     
     <!-- Nav / Kembali -->
     <div class="flex justify-between items-center">
@@ -66,8 +66,7 @@
           <p class="text-sm text-gray-300">Anda belum login. Silakan login Discord untuk menulis ulasan.</p>
         </div>
         <div>
-          <!-- Menggunakan state=rating agar callback.js mengembalikan user ke /rating.html -->
-          <a id="auth-btn" href="https://discord.com/api/oauth2/authorize?client_id=YOUR_CLIENT_ID&redirect_uri=ENCODED_REDIRECT_URI&response_type=code&scope=identify&state=rating" 
+          <a id="auth-btn" href="https://discord.com/api/oauth2/authorize?client_id=1380868700688613416&redirect_uri=ENCODED_REDIRECT_URI&response_type=code&scope=identify&state=rating" 
              class="inline-flex items-center gap-2 bg-discord hover:bg-discordHover text-white font-medium px-5 py-2.5 rounded-xl transition shadow-lg shadow-discord/20">
             <i class="fa-brands fa-discord text-lg"></i> Login dengan Discord
           </a>
@@ -134,18 +133,98 @@
       </div>
     </div>
 
+    <!-- BUKTI GIVEAWAY KOMUNITAS SECTION -->
+    <div class="space-y-4 pt-6 border-t border-gray-800">
+      <div class="text-center space-y-1">
+        <h2 class="text-2xl font-bold text-white flex items-center justify-center gap-2">
+          <span>🎁</span> Bukti Giveaway Rakan Aditya Community
+        </h2>
+        <p class="text-xs text-gray-400">Dokumentasi nyata para pemenang event &amp; pembagian hadiah di server kami. Klik foto untuk memperbesar!</p>
+      </div>
+
+      <!-- Grid Model Galeri Foto -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+        <div class="glass rounded-xl overflow-hidden group cursor-pointer aspect-square relative border border-gray-800 hover:border-purple-500/50 transition" onclick="openModal('https://i.imgur.com/xyq3S9A.jpeg')">
+          <img src="https://i.imgur.com/xyq3S9A.jpeg" alt="Bukti Giveaway 1" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" loading="lazy">
+          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-medium backdrop-blur-[2px]">
+            <i class="fa-solid fa-magnifying-glass-plus text-lg"></i>
+          </div>
+        </div>
+        <div class="glass rounded-xl overflow-hidden group cursor-pointer aspect-square relative border border-gray-800 hover:border-purple-500/50 transition" onclick="openModal('https://i.imgur.com/ZoMCLdP.jpeg')">
+          <img src="https://i.imgur.com/ZoMCLdP.jpeg" alt="Bukti Giveaway 2" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" loading="lazy">
+          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-medium backdrop-blur-[2px]">
+            <i class="fa-solid fa-magnifying-glass-plus text-lg"></i>
+          </div>
+        </div>
+        <div class="glass rounded-xl overflow-hidden group cursor-pointer aspect-square relative border border-gray-800 hover:border-purple-500/50 transition" onclick="openModal('https://i.imgur.com/sInniAs.jpeg')">
+          <img src="https://i.imgur.com/sInniAs.jpeg" alt="Bukti Giveaway 3" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" loading="lazy">
+          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-medium backdrop-blur-[2px]">
+            <i class="fa-solid fa-magnifying-glass-plus text-lg"></i>
+          </div>
+        </div>
+        <div class="glass rounded-xl overflow-hidden group cursor-pointer aspect-square relative border border-gray-800 hover:border-purple-500/50 transition" onclick="openModal('https://i.imgur.com/oI7nR6N.jpeg')">
+          <img src="https://i.imgur.com/oI7nR6N.jpeg" alt="Bukti Giveaway 4" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" loading="lazy">
+          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-medium backdrop-blur-[2px]">
+            <i class="fa-solid fa-magnifying-glass-plus text-lg"></i>
+          </div>
+        </div>
+        <div class="glass rounded-xl overflow-hidden group cursor-pointer aspect-square relative border border-gray-800 hover:border-purple-500/50 transition" onclick="openModal('https://i.imgur.com/8Erz9g1.jpeg')">
+          <img src="https://i.imgur.com/8Erz9g1.jpeg" alt="Bukti Giveaway 5" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" loading="lazy">
+          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-medium backdrop-blur-[2px]">
+            <i class="fa-solid fa-magnifying-glass-plus text-lg"></i>
+          </div>
+        </div>
+        <div class="glass rounded-xl overflow-hidden group cursor-pointer aspect-square relative border border-gray-800 hover:border-purple-500/50 transition" onclick="openModal('https://i.imgur.com/B8gboUY.jpeg')">
+          <img src="https://i.imgur.com/B8gboUY.jpeg" alt="Bukti Giveaway 6" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" loading="lazy">
+          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-medium backdrop-blur-[2px]">
+            <i class="fa-solid fa-magnifying-glass-plus text-lg"></i>
+          </div>
+        </div>
+        <div class="glass rounded-xl overflow-hidden group cursor-pointer aspect-square relative border border-gray-800 hover:border-purple-500/50 transition" onclick="openModal('https://i.imgur.com/DaaNYgS.jpeg')">
+          <img src="https://i.imgur.com/DaaNYgS.jpeg" alt="Bukti Giveaway 7" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" loading="lazy">
+          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-medium backdrop-blur-[2px]">
+            <i class="fa-solid fa-magnifying-glass-plus text-lg"></i>
+          </div>
+        </div>
+        <div class="glass rounded-xl overflow-hidden group cursor-pointer aspect-square relative border border-gray-800 hover:border-purple-500/50 transition" onclick="openModal('https://i.imgur.com/mqo9IoH.jpeg')">
+          <img src="https://i.imgur.com/mqo9IoH.jpeg" alt="Bukti Giveaway 8" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" loading="lazy">
+          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-medium backdrop-blur-[2px]">
+            <i class="fa-solid fa-magnifying-glass-plus text-lg"></i>
+          </div>
+        </div>
+        <div class="glass rounded-xl overflow-hidden group cursor-pointer aspect-square relative border border-gray-800 hover:border-purple-500/50 transition" onclick="openModal('https://i.imgur.com/Av0VJV9.png')">
+          <img src="https://i.imgur.com/Av0VJV9.png" alt="Bukti Giveaway 9" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" loading="lazy">
+          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-medium backdrop-blur-[2px]">
+            <i class="fa-solid fa-magnifying-glass-plus text-lg"></i>
+          </div>
+        </div>
+        <div class="glass rounded-xl overflow-hidden group cursor-pointer aspect-square relative border border-gray-800 hover:border-purple-500/50 transition" onclick="openModal('https://i.imgur.com/3B1JNRD.png')">
+          <img src="https://i.imgur.com/3B1JNRD.png" alt="Bukti Giveaway 10" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" loading="lazy">
+          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-medium backdrop-blur-[2px]">
+            <i class="fa-solid fa-magnifying-glass-plus text-lg"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODAL ZOOM GAMBAR -->
+  <div id="imageModal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4" onclick="closeModal()">
+    <div class="relative max-w-4xl max-h-[90vh] overflow-hidden rounded-2xl glass p-2">
+      <button onclick="closeModal()" class="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-black/60 hover:bg-red-600 text-white flex items-center justify-center transition shadow-lg">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+      <img id="modalImage" src="" alt="Zoomed Proof" class="max-w-full max-h-[85vh] object-contain rounded-xl mx-auto block">
+    </div>
   </div>
 
   <script>
-    // Set Discord Login URL secara dinamis berdasarkan Client ID (bisa disesuaikan atau diambil dari env publik)
-    // Sesuai callback.js Anda, state='rating' akan mengembalikan user ke halaman ini membawa query parameter ?user=...
-    const clientIdEnv = "1380868700688613416"; // Ganti dengan Client ID Discord Anda atau biarkan sesuai Vercel config
+    // Set Discord Login URL secara dinamis berdasarkan Client ID
+    const clientIdEnv = "1380868700688613416";
     const currentRedirectUri = encodeURIComponent(window.location.origin + "/api/callback");
     
-    // Perbarui link tombol login agar state=rating
     const authLink = document.getElementById('auth-btn');
-    // Jika Vercel environment otomatis menghandle, Anda bisa arahkan ke endpoint auth kustom jika ada, 
-    // atau langsung ke Discord OAuth2 URL berikut:
     authLink.href = `https://discord.com/api/oauth2/authorize?client_id=${clientIdEnv}&redirect_uri=${currentRedirectUri}&response_type=code&scope=identify&state=rating`;
 
     // Tangkap data user dari URL parameter yang dikirim oleh api/callback.js (?user=...)
@@ -156,7 +235,6 @@
       try {
         const userData = JSON.parse(decodeURIComponent(userParam));
         localStorage.setItem('discord_user', JSON.stringify(userData));
-        // Bersihkan URL dari parameter user agar bersih
         window.history.replaceState({}, document.title, window.location.pathname);
       } catch (e) {
         console.error("Gagal parsing user data:", e);
@@ -177,7 +255,6 @@
       document.getElementById('user-avatar').src = avatarUrl;
       document.getElementById('user-name').textContent = user.global_name || user.username;
 
-      // Ubah tombol jadi Logout
       authLink.textContent = 'Logout';
       authLink.href = '#';
       authLink.className = 'inline-flex items-center gap-2 bg-red-600/80 hover:bg-red-600 text-white font-medium px-4 py-2 rounded-xl transition text-sm';
@@ -201,7 +278,6 @@
         selectedReactionInput.value = btn.dataset.reaction;
       });
     });
-    // Set default ke reaksi kedua (❤️)
     reactionButtons[1].classList.add('border-purple-500', 'bg-purple-900/50');
 
     // Load Ulasan dari Backend API (/api/ratings)
@@ -292,6 +368,26 @@
       const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
       return text.replace(/[&<>"']/g, function(m) { return map[m]; });
     }
+
+    // Fungsi Modal Zoom Gambar Giveaway
+    function openModal(imgSrc) {
+      const modal = document.getElementById('imageModal');
+      const modalImg = document.getElementById('modalImage');
+      modalImg.src = imgSrc;
+      modal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('imageModal');
+      modal.classList.add('hidden');
+      document.body.style.overflow = 'auto';
+    }
+
+    // Tutup modal dengan tombol Escape pada keyboard
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
 
     // Jalankan saat halaman dimuat
     loadReviews();
