@@ -321,7 +321,7 @@
               
               <!-- Tombol Hapus (Hanya muncul jika Owner) -->
               ${isOwner ? `
-                <button onclick="deleteReview('${r._id || r.id}')" class="ml-3 p-2 bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white rounded-lg transition text-xs flex items-center justify-center" title="Hapus Ulasan">
+                <button onclick="deleteReview('${r._id}')" class="ml-3 p-2 bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white rounded-lg transition text-xs flex items-center justify-center" title="Hapus Ulasan">
                   <i class="fa-solid fa-trash"></i>
                 </button>
               ` : ''}
@@ -333,7 +333,7 @@
       }
     }
 
-    // Fungsi Hapus Ulasan (Owner Only)
+    // Fungsi Hapus Ulasan (Owner Only) langsung dari Website ke Backend API
     async function deleteReview(reviewId) {
       if (!confirm('Apakah Anda yakin ingin menghapus ulasan ini?')) return;
 
@@ -404,7 +404,7 @@
 
     function escapeHtml(text) {
       const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-      return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+      return text.replace(/[\u0026\u003C\u003E\u0022\u0027]/g, function(m) { return map[m]; });
     }
 
     // Fungsi Modal Zoom Gambar Giveaway
