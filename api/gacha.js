@@ -22,6 +22,7 @@ export default async function handler(req, res) {
 
   const { action, userId, user } = req.method === 'POST' ? req.body : req.query;
 
+  // PENANGANAN METHOD GET
   if (req.method === 'GET') {
     const { action: getAction, id, roomId } = req.query;
     
@@ -61,10 +62,46 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, openRooms });
     }
 
+    // <-- PINDAHKAN LEADERBOARD KE SINI (KARENA DIA MENGGUNAKAN METHOD GET) -->
+    if (getAction === 'leaderboard') {
+      const topPoints = await usersCollection.find({}).sort({ points: -1 }).limit(10).project({ id: 1, username: 1, global_name: 1, avatar: 1, points: 1 }).toArray();
+      const topStreak = await usersCollection.find({}).sort({ loginStreak: -1, points: -1 }).limit(10).project({ id: 1, username: 1, global_name: 1, avatar: 1, loginStreak: 1 }).toArray();
+      
+      const allUsers = await usersCollection.find({}).toArray();
+      
+      const topInventory = allUsers.map(u => ({
+        id: u.id,
+        username: u.username,
+        global_name: u.global_name,
+        avatar: u.avatar,
+        inventoryCount: u.inventory ? u.inventory.length : 0
+      })).sort((a, b) => b.inventoryCount - a.inventoryCount).slice(0, 10);
+
+      const topPvP = allUsers.map(u => ({
+        id: u.id,
+        username: u.username,
+        global_name: u.global_name,
+        avatar: u.avatar,
+        pvpWins: u.pvpWins || 0,
+        pvpLosses: u.pvpLosses || 0
+      })).sort((a, b) => b.pvpWins - a.pvpWins).slice(0, 10);
+
+      return res.status(200).json({
+        success: true,
+        leaderboard: {
+          points: topPoints,
+          streak: topStreak,
+          inventory: topInventory,
+          pvp: topPvP
+        }
+      });
+    }
+
     const allWaifus = await waifusCollection.find({}).toArray();
     return res.status(200).json({ success: true, waifus: allWaifus });
   }
 
+  // PENANGANAN METHOD POST
   if (req.method === 'POST') {
     try {
       let dbUser = await usersCollection.findOne({ id: userId });
@@ -269,9 +306,9 @@ export default async function handler(req, res) {
             waifu: { ...randBotWaifu, instanceId: 'bot_inst', dupes: 1 },
             currentHp: randBotWaifu.hp,
             maxHp: randBotWaifu.hp,
-            ready: true // Bot selalu ready otomatis
+            ready: true
           };
-          initialStatus = 'waiting'; // Tetap waiting agar user bisa klik ready atau langsung ready
+          initialStatus = 'waiting';
         }
 
         const newRoom = {
@@ -323,13 +360,12 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, roomId });
       }
 
-      // 7. PLAYER READY ACTION (Mendukung Rematch dan Bot Auto Ready)
+      // 7. PLAYER READY ACTION
       if (action === 'player_ready') {
         const { roomId } = req.body;
         let room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
         if (!room) return res.status(400).json({ success: false, error: 'Room tidak ditemukan.' });
 
-        // Jika room sudah selesai (finished), reset HP dan status ready untuk Rematch
         if (room.status === 'finished') {
           await pvpRoomsCollection.updateOne(
             { _id: new ObjectId(roomId) },
@@ -352,7 +388,6 @@ export default async function handler(req, res) {
         if (room.player1 && room.player1.id === userId) updateField['player1.ready'] = true;
         else if (room.player2 && room.player2.id === userId) updateField['player2.ready'] = true;
 
-        // Jika player2 adalah bot, pastikan bot selalu ready
         if (room.player2 && room.player2.id === 'bot_ai') {
           updateField['player2.ready'] = true;
         }
@@ -415,9 +450,9 @@ export default async function handler(req, res) {
 
           room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
           if (winner === room.player1.name && room.player1.id !== 'bot_ai') {
-            await usersCollection.updateOne({ id: room.player1.id }, { $inc: { points: 200 } });
+            await usersCollection.updateOne({ id: room.player1.id }, { $inc: { points: 200, pvpWins: 1 } });
           } else if (winner === room.player2.name && room.player2.id !== 'bot_ai') {
-            await usersCollection.updateOne({ id: room.player2.id }, { $inc: { points: 200 } });
+            await usersCollection.updateOne({ id: room.player2.id }, { $inc: { points: 200, pvpWins: 1 } });
           }
         }
 
@@ -435,42 +470,6 @@ export default async function handler(req, res) {
     } catch (e) {
       console.error(e);
       return res.status(500).json({ success: false, error: 'Terjadi kesalahan pada server.' });
-    }
-
-    // 10. LEADERBOARD DATA ENDPOINT
-    if (getAction === 'leaderboard') {
-      const topPoints = await usersCollection.find({}).sort({ points: -1 }).limit(10).project({ id: 1, username: 1, global_name: 1, avatar: 1, points: 1 }).toArray();
-      const topStreak = await usersCollection.find({}).sort({ loginStreak: -1, points: -1 }).limit(10).project({ id: 1, username: 1, global_name: 1, avatar: 1, loginStreak: 1 }).toArray();
-      
-      // Top Inventory Count & Top PVP (Diasumsikan ada field pvpWins atau dihitung dari inventory length)
-      const allUsers = await usersCollection.find({}).toArray();
-      
-      const topInventory = allUsers.map(u => ({
-        id: u.id,
-        username: u.username,
-        global_name: u.global_name,
-        avatar: u.avatar,
-        inventoryCount: u.inventory ? u.inventory.length : 0
-      })).sort((a, b) => b.inventoryCount - a.inventoryCount).slice(0, 10);
-
-      const topPvP = allUsers.map(u => ({
-        id: u.id,
-        username: u.username,
-        global_name: u.global_name,
-        avatar: u.avatar,
-        pvpWins: u.pvpWins || 0,
-        pvpLosses: u.pvpLosses || 0
-      })).sort((a, b) => b.pvpWins - a.pvpWins).slice(0, 10);
-
-      return res.status(200).json({
-        success: true,
-        leaderboard: {
-          points: topPoints,
-          streak: topStreak,
-          inventory: topInventory,
-          pvp: topPvP
-        }
-      });
     }
   }
 }
