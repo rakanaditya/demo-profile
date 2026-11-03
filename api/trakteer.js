@@ -5,7 +5,7 @@ export default async function handler(req, res) {
     const { db } = await connectToDatabase();
     const collection = db.collection('trakteer_donations');
 
-    // GET: Ambil channel ID (untuk konfigurasi frontend) atau daftar riwayat donasi
+    // GET: Ambil konfigurasi channel atau daftar riwayat donasi
     if (req.method === 'GET') {
       const { action } = req.query;
 
@@ -20,22 +20,25 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, donations });
     }
 
-    // POST: Simpan donasi baru dari Trakteer WebSocket / Webhook
+    // POST: Menerima data dari WebSocket frontend ATAU Webhook HTTP Trakteer
     if (req.method === 'POST') {
-      const { supporter_name, unit, quantity, supporter_message, supporter_avatar, unit_icon, price } = req.body;
+      const bodyData = req.body;
 
-      if (!supporter_name) {
-        return res.status(400).json({ success: false, message: 'Nama supporter tidak boleh kosong.' });
-      }
+      // Mendukung struktur data dari WebSocket maupun Webhook HTTP Trakteer
+      const supporter_name = bodyData.supporter_name || bodyData.name || 'Seseorang';
+      const unit = bodyData.unit || 'Dukungan';
+      const quantity = bodyData.quantity || bodyData.total_unit || 1;
+      const supporter_message = bodyData.supporter_message || bodyData.message || '';
+      const supporter_avatar = bodyData.supporter_avatar || bodyData.avatar || 'https://edge-cdn.trakteer.id/images/mix/default-avatar.png';
+      const price = bodyData.price || bodyData.amount || 'Rp 0';
 
       const newDonation = {
         supporter_name,
-        unit: unit || 'Dukungan',
-        quantity: quantity || 1,
-        supporter_message: supporter_message || '',
-        supporter_avatar: supporter_avatar || 'https://edge-cdn.trakteer.id/images/mix/default-avatar.png',
-        unit_icon: unit_icon || '',
-        price: price || 'Rp 0',
+        unit,
+        quantity: Number(quantity),
+        supporter_message,
+        supporter_avatar,
+        price: String(price),
         createdAt: new Date(),
       };
 
