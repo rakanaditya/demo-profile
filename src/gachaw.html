@@ -268,7 +268,7 @@
     function startLobbyPolling() {
       if (lobbyPollInterval) clearInterval(lobbyPollInterval);
       lobbyPollInterval = setInterval(async () => {
-        if (activeRoomId) return; // Jangan poll lobby jika sedang di dalam room battle
+        if (activeRoomId) return;
         try {
           const res = await fetch(`/api/gacha?action=get_open_rooms&id=${currentUser.id}`);
           const data = await res.json();
@@ -505,7 +505,6 @@
         
         if (room.status === 'finished') {
           document.getElementById('room-status-badge').innerText = `Status: Pertarungan Selesai! Pemenang: ${room.winner}. Tekan Ready untuk Rematch!`;
-          // Munculkan kembali tombol Ready untuk rematch
           const readyBtn = document.getElementById('ready-btn');
           readyBtn.disabled = false;
           readyBtn.innerText = '✅ SIAP REMATCH (READY)';
@@ -535,7 +534,7 @@
             const turnData = await turnRes.json();
             if (turnData.success && turnData.room.status === 'finished') {
               renderBattleAnimationAndLogs(turnData.room.logs, turnData.room.winner, turnData.room);
-              fetchUserData(); // Refresh data user untuk memperbarui HP inventory
+              fetchUserData();
             }
           }
         }
@@ -557,14 +556,14 @@
 
         if (isP1) {
           document.getElementById('p1-hp-text').innerText = `HP: ${l.p1Hp}/${room.player1.maxHp}`;
-          document.getElementById('p1-hp-bar').style.width = `${Math.max(0, (l.p1Hp / room.player1.maxHp) * 100)}%`;
+          document.getElementById('p1-hp-bar'].style.width = `${Math.max(0, (l.p1Hp / room.player1.maxHp) * 100)}%`;
           document.getElementById('p2-hp-text').innerText = `HP: ${l.p2Hp}/${room.player2.maxHp}`;
-          document.getElementById('p2-hp-bar').style.width = `${Math.max(0, (l.p2Hp / room.player2.maxHp) * 100)}%`;
+          document.getElementById('p2-hp-bar'].style.width = `${Math.max(0, (l.p2Hp / room.player2.maxHp) * 100)}%`;
         } else {
           document.getElementById('p1-hp-text').innerText = `HP: ${l.p2Hp}/${room.player2.maxHp}`;
-          document.getElementById('p1-hp-bar').style.width = `${Math.max(0, (l.p2Hp / room.player2.maxHp) * 100)}%`;
+          document.getElementById('p1-hp-bar'].style.width = `${Math.max(0, (l.p2Hp / room.player2.maxHp) * 100)}%`;
           document.getElementById('p2-hp-text').innerText = `HP: ${l.p1Hp}/${room.player1.maxHp}`;
-          document.getElementById('p2-hp-bar').style.width = `${Math.max(0, (l.p1Hp / room.player1.maxHp) * 100)}%`;
+          document.getElementById('p2-hp-bar'].style.width = `${Math.max(0, (l.p1Hp / room.player1.maxHp) * 100)}%`;
         }
       }
 
