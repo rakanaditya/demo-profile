@@ -242,7 +242,6 @@ export default async function handler(req, res) {
         const waifu = (dbUser.inventory || []).find(i => i.instanceId === instanceId);
         if (!waifu) return res.status(400).json({ success: false, error: 'Waifu tidak ditemukan.' });
         
-        // Cek apakah HP waifu sudah 0 (habis)
         if (waifu.currentHp !== undefined && waifu.currentHp <= 0) {
           return res.status(400).json({ success: false, error: 'Waifu ini memiliki HP 0 dan tidak bisa bertarung lagi! Pilih waifu lain.' });
         }
@@ -270,9 +269,9 @@ export default async function handler(req, res) {
             waifu: { ...randBotWaifu, instanceId: 'bot_inst', dupes: 1 },
             currentHp: randBotWaifu.hp,
             maxHp: randBotWaifu.hp,
-            ready: true
+            ready: true // Bot selalu ready otomatis
           };
-          initialStatus = 'battling';
+          initialStatus = 'waiting'; // Tetap waiting agar user bisa klik ready atau langsung ready
         }
 
         const newRoom = {
@@ -324,7 +323,7 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, roomId });
       }
 
-      // 7. PLAYER READY ACTION (Mendukung Rematch jika status 'finished')
+      // 7. PLAYER READY ACTION (Mendukung Rematch dan Bot Auto Ready)
       if (action === 'player_ready') {
         const { roomId } = req.body;
         let room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
@@ -342,7 +341,7 @@ export default async function handler(req, res) {
                 'player1.currentHp': room.player1.maxHp, 
                 'player1.ready': false,
                 'player2.currentHp': room.player2.maxHp, 
-                'player2.ready': false 
+                'player2.ready': room.player2.id === 'bot_ai' ? true : false 
               } 
             }
           );
@@ -352,6 +351,11 @@ export default async function handler(req, res) {
         let updateField = {};
         if (room.player1 && room.player1.id === userId) updateField['player1.ready'] = true;
         else if (room.player2 && room.player2.id === userId) updateField['player2.ready'] = true;
+
+        // Jika player2 adalah bot, pastikan bot selalu ready
+        if (room.player2 && room.player2.id === 'bot_ai') {
+          updateField['player2.ready'] = true;
+        }
 
         await pvpRoomsCollection.updateOne({ _id: new ObjectId(roomId) }, { $set: updateField });
 
@@ -396,7 +400,6 @@ export default async function handler(req, res) {
             { $set: { status: 'finished', logs, winner, 'player1.currentHp': p1Hp, 'player2.currentHp': p2Hp } }
           );
 
-          // Update currentHp ke database inventory user agar HP tersimpan permanen
           if (room.player1.id !== 'bot_ai') {
             await usersCollection.updateOne(
               { id: room.player1.id, "inventory.instanceId": room.player1.waifu.instanceId },
