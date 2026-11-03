@@ -122,7 +122,12 @@
 
           <!-- Lobby Open Rooms -->
           <div id="pvp-lobby" class="space-y-4 bg-slate-950 p-6 rounded-2xl border border-slate-800">
-            <h4 class="font-bold text-sm text-white">Room Tantangan Terbuka (Auto-Update):</h4>
+            <div class="flex justify-between items-center flex-wrap gap-2">
+              <h4 class="font-bold text-sm text-white">Room Tantangan Terbuka:</h4>
+              <button onclick="refreshOpenRooms()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-lg transition flex items-center space-x-1.5">
+                <i class="fa-solid fa-rotate"></i><span>Refresh Room</span>
+              </button>
+            </div>
             <div id="open-rooms-list" class="space-y-2">
               <p class="text-xs text-slate-500">Memuat room...</p>
             </div>
@@ -199,7 +204,6 @@
     let selectedBattleInstanceId = null;
     let activeRoomId = null;
     let pollInterval = null;
-    let lobbyPollInterval = null;
 
     function playAudio(s) { try { const a = document.getElementById(s); if(a){a.currentTime=0;a.play().catch(e=>{});} }catch(e){} }
     function getAvatarUrl(u) { return u && u.avatar ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png'; }
@@ -213,8 +217,7 @@
       document.getElementById(`tab-${t}`).classList.remove('hidden');
       document.getElementById(`tab-btn-${t}`).className = 'px-5 py-2.5 rounded-xl text-xs font-bold transition bg-pink-600 text-white shadow-lg';
       if (t === 'daily') renderDailyStreakGrid();
-      if (t === 'battle' && !activeRoomId) startLobbyPolling();
-      else stopLobbyPolling();
+      if (t === 'battle' && !activeRoomId) refreshOpenRooms();
     }
 
     async function initAuthAndData() {
@@ -235,7 +238,6 @@
         document.getElementById('nav-user-name').innerText = currentUser.global_name || currentUser.username;
         document.getElementById('nav-user-avatar').src = getAvatarUrl(currentUser);
         await fetchUserData();
-        startLobbyPolling();
       } else {
         document.getElementById('login-prompt').classList.remove('hidden');
       }
@@ -264,23 +266,16 @@
       renderDailyStreakGrid();
     }
 
-    // AUTO UPDATE LOBBY ROOMS TANPA REFRESH
-    function startLobbyPolling() {
-      if (lobbyPollInterval) clearInterval(lobbyPollInterval);
-      lobbyPollInterval = setInterval(async () => {
-        if (activeRoomId) return;
-        try {
-          const res = await fetch(`/api/gacha?action=get_open_rooms&id=${currentUser.id}`);
-          const data = await res.json();
-          if (data.success) {
-            renderOpenRooms(data.openRooms || []);
-          }
-        } catch(e) {}
-      }, 3000);
-    }
-
-    function stopLobbyPolling() {
-      if (lobbyPollInterval) clearInterval(lobbyPollInterval);
+    // MANUAL REFRESH LOBBY ROOMS
+    async function refreshOpenRooms() {
+      playAudio('audio-pop');
+      try {
+        const res = await fetch(`/api/gacha?action=get_open_rooms&id=${currentUser.id}`);
+        const data = await res.json();
+        if (data.success) {
+          renderOpenRooms(data.openRooms || []);
+        }
+      } catch(e) {}
     }
 
     function renderDailyStreakGrid() {
@@ -440,7 +435,6 @@
 
     async function createPvPRoom(isBot) {
       if (!selectedBattleInstanceId) return alert('Pilih waifu andalan Anda terlebih dahulu di bawah!');
-      stopLobbyPolling();
       const res = await fetch('/api/gacha', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'create_pvp_room', userId:currentUser.id, instanceId:selectedBattleInstanceId, isBot}) });
       const data = await res.json();
       if(data.success) {
@@ -450,14 +444,12 @@
         setupRoomUI(data.room);
         startPollingRoom();
       } else {
-        startLobbyPolling();
         alert(data.error);
       }
     }
 
     async function joinPvPRoom(roomId) {
       if (!selectedBattleInstanceId) return alert('Pilih waifu andalan Anda terlebih dahulu di bawah!');
-      stopLobbyPolling();
       const res = await fetch('/api/gacha', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'join_pvp_room', userId:currentUser.id, instanceId:selectedBattleInstanceId, roomId}) });
       const data = await res.json();
       if(data.success) {
@@ -466,7 +458,6 @@
         document.getElementById('live-battle-room').classList.remove('hidden');
         startPollingRoom();
       } else {
-        startLobbyPolling();
         alert(data.error);
       }
     }
@@ -556,14 +547,14 @@
 
         if (isP1) {
           document.getElementById('p1-hp-text').innerText = `HP: ${l.p1Hp}/${room.player1.maxHp}`;
-          document.getElementById('p1-hp-bar'].style.width = `${Math.max(0, (l.p1Hp / room.player1.maxHp) * 100)}%`;
+          document.getElementById('p1-hp-bar').style.width = `${Math.max(0, (l.p1Hp / room.player1.maxHp) * 100)}%`;
           document.getElementById('p2-hp-text').innerText = `HP: ${l.p2Hp}/${room.player2.maxHp}`;
-          document.getElementById('p2-hp-bar'].style.width = `${Math.max(0, (l.p2Hp / room.player2.maxHp) * 100)}%`;
+          document.getElementById('p2-hp-bar').style.width = `${Math.max(0, (l.p2Hp / room.player2.maxHp) * 100)}%`;
         } else {
           document.getElementById('p1-hp-text').innerText = `HP: ${l.p2Hp}/${room.player2.maxHp}`;
-          document.getElementById('p1-hp-bar'].style.width = `${Math.max(0, (l.p2Hp / room.player2.maxHp) * 100)}%`;
+          document.getElementById('p1-hp-bar').style.width = `${Math.max(0, (l.p2Hp / room.player2.maxHp) * 100)}%`;
           document.getElementById('p2-hp-text').innerText = `HP: ${l.p1Hp}/${room.player1.maxHp}`;
-          document.getElementById('p2-hp-bar'].style.width = `${Math.max(0, (l.p1Hp / room.player1.maxHp) * 100)}%`;
+          document.getElementById('p2-hp-bar').style.width = `${Math.max(0, (l.p1Hp / room.player1.maxHp) * 100)}%`;
         }
       }
 
@@ -589,7 +580,6 @@
       document.getElementById('ready-btn').innerText = '✅ SIAP (READY)';
       document.getElementById('ready-btn').className = 'px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg transition';
       fetchUserData();
-      startLobbyPolling();
     }
 
     window.addEventListener('DOMContentLoaded', () => { initAuthAndData(); });
