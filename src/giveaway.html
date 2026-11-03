@@ -124,11 +124,11 @@
       </a>
     </div>
 
-    <!-- OWNER PANEL -->
+    <!-- OWNER / ADMIN PANEL -->
     <div id="owner-panel" class="hidden bg-slate-900 border border-amber-500/40 p-6 rounded-2xl space-y-4 shadow-xl">
       <div class="flex items-center space-x-2 text-amber-400">
         <span class="text-lg">👑</span>
-        <h3 class="font-bold text-lg text-white">Owner Management Panel</h3>
+        <h3 class="font-bold text-lg text-white">Owner & Admin Management Panel</h3>
       </div>
       
       <form id="create-giveaway-form" class="space-y-4">
@@ -215,9 +215,7 @@
       <!-- DISCORD USER PROFILE CARD (Tampilan Pemenang Sesuai Referensi Gambar) -->
       <div id="winner-display-info" class="hidden flex flex-col items-center justify-center space-y-4 py-4">
         <div class="relative inline-block">
-          <!-- Avatar Besar dengan Ring Ungu/Indigo -->
           <img id="winner-profile-avatar" src="" class="w-28 h-28 rounded-full border-4 border-indigo-500 shadow-2xl object-cover bg-slate-800">
-          <!-- Badge Nomor Urut Peserta (#3 dsb) -->
           <span id="winner-entry-badge" class="absolute -top-1 -right-1 bg-amber-500 text-slate-950 text-xs font-black px-2.5 py-0.5 rounded-full shadow-lg border border-amber-300">#1</span>
         </div>
         
@@ -239,7 +237,7 @@
   <div id="participants-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl p-6 space-y-4">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h4 class="font-bold text-white text-base">👥 Daftar Peserta Giveaway (Siapa Cepat Dapat)</h4>
+        <h4 class="font-bold text-white text-base">👥 Daftar Peserta Giveaway</h4>
         <button onclick="closeModal()" class="text-slate-400 hover:text-white text-sm">✕</button>
       </div>
       <div id="modal-participants-list" class="max-h-60 overflow-y-auto space-y-2 pr-1"></div>
@@ -252,6 +250,13 @@
 
   <script>
     const OWNER_ID = '628205121704296458';
+    // Daftar Admin ID yang diizinkan untuk Panel Admin
+    const ADMIN_IDS = [
+      '628205121704296458', // Owner
+      '1128149108566269962', // Admin 1
+      '995913592253710356'  // Admin 2
+    ];
+
     let currentUser = null;
     let timerIntervals = [];
     let isMuted = false;
@@ -361,7 +366,8 @@
           ? `https://cdn.discordapp.com/avatars/${currentUser.id}/${currentUser.avatar}.png`
           : 'https://cdn.discordapp.com/embed/avatars/0.png';
 
-        if (currentUser.id === OWNER_ID) {
+        // Jika user adalah Owner atau Admin terdaftar, tampilkan panel manajemen
+        if (ADMIN_IDS.includes(currentUser.id)) {
           document.getElementById('owner-panel').classList.remove('hidden');
         }
       }
@@ -435,7 +441,6 @@
       const firstWinner = winners[0];
       displayList.push(firstWinner);
 
-      // Cari nomor urut peserta di list participants
       const winnerIndex = participants.findIndex(p => p.id === firstWinner.id);
 
       track.innerHTML = displayList.map((p) => `
@@ -471,7 +476,6 @@
           statusBadge.innerText = 'WINNER SELECTED';
           statusBadge.className = 'inline-block px-4 py-1.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-bold tracking-wide uppercase animate-bounce';
 
-          // Sembunyikan carousel dan tampilkan profil pemenang persis seperti gambar
           carouselContainer.classList.add('hidden');
           winnerInfo.classList.remove('hidden');
 
@@ -517,7 +521,7 @@
       if (data.success && data.data && data.data.length > 0) {
         container.innerHTML = '';
         data.data.forEach(gw => {
-          const isOwner = currentUser && currentUser.id === OWNER_ID;
+          const isAdmin = currentUser && ADMIN_IDS.includes(currentUser.id);
           const participants = gw.participants || [];
           const isJoined = currentUser && participants.some(p => p.id === currentUser.id);
           const isEnded = gw.status === 'ended';
@@ -598,13 +602,14 @@
             <div class="space-y-2 pt-2 border-t border-slate-800/60">
               ${!isEnded ? `
                 <button onclick="joinGiveaway('${gw._id}')" ${isJoined ? 'disabled' : ''} class="w-full py-2 px-4 ${isJoined ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/20'} rounded-xl text-xs font-semibold transition">
-                  ${isJoined ? '✓ Sudah Mengikuti (Nomor Terdaftar)' : '🎉 Ikuti Giveaway (Siapa Cepat Dapat)'}
+                  ${isJoined ? '✓ Sudah Mengikuti' : '🎉 Ikuti Giveaway'}
                 </button>
               ` : ''}
 
-              ${isOwner ? `
+              ${isAdmin ? `
                 <div class="flex space-x-2">
                   ${!isEnded ? `<button onclick="triggerRollStart('${gw._id}')" class="flex-1 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-medium transition">🎲 START ROLL</button>` : ''}
+                  ${isEnded ? `<button onclick="rerollGiveaway('${gw._id}')" class="flex-1 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-medium transition">🔄 REROLL (Ganti Pemenang)</button>` : ''}
                   <button onclick="deleteGiveaway('${gw._id}')" class="flex-1 py-1.5 bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white rounded-lg text-xs font-medium transition border border-rose-500/30">🗑️ Hapus</button>
                 </div>
               ` : ''}
@@ -653,19 +658,19 @@
 
     async function triggerRollStart(id) {
       triggerWebhook({ type: 'roll_start' });
-      runCountdownSequence(() => { rollGiveaway(id, true); });
+      runCountdownSequence(() => { rollGiveaway(id); });
     }
 
     async function triggerAutoRoll(id) {
       triggerWebhook({ type: 'roll_auto' });
-      rollGiveaway(id, false);
+      rollGiveaway(id);
     }
 
-    async function rollGiveaway(id, isManual = true) {
+    async function rollGiveaway(id) {
       const data = await safeFetchJson('/api/giveaway', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'roll', giveawayId: id, userId: currentUser ? currentUser.id : OWNER_ID, isAuto: !isManual })
+        body: JSON.stringify({ action: 'roll', giveawayId: id, user: currentUser })
       });
 
       if (data.success && data.data && data.data.winners && data.data.winners.length > 0) {
@@ -683,10 +688,34 @@
       }
     }
 
+    // Fungsi Reroll (Mencari Pemenang Pengganti jika tidak klaim dalam 5 menit)
+    async function rerollGiveaway(id) {
+      if (!confirm('Apakah pemenang sebelumnya tidak mengklaim hadiah dan Anda ingin mencari pemenang pengganti (reroll)?')) return;
+
+      const data = await safeFetchJson('/api/giveaway', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'reroll', giveawayId: id, user: currentUser })
+      });
+
+      if (data.success && data.data && data.data.winners && data.data.winners.length > 0) {
+        const gw = data.data;
+        const winners = gw.winners;
+        const participants = gw.participants || winners;
+
+        startRollingAnimation(participants, winners, gw.title, gw.prize, () => {
+          const winnerNames = winners.map(w => w.global_name || w.username).join(', ');
+          showToast(`Reroll Berhasil! Pemenang baru: ${winnerNames}`);
+        });
+      } else {
+        showToast(data.error || 'Gagal melakukan reroll pemenang.', true);
+      }
+    }
+
     document.getElementById('create-giveaway-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      if (!currentUser || currentUser.id !== OWNER_ID) {
-        return showToast("Hanya owner yang dapat membuat giveaway!", true);
+      if (!currentUser || !ADMIN_IDS.includes(currentUser.id)) {
+        return showToast("Hanya Owner atau Admin yang dapat membuat giveaway!", true);
       }
 
       const payload = {
