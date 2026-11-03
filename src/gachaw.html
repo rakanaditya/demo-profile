@@ -89,7 +89,7 @@
       </div>
       <div class="space-y-2 max-w-lg mx-auto">
         <h2 class="text-2xl font-extrabold text-white">Koleksi Waifu Impianmu!</h2>
-        <p class="text-xs sm:text-sm text-slate-400">Login dengan akun Discord Anda untuk mendapatkan bonus awal <span class="text-pink-400 font-bold">100 Poin</span>, klaim Daily Reward, gacha waifu legendaris (.png, .jpg, .gif), dan bertarung di arena!</p>
+        <p class="text-xs sm:text-sm text-slate-400">Login dengan akun Discord Anda untuk mendapatkan bonus awal <span class="text-pink-400 font-bold">100 Poin</span>, klaim Daily Reward, gacha waifu legendaris dan bertarung di arena!</p>
       </div>
       <a href="https://discord.com/api/oauth2/authorize?client_id=1380868700688613416&redirect_uri=https%3A%2F%2Fdemo-profile-dun.vercel.app%2Fapi%2Fcallback&response_type=code&scope=identify%20guilds" 
          class="inline-flex items-center space-x-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm rounded-xl transition shadow-lg shadow-indigo-600/30 active:scale-95">
@@ -98,7 +98,7 @@
       </a>
     </div>
 
-    <!-- Dashboard App (Hidden unless logged in) -->
+    <!-- Dashboard App -->
     <div id="gacha-app" class="hidden space-y-8">
       
       <!-- Tab Navigation -->
@@ -142,7 +142,7 @@
         </div>
       </div>
 
-      <!-- SECTION 2: DAILY REWARD (Day 1 - Day 7) -->
+      <!-- SECTION 2: DAILY REWARD -->
       <div id="tab-daily" class="hidden space-y-6">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 space-y-6 shadow-xl">
           <div class="text-center space-y-2">
@@ -150,9 +150,7 @@
             <p class="text-xs text-slate-400">Login setiap hari untuk klaim poin: Day 1 (+100 Poin) s.d Day 7 (+700 Poin)!</p>
           </div>
 
-          <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3" id="daily-streak-grid">
-            <!-- Render via JS -->
-          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3" id="daily-streak-grid"></div>
 
           <div class="text-center pt-4">
             <button onclick="claimDailyReward()" id="claim-daily-btn" class="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition shadow-lg shadow-emerald-600/30">
@@ -183,12 +181,38 @@
         </div>
       </div>
 
-      <!-- SECTION 4: ARENA BATTLE DENGAN ANIMASI -->
+      <!-- SECTION 4: ARENA BATTLE (Bot & PvP) -->
       <div id="tab-battle" class="space-y-6 hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 space-y-6 shadow-xl">
           <div class="text-center space-y-2">
             <h3 class="text-2xl font-black text-white">⚔️ Waifu Arena Battle</h3>
-            <p class="text-xs text-slate-400">Pilih waifu dengan statistik ATK tertinggi untuk bertarung dan menangkan Poin!</p>
+            <p class="text-xs text-slate-400">Pilih waifu andalanmu dan tantang Bot atau User Discord lain di arena!</p>
+          </div>
+
+          <!-- Pilihan Mode Lawan -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-950 p-4 rounded-2xl border border-slate-800">
+            <div class="space-y-2">
+              <label class="text-xs font-bold text-slate-300">Pilih Mode Lawan:</label>
+              <select id="opponent-type-select" onchange="toggleOpponentSelection()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2.5 focus:outline-none focus:border-pink-500">
+                <option value="bot">🤖 Lawan Bot Random</option>
+                <option value="user">👥 Lawan User Discord Lain (PvP)</option>
+              </select>
+            </div>
+
+            <div id="pvp-target-container" class="space-y-2 hidden">
+              <label class="text-xs font-bold text-slate-300">Pilih User Lawan:</label>
+              <select id="target-user-select" onchange="renderTargetUserWaifus()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2.5 focus:outline-none focus:border-pink-500">
+                <option value="">-- Pilih User --</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Dropdown Waifu Lawan PvP -->
+          <div id="pvp-waifu-select-container" class="space-y-2 hidden bg-slate-950 p-4 rounded-2xl border border-slate-800">
+            <label class="text-xs font-bold text-slate-300">Pilih Waifu Lawan dari User Tersebut:</label>
+            <div id="target-user-waifus-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <span class="text-xs text-slate-500">Pilih user terlebih dahulu.</span>
+            </div>
           </div>
 
           <div id="battle-arena" class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center bg-slate-950 p-6 rounded-2xl border border-slate-800">
@@ -211,16 +235,15 @@
               <span class="text-xs bg-rose-500/20 text-rose-300 px-2.5 py-1 rounded-full font-bold">Lawan Arena</span>
               <div id="enemy-preview" class="border border-slate-800 bg-slate-900 p-4 rounded-xl flex flex-col items-center space-y-2 min-h-[180px] justify-center">
                 <span class="text-3xl">👾</span>
-                <span class="text-xs text-slate-500">Menunggu penantang...</span>
+                <span class="text-xs text-slate-500">Lawan Bot Random</span>
               </div>
             </div>
           </div>
 
-          <div id="battle-result-log" class="hidden bg-slate-950 p-4 rounded-xl border border-slate-800 text-center space-y-2 animate-fade-in">
-          </div>
+          <div id="battle-result-log" class="hidden bg-slate-950 p-4 rounded-xl border border-slate-800 text-center space-y-2 animate-fade-in"></div>
 
           <div class="space-y-3 pt-4">
-            <h4 class="font-bold text-sm text-slate-300">Pilih Waifu untuk Bertarung:</h4>
+            <h4 class="font-bold text-sm text-slate-300">Pilih Waifu Anda untuk Bertarung:</h4>
             <div id="battle-inventory-select" class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-h-60 overflow-y-auto pr-1">
               <p class="text-slate-500 text-xs col-span-4 text-center">Inventory kosong.</p>
             </div>
@@ -240,7 +263,10 @@
     let currentUser = null;
     let userData = null;
     let allWaifusMaster = [];
+    let availableOpponents = [];
     let selectedBattleInstanceId = null;
+    let selectedOpponentUserId = null;
+    let selectedOpponentInstanceId = null;
 
     function playAudio(soundId) {
       try {
@@ -301,6 +327,7 @@
         if (data.success) {
           userData = data.user;
           allWaifusMaster = data.waifus;
+          availableOpponents = data.opponents || [];
           updateUIState();
         }
       } catch (err) {
@@ -317,6 +344,9 @@
       renderDailyGrid();
       renderInventory();
       renderBattleSelection();
+      if (document.getElementById('opponent-type-select').value === 'user') {
+        populateOpponentsDropdown();
+      }
     }
 
     // GACHA PULL
@@ -420,7 +450,7 @@
       }
     }
 
-    // INVENTORY & MANAGE (DELETE / MERGE)
+    // INVENTORY MANAGEMENT
     function renderInventory() {
       const container = document.getElementById('inventory-grid');
       const inv = userData.inventory || [];
@@ -508,7 +538,91 @@
       }
     }
 
-    // BATTLE ARENA DENGAN ANIMASI
+    // ARENA BATTLE (BOT & PVP)
+    function toggleOpponentSelection() {
+      const mode = document.getElementById('opponent-type-select').value;
+      const pvpContainer = document.getElementById('pvp-target-container');
+      const pvpWaifuContainer = document.getElementById('pvp-waifu-select-container');
+      
+      if (mode === 'user') {
+        pvpContainer.classList.remove('hidden');
+        pvpWaifuContainer.classList.remove('hidden');
+        populateOpponentsDropdown();
+      } else {
+        pvpContainer.classList.add('hidden');
+        pvpWaifuContainer.classList.add('hidden');
+        selectedOpponentUserId = null;
+        selectedOpponentInstanceId = null;
+        document.getElementById('enemy-preview').innerHTML = '<span class="text-3xl">👾</span><span class="text-xs text-slate-500">Lawan Bot Random</span>';
+      }
+    }
+
+    function populateOpponentsDropdown() {
+      const select = document.getElementById('target-user-select');
+      select.innerHTML = '<option value="">-- Pilih User Discord --</option>';
+      
+      if (!availableOpponents || availableOpponents.length === 0) {
+        select.innerHTML = '<option value="">Tidak ada user lain yang aktif</option>';
+        return;
+      }
+
+      availableOpponents.forEach(op => {
+        const opt = document.createElement('option');
+        opt.value = op.id;
+        opt.innerText = op.global_name || op.username;
+        select.appendChild(opt);
+      });
+    }
+
+    function renderTargetUserWaifus() {
+      const userId = document.getElementById('target-user-select').value;
+      selectedOpponentUserId = userId;
+      selectedOpponentInstanceId = null;
+
+      const grid = document.getElementById('target-user-waifus-grid');
+      grid.innerHTML = '';
+
+      if (!userId) {
+        grid.innerHTML = '<span class="text-xs text-slate-500 col-span-4">Pilih user terlebih dahulu.</span>';
+        return;
+      }
+
+      const targetOp = availableOpponents.find(o => o.id === userId);
+      if (!targetOp || !targetOp.inventory || targetOp.inventory.length === 0) {
+        grid.innerHTML = '<span class="text-xs text-slate-500 col-span-4">User ini belum memiliki waifu.</span>';
+        return;
+      }
+
+      targetOp.inventory.forEach(w => {
+        const card = document.createElement('div');
+        card.className = `cursor-pointer p-2 rounded-xl border border-slate-800 bg-slate-900 flex items-center space-x-2 hover:border-pink-400 transition`;
+        card.onclick = () => selectTargetWaifu(w, card);
+        card.innerHTML = `
+          <img src="${w.image}" class="w-8 h-8 rounded-lg object-cover">
+          <div class="overflow-hidden">
+            <h6 class="font-bold text-[10px] text-white truncate">${w.name}</h6>
+            <p class="text-[9px] text-rose-400 font-mono">ATK: ${w.attack}</p>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function selectTargetWaifu(w, cardElement) {
+      document.querySelectorAll('#target-user-waifus-grid > div').forEach(d => d.className = "cursor-pointer p-2 rounded-xl border border-slate-800 bg-slate-900 flex items-center space-x-2 hover:border-pink-400 transition");
+      cardElement.className = "cursor-pointer p-2 rounded-xl border border-pink-500 bg-pink-950/30 flex items-center space-x-2 transition";
+      
+      selectedOpponentInstanceId = w.instanceId;
+
+      document.getElementById('enemy-preview').innerHTML = `
+        <img src="${w.image}" class="w-16 h-16 rounded-xl object-cover border border-slate-700 shadow-md">
+        <div class="text-center">
+          <h5 class="font-bold text-xs text-white">${w.name}</h5>
+          <p class="text-[9px] text-rose-400 font-mono">ATK: ${w.attack} | DEF: ${w.defense}</p>
+        </div>
+      `;
+    }
+
     function renderBattleSelection() {
       const container = document.getElementById('battle-inventory-select');
       const inv = userData.inventory || [];
@@ -555,6 +669,12 @@
       playAudio('audio-pop');
       if (!selectedBattleInstanceId) return;
 
+      const opponentType = document.getElementById('opponent-type-select').value;
+      if (opponentType === 'user' && (!selectedOpponentUserId || !selectedOpponentInstanceId)) {
+        alert('Silakan pilih user dan waifu lawan PvP terlebih dahulu!');
+        return;
+      }
+
       const arena = document.getElementById('battle-arena');
       arena.classList.add('battle-anim');
       setTimeout(() => arena.classList.remove('battle-anim'), 500);
@@ -564,10 +684,22 @@
       logBox.innerHTML = '<p class="text-xs text-pink-400 animate-pulse">⚔️ Pertarungan sengit sedang berlangsung...</p>';
 
       try {
+        const bodyData = {
+          action: 'battle',
+          userId: currentUser.id,
+          instanceId: selectedBattleInstanceId,
+          opponentType: opponentType
+        };
+
+        if (opponentType === 'user') {
+          bodyData.opponentUserId = selectedOpponentUserId;
+          bodyData.opponentInstanceId = selectedOpponentInstanceId;
+        }
+
         const res = await fetch('/api/gacha', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'battle', userId: currentUser.id, instanceId: selectedBattleInstanceId })
+          body: JSON.stringify(bodyData)
         });
         const data = await res.json();
 
