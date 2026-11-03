@@ -47,7 +47,6 @@ export default async function handler(req, res) {
       }
       
       const allWaifus = await waifusCollection.find({}).toArray();
-      // Ambil daftar user lain yang memiliki waifu di inventory untuk mode PvP Arena
       const activeUsers = await usersCollection.find({ id: { $ne: id }, 'inventory.0': { $exists: true } }).project({ id: 1, global_name: 1, username: 1, avatar: 1, inventory: 1 }).toArray();
 
       return res.status(200).json({ success: true, user: dbUser, waifus: allWaifus, opponents: activeUsers });
@@ -115,7 +114,7 @@ export default async function handler(req, res) {
         });
       }
 
-      // 2. SYSTEM GACHA PULL (Biaya 50 Poin)
+      // 2. SYSTEM GACHA PULL (Biaya 50 Poin + Duplicate Merge / Stack System)
       if (action === 'gacha') {
         const gachaCost = 50;
         if (dbUser.points < gachaCost) {
@@ -138,37 +137,58 @@ export default async function handler(req, res) {
         const pulledWaifu = pool[Math.floor(Math.random() * pool.length)];
         const newPoints = dbUser.points - gachaCost;
 
-        const inventoryItem = {
-          instanceId: new ObjectId().toString(),
-          waifuId: pulledWaifu.id,
-          name: pulledWaifu.name,
-          title: pulledWaifu.title,
-          rarity: pulledWaifu.rarity,
-          element: pulledWaifu.element,
-          attack: pulledWaifu.attack,
-          defense: pulledWaifu.defense,
-          hp: pulledWaifu.hp,
-          image: pulledWaifu.image,
-          obtainedAt: new Date()
-        };
+        let inventory = dbUser.inventory || [];
+        let existingIndex = inventory.findIndex(item => item.waifuId === pulledWaifu.id);
+
+        let updatedItem;
+        if (existingIndex !== -1) {
+          // Jika duplikat ditemukan, gabungkan dan tingkatkan stats serta level dups
+          let item = inventory[existingIndex];
+          item.dupes = (item.dupes || 1) + 1;
+          item.attack = Math.round(item.attack * 1.08);
+          item.defense = Math.round(item.defense * 1.08);
+          item.hp = Math.round(item.hp * 1.08);
+          updatedItem = item;
+          inventory[existingIndex] = item;
+        } else {
+          // Jika belum ada, masukkan sebagai waifu baru
+          updatedItem = {
+            instanceId: new ObjectId().toString(),
+            waifuId: pulledWaifu.id,
+            name: pulledWaifu.name,
+            title: pulledWaifu.title,
+            rarity: pulledWaifu.rarity,
+            element: pulledWaifu.element,
+            attack: pulledWaifu.attack,
+            defense: pulledWaifu.defense,
+            hp: pulledWaifu.hp,
+            image: pulledWaifu.image,
+            dupes: 1,
+            obtainedAt: new Date()
+          };
+          inventory.push(updatedItem);
+        }
 
         await usersCollection.updateOne(
           { id: userId },
           { 
-            $set: { points: newPoints },
-            $push: { inventory: inventoryItem }
+            $set: { points: newPoints, inventory: inventory }
           }
         );
 
+        const isDuplicate = existingIndex !== -1;
         return res.status(200).json({
           success: true,
-          message: `Selamat! Anda mendapatkan ${pulledWaifu.name} (${pulledWaifu.rarity})!`,
-          waifu: inventoryItem,
+          isDuplicate: isDuplicate,
+          message: isDuplicate 
+            ? `Duplikat! ${pulledWaifu.name} digabungkan (Dupes: x${updatedItem.dupes}, Stats Meningkat!).`
+            : `Selamat! Anda mendapatkan ${pulledWaifu.name} (${pulledWaifu.rarity}) baru!`,
+          waifu: updatedItem,
           points: newPoints
         });
       }
 
-      // 3. SYSTEM ARENA BATTLE (Lawan Bot Random ATAU Lawan User Discord Lain)
+      // 3. SYSTEM ARENA BATTLE
       if (action === 'battle') {
         const { instanceId, opponentType, opponentUserId, opponentInstanceId } = req.body;
         const userWaifu = dbUser.inventory.find(item => item.instanceId === instanceId);
@@ -181,7 +201,6 @@ export default async function handler(req, res) {
         let enemyName = '';
 
         if (opponentType === 'user' && opponentUserId && opponentInstanceId) {
-          // Mode PvP: Lawan waifu dari user Discord lain
           const targetUser = await usersCollection.findOne({ id: opponentUserId });
           if (targetUser && targetUser.inventory) {
             const targetWaifu = targetUser.inventory.find(i => i.instanceId === opponentInstanceId);
@@ -192,7 +211,6 @@ export default async function handler(req, res) {
           }
         }
 
-        // Fallback ke Bot Random jika PvP tidak ditemukan
         if (!enemyWaifu) {
           const allWaifus = await waifusCollection.find({}).toArray();
           const randBot = allWaifus[Math.floor(Math.random() * allWaifus.length)];
@@ -200,9 +218,8 @@ export default async function handler(req, res) {
           enemyName = `[Bot Arena] ${randBot.name}`;
         }
 
-        // Kalkulasi perbandingan kekuatan ATK & HP
         const playerPower = userWaifu.attack * 1.2 + userWaifu.hp * 0.1;
-        const enemyPower = enemyWaifu.attack * 1.2 + enemyWaifu.hp * 0.1;
+        const enemyPower = (enemyWaifu.attack || 700) * 1.2 + (enemyWaifu.hp || 2500) * 0.1;
         
         const winProbability = playerPower / (playerPower + enemyPower);
         const isWin = Math.random() < winProbability;
