@@ -1,7 +1,6 @@
 import { connectToDatabase } from './db.js';
 import { ObjectId } from 'mongodb';
 
-// Daftar Waifu Default (Secara otomatis tersinkronisasi ke MongoDB jika database kosong)
 const DEFAULT_WAIFUS = [
   { id: 'lufas', name: 'Lufas Mapha', title: 'Black-Winged Sovereign', element: 'Dark', rarity: 'SSR', attack: 950, defense: 820, hp: 3200, image: '/Assets/Waifu/lufas.gif', description: 'Penguasa kegelapan bersayap hitam yang legendaris.' },
   { id: 'rem', name: 'Rem', title: 'The Maid of Oni', element: 'Water', rarity: 'SR', attack: 780, defense: 750, hp: 2800, image: '/Assets/Waifu/rem.gif', description: 'Pelayan setia dengan kekuatan oni yang luar biasa.' },
@@ -15,7 +14,6 @@ export default async function handler(req, res) {
   const usersCollection = db.collection('waifu_users');
   const waifusCollection = db.collection('waifus');
 
-  // Sinkronisasi otomatis master data waifu ke MongoDB
   const existingWaifusCount = await waifusCollection.countDocuments();
   if (existingWaifusCount === 0) {
     await waifusCollection.insertMany(DEFAULT_WAIFUS);
@@ -30,7 +28,6 @@ export default async function handler(req, res) {
       if (!id) return res.status(400).json({ success: false, error: 'User ID diperlukan.' });
       let dbUser = await usersCollection.findOne({ id: id });
       
-      // Bonus awal 100 poin saat pertama kali login Discord
       if (!dbUser) {
         dbUser = {
           id: id,
@@ -78,7 +75,7 @@ export default async function handler(req, res) {
         return res.status(404).json({ success: false, error: 'User tidak ditemukan.' });
       }
 
-      // 1. SYSTEM DAILY LOGIN REWARD (Day 1 = 100 poin s.d Day 7)
+      // 1. DAILY LOGIN REWARD
       if (action === 'daily') {
         const now = new Date();
         const lastClaim = dbUser.lastDailyClaim ? new Date(dbUser.lastDailyClaim) : null;
@@ -87,10 +84,10 @@ export default async function handler(req, res) {
         if (lastClaim) {
           const diffHours = (now - lastClaim) / (1000 * 60 * 60);
           if (diffHours < 24) {
-            return res.status(400).json({ success: false, error: 'Reward harian sudah diambil hari ini. Silakan coba lagi besok!' });
+            return res.status(400).json({ success: false, error: 'Reward harian sudah diambil hari ini. Coba lagi besok!' });
           }
           if (diffHours > 48) {
-            streak = 1; // Reset streak jika terlewat lebih dari 2 hari
+            streak = 1;
           } else {
             streak = (streak % 7) + 1;
           }
@@ -114,16 +111,16 @@ export default async function handler(req, res) {
         });
       }
 
-      // 2. SYSTEM GACHA PULL (Biaya 50 Poin + Duplicate Merge / Stack System)
+      // 2. GACHA PULL
       if (action === 'gacha') {
         const gachaCost = 50;
         if (dbUser.points < gachaCost) {
-          return res.status(400).json({ success: false, error: 'Poin Anda tidak cukup! Lakukan Daily Login atau Battle untuk menambah poin.' });
+          return res.status(400).json({ success: false, error: 'Poin Anda tidak cukup! Lakukan Daily Login atau Battle.' });
         }
 
         const allWaifus = await waifusCollection.find({}).toArray();
         if (allWaifus.length === 0) {
-          return res.status(400).json({ success: false, error: 'Belum ada data waifu di database.' });
+          return res.status(400).json({ success: false, error: 'Belum ada data waifu.' });
         }
 
         const rand = Math.random() * 100;
@@ -142,7 +139,6 @@ export default async function handler(req, res) {
 
         let updatedItem;
         if (existingIndex !== -1) {
-          // Jika duplikat ditemukan, gabungkan dan tingkatkan stats serta level dups
           let item = inventory[existingIndex];
           item.dupes = (item.dupes || 1) + 1;
           item.attack = Math.round(item.attack * 1.08);
@@ -151,7 +147,6 @@ export default async function handler(req, res) {
           updatedItem = item;
           inventory[existingIndex] = item;
         } else {
-          // Jika belum ada, masukkan sebagai waifu baru
           updatedItem = {
             instanceId: new ObjectId().toString(),
             waifuId: pulledWaifu.id,
@@ -171,9 +166,7 @@ export default async function handler(req, res) {
 
         await usersCollection.updateOne(
           { id: userId },
-          { 
-            $set: { points: newPoints, inventory: inventory }
-          }
+          { $set: { points: newPoints, inventory: inventory } }
         );
 
         const isDuplicate = existingIndex !== -1;
@@ -188,7 +181,52 @@ export default async function handler(req, res) {
         });
       }
 
-      // 3. SYSTEM ARENA BATTLE
+      // 3. DELETE WAIFU FROM INVENTORY
+      if (action === 'delete_waifu') {
+        const { instanceId } = req.body;
+        let inventory = dbUser.inventory || [];
+        const initialLen = inventory.length;
+        inventory = inventory.filter(item => item.instanceId !== instanceId);
+
+        if (inventory.length === initialLen) {
+          return res.status(400).json({ success: false, error: 'Waifu tidak ditemukan di inventory.' });
+        }
+
+        await usersCollection.updateOne(
+          { id: userId },
+          { $set: { inventory: inventory } }
+        );
+
+        return res.status(200).json({ success: true, inventory: inventory, message: 'Waifu berhasil dihapus dari inventory.' });
+      }
+
+      // 4. MERGE DUPES
+      if (action === 'merge_dupes') {
+        let inventory = dbUser.inventory || [];
+        const mergedMap = {};
+
+        inventory.forEach(item => {
+          const key = item.waifuId || item.name;
+          if (!mergedMap[key]) {
+            mergedMap[key] = { ...item };
+          } else {
+            mergedMap[key].dupes = (mergedMap[key].dupes || 1) + (item.dupes || 1);
+            mergedMap[key].attack = Math.round(mergedMap[key].attack * 1.08);
+            mergedMap[key].defense = Math.round(mergedMap[key].defense * 1.08);
+            mergedMap[key].hp = Math.round(mergedMap[key].hp * 1.08);
+          }
+        });
+
+        const newInventory = Object.values(mergedMap);
+        await usersCollection.updateOne(
+          { id: userId },
+          { $set: { inventory: newInventory } }
+        );
+
+        return res.status(200).json({ success: true, inventory: newInventory, message: 'Semua duplikat berhasil digabungkan dan statistik meningkat!' });
+      }
+
+      // 5. ARENA BATTLE
       if (action === 'battle') {
         const { instanceId, opponentType, opponentUserId, opponentInstanceId } = req.body;
         const userWaifu = dbUser.inventory.find(item => item.instanceId === instanceId);
