@@ -203,11 +203,13 @@
           <div class="flex justify-between items-center flex-wrap gap-2">
             <div>
               <h3 class="text-2xl font-black text-white">🛒 Waifu Item Shop</h3>
-              <p class="text-xs text-slate-400">Belanja item menggunakan Poin untuk memulihkan HP atau meningkatkan ATK & DEF waifu andalanmu!</p>
+              <p class="text-xs text-slate-400">Belanja item menggunakan Poin untuk memulihkan HP atau meningkatkan ATK & DEF!</p>
             </div>
-            <button onclick="fetchShopItems()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-lg transition flex items-center space-x-1.5">
-              <i class="fa-solid fa-rotate"></i><span>Refresh Shop</span>
-            </button>
+            <div class="flex items-center space-x-3">
+              <span id="shop-reset-timer" class="text-xs font-mono bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-pink-400 font-bold">Reset dalam: --:--:--</span>
+              <button onclick="fetchShopItems()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-lg transition flex items-center space-x-1.5">
+                <i class="fa-solid fa-rotate"></i><span>Refresh Shop</span>
+              </button>
           </div>
 
           <div id="shop-items-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -247,15 +249,44 @@
       if (t === 'shop') fetchShopItems();
     }
 
-    // Fungsi Fetch Item Shop
+    let shopCountdownInterval = null;
+    let targetResetTimestamp = null;
+
     async function fetchShopItems() {
       try {
         const res = await fetch('/api/shopw');
         const data = await res.json();
         if (data.success) {
           renderShopGrid(data.items);
+          if (data.nextResetTime) {
+            targetResetTimestamp = new Date(data.nextResetTime).getTime();
+            startShopCountdown();
+          }
         }
       } catch (e) {}
+    }
+
+    function startShopCountdown() {
+      if (shopCountdownInterval) clearInterval(shopCountdownInterval);
+      
+      shopCountdownInterval = setInterval(() => {
+        if (!targetResetTimestamp) return;
+        const now = new Date().getTime();
+        const distance = targetResetTimestamp - now;
+
+        if (distance <= 0) {
+          document.getElementById('shop-reset-timer').innerText = 'Reset dalam: 00:00:00';
+          fetchShopItems(); // Otomatis refresh shop saat waktu habis
+          return;
+        }
+
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        const pad = (n) => String(n).padStart(2, '0');
+        document.getElementById('shop-reset-timer').innerText = `Reset dalam: ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+      }, 1000);
     }
 
     function renderShopGrid(items) {
