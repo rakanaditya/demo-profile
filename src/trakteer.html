@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Trakteer Support - Rakan Aditya Community</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            trakteer: '#be123c',
+            trakteerHover: '#9f1239',
+            darkBg: '#0b0f19',
+          }
+        }
+      }
+    }
+  </script>
+  <!-- FontAwesome untuk ikon -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Trakteer WebSocket SDK -->
+  <script src="https://assets.trakteer.id/js/trws.min.js"></script>
+  <style>
+    body { background-color: #0b0f19; color: #f3f4f6; font-family: system-ui, -apple-system, sans-serif; }
+    .glass { background: rgba(17, 24, 39, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 15px rgba(190, 18, 60, 0.4); }
+      50% { box-shadow: 0 0 30px rgba(190, 18, 60, 0.8); }
+    }
+    .live-alert { animation: pulse-glow 2s infinite; }
+  </style>
+</head>
+<body class="min-h-screen py-10 px-4 sm:px-6 lg:px-8">
+
+  <div class="max-w-3xl mx-auto space-y-8">
+    
+    <!-- Nav / Kembali -->
+    <div class="flex justify-between items-center">
+      <a href="/" class="text-sm text-gray-400 hover:text-white transition flex items-center gap-2">
+        <i class="fa-solid fa-arrow-left"></i> Kembali ke Beranda
+      </a>
+      <span class="text-xs bg-rose-950/60 border border-rose-500/30 text-rose-300 px-3 py-1 rounded-full flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span> Live Trakteer Connected
+      </span>
+    </div>
+
+    <!-- Header Title -->
+    <div class="text-center space-y-2">
+      <h1 class="text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-pink-300 to-purple-400">
+        Dukungan Trakteer Komunitas
+      </h1>
+      <p class="text-gray-400 text-sm">Terima kasih atas trakteer dan dukungan luar biasa untuk Rakan Aditya Community!</p>
+    </div>
+
+    <!-- Live Alert Box (Muncul saat ada donasi real-time masuk) -->
+    <div id="live-alert-container" class="hidden glass rounded-2xl p-6 border border-rose-500/50 live-alert space-y-4 relative overflow-hidden bg-gradient-to-r from-rose-950/40 via-gray-900 to-rose-950/40">
+      <div class="absolute top-2 right-3 text-[10px] tracking-widest text-rose-400 uppercase font-bold">New Support! 🚀</div>
+      <div class="flex items-center space-x-4">
+        <img id="alert-avatar" src="" alt="Avatar" class="w-14 h-14 rounded-full border-2 border-rose-500 shadow-md object-cover">
+        <div>
+          <h3 id="alert-name" class="text-lg font-bold text-white"></h3>
+          <p id="alert-unit-info" class="text-sm text-rose-300 font-medium"></p>
+        </div>
+      </div>
+      <p id="alert-message" class="text-gray-300 text-sm italic bg-black/30 p-3 rounded-xl border border-gray-800 hidden"></p>
+    </div>
+
+    <!-- Tombol Menuju Halaman Trakteer Asli -->
+    <div class="glass rounded-2xl p-6 text-center space-y-4 shadow-xl">
+      <div class="space-y-1">
+        <h2 class="text-lg font-semibold text-rose-300">Ingin Mendukung Kreator?</h2>
+        <p class="text-xs text-gray-400">Bantu perkembangan konten dan server komunitas dengan mentraktir kopi atau mie ayam!</p>
+      </div>
+      <a href="https://trakteer.id" target="_blank" rel="noopener noreferrer"
+         class="inline-flex items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white font-medium px-6 py-3 rounded-xl transition shadow-lg shadow-rose-600/30">
+        <i class="fa-solid fa-mug-hot"></i> Traktir Sekarang via Trakteer
+      </a>
+    </div>
+
+    <!-- Daftar Riwayat Dukungan Terbaru -->
+    <div class="space-y-4">
+      <h2 class="text-xl font-bold text-white flex items-center gap-2">
+        <span>🏆</span> Riwayat Dukungan Terbaru
+      </h2>
+
+      <div id="donations-list" class="space-y-3">
+        <p class="text-center text-gray-500 py-6">Memuat riwayat dukungan...</p>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Ambil Channel ID secara dinamis dari API yang terhubung ke process.env.TRAKTEER_CHANNEL_ID
+    async function initTrakteer() {
+      try {
+        const res = await fetch('/api/trakteer?action=config');
+        const config = await res.json();
+
+        if (config.success && config.channelId) {
+          const channelID = config.channelId;
+
+          // Register Trakteer WebSocket
+          TrakteerWS.register(channelID);
+
+          // Handle event saat ada trakteer baru masuk secara real-time
+          TrakteerWS.onNewTipSuccess((data) => {
+            console.log("New Trakteer Tip:", data);
+            showAlert(data);
+            saveDonation(data);
+            loadDonations();
+          });
+        } else {
+          console.warn("TRAKTEER_CHANNEL_ID belum dikonfigurasi di Environment Variables.");
+        }
+      } catch (e) {
+        console.error("Gagal menginisialisasi Trakteer WebSocket:", e);
+      }
+    }
+
+    function showAlert(data) {
+      const container = document.getElementById('live-alert-container');
+      const avatar = document.getElementById('alert-avatar');
+      const name = document.getElementById('alert-name');
+      const unitInfo = document.getElementById('alert-unit-info');
+      const message = document.getElementById('alert-message');
+
+      avatar.src = data.supporter_avatar || 'https://edge-cdn.trakteer.id/images/mix/default-avatar.png';
+      name.textContent = data.supporter_name || 'Seseorang';
+      unitInfo.innerHTML = `Mendukung <span class="text-white font-bold">${data.quantity}x ${data.unit}</span> (${data.price || ''})`;
+
+      if (data.supporter_message) {
+        message.textContent = `"${data.supporter_message}"`;
+        message.classList.remove('hidden');
+      } else {
+        message.classList.add('hidden');
+      }
+
+      container.classList.remove('hidden');
+
+      // Hilangkan alert otomatis setelah 10 detik
+      setTimeout(() => {
+        container.classList.add('hidden');
+      }, 10000);
+    }
+
+    async function saveDonation(data) {
+      try {
+        await fetch('/api/trakteer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            supporter_name: data.supporter_name,
+            unit: data.unit,
+            quantity: data.quantity,
+            supporter_message: data.supporter_message,
+            supporter_avatar: data.supporter_avatar,
+            unit_icon: data.unit_icon,
+            price: data.price
+          })
+        });
+      } catch (err) {
+        console.error("Gagal menyimpan donasi ke database:", err);
+      }
+    }
+
+    async function loadDonations() {
+      try {
+        const res = await fetch('/api/trakteer');
+        const result = await res.json();
+
+        if (result.success) {
+          const listContainer = document.getElementById('donations-list');
+          if (result.donations.length === 0) {
+            listContainer.innerHTML = '<p class="text-center text-gray-500 py-6 glass rounded-xl">Belum ada riwayat dukungan tercatat.</p>';
+            return;
+          }
+
+          listContainer.innerHTML = result.donations.map(d => `
+            <div class="glass rounded-xl p-4 flex items-start gap-4 transition hover:border-rose-500/30">
+              <img src="${d.supporter_avatar}" alt="${d.supporter_name}" class="w-10 h-10 rounded-full border border-gray-700 flex-shrink-0 object-cover">
+              <div class="flex-1 space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="font-semibold text-white text-sm">${escapeHtml(d.supporter_name)}</span>
+                  <span class="text-xs text-gray-500">${new Date(d.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                </div>
+                <div class="flex items-center gap-2 text-rose-300 text-xs font-medium">
+                  <span>☕ Membeli ${d.quantity}x ${d.unit}</span>
+                  <span class="text-gray-500">•</span>
+                  <span class="text-gray-400">${d.price}</span>
+                </div>
+                ${d.supporter_message ? `<p class="text-gray-300 text-sm mt-1 bg-gray-900/50 p-2.5 rounded-lg border border-gray-800">${escapeHtml(d.supporter_message)}</p>` : ''}
+              </div>
+            </div>
+          `).join('');
+        }
+      } catch (err) {
+        console.error("Gagal memuat riwayat donasi:", err);
+      }
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+      return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+
+    // Jalankan saat halaman dimuat pertama kali
+    initTrakteer();
+    loadDonations();
+  </script>
+</body>
+</html>
