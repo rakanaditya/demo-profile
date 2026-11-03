@@ -10,6 +10,7 @@
     { "source": "/announcements", "destination": "/src/announcements.html" },
      { "source": "/activitylog", "destination": "/src/activitylog.html" },
     { "source": "/rating", "destination": "/src/rating.html" },
+    { "source": "/trakteer", "destination": "/src/trakteer.html" },
     { "source": "/myprofile", "destination": "/src/myprofile.html" }
   ]
 }
