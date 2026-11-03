@@ -10,31 +10,15 @@
       if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) return;
       origConsoleWarn.apply(console, args);
     };
-    tailwind = {
-      config: {
-        theme: {
-          extend: {
-            colors: { discord: { bg: '#313338', card: '#2b2d31', inner: '#1e1f22', accent: '#5865f2' } }
-          }
-        }
-      }
-    };
+    tailwind = { config: { theme: { extend: { colors: { discord: { bg: '#313338', card: '#2b2d31', inner: '#1e1f22', accent: '#5865f2' } } } } } };
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=gg+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     body { font-family: 'gg Sans', sans-serif; }
-    @keyframes pulseGlow {
-      0%, 100% { box-shadow: 0 0 15px rgba(236, 72, 153, 0.4); }
-      50% { box-shadow: 0 0 30px rgba(236, 72, 153, 0.8); }
-    }
+    @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 15px rgba(236, 72, 153, 0.4); } 50% { box-shadow: 0 0 30px rgba(236, 72, 153, 0.8); } }
     .gacha-glow { animation: pulseGlow 2s infinite; }
-    @keyframes cardSpin {
-      0% { transform: rotateY(0deg) scale(0.8); opacity: 0; }
-      100% { transform: rotateY(360deg) scale(1); opacity: 1; }
-    }
-    .summon-anim { animation: cardSpin 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-pink-500 selection:text-white">
@@ -46,7 +30,7 @@
   <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-40">
     <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
       <div class="flex items-center space-x-3">
-        <a href="/" class="w-10 h-10 rounded-2xl overflow-hidden flex items-center justify-center shadow-lg shadow-pink-600/30 border border-slate-700">
+        <a href="/" class="w-10 h-10 rounded-2xl overflow-hidden flex items-center justify-center shadow-lg border border-slate-700">
           <img src="/Assets/server.png" alt="Server" class="w-full h-full object-cover">
         </a>
         <div>
@@ -75,7 +59,7 @@
       <div class="w-16 h-16 rounded-2xl bg-pink-500/20 text-pink-400 mx-auto flex items-center justify-center text-3xl">✨</div>
       <div class="space-y-2 max-w-lg mx-auto">
         <h2 class="text-2xl font-extrabold text-white">Koleksi Waifu Impianmu!</h2>
-        <p class="text-xs sm:text-sm text-slate-400">Login dengan Discord untuk mulai gacha dan bertarung real-time PvP!</p>
+        <p class="text-xs sm:text-sm text-slate-400">Login dengan Discord untuk mulai bertarung PvP Real-Time dengan tombol Ready!</p>
       </div>
       <a href="https://discord.com/api/oauth2/authorize?client_id=1380868700688613416&redirect_uri=https%3A%2F%2Fdemo-profile-dun.vercel.app%2Fapi%2Fcallback&response_type=code&scope=identify%20guilds" 
          class="inline-flex items-center space-x-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm rounded-xl transition shadow-lg">
@@ -126,7 +110,7 @@
         <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 space-y-6 shadow-xl">
           <div class="text-center space-y-2">
             <h3 class="text-2xl font-black text-white">⚔️ PvP Arena Real-Time</h3>
-            <p class="text-xs text-slate-400">Pilih waifu andalanmu, buat room atau masuk ke room tantangan, dan bertarung real-time dengan HP bar!</p>
+            <p class="text-xs text-slate-400">Pilih waifu andalanmu, buat room PvP atau lawan Bot, tekan tombol Ready, dan nikmati animasi pertarungan real-time!</p>
           </div>
 
           <!-- Lobby Open Rooms -->
@@ -135,39 +119,37 @@
             <div id="open-rooms-list" class="space-y-2">
               <p class="text-xs text-slate-500">Memuat room...</p>
             </div>
-            <div class="pt-4 border-t border-slate-800">
-              <h5 class="text-xs font-bold text-slate-300 mb-2">Atau Buat Room Baru (Pilih Waifu Anda dulu di bawah):</h5>
-              <button onclick="createPvPRoom()" id="create-room-btn" disabled class="px-6 py-2.5 bg-pink-600 hover:bg-pink-500 disabled:bg-slate-800 text-white font-bold text-xs rounded-xl">🎮 Buat Room PvP Baru</button>
+            <div class="pt-4 border-t border-slate-800 flex flex-wrap gap-3">
+              <button onclick="createPvPRoom(false)" id="create-room-btn" disabled class="px-6 py-2.5 bg-pink-600 hover:bg-pink-500 disabled:bg-slate-800 text-white font-bold text-xs rounded-xl transition">🎮 Buat Room PvP User</button>
+              <button onclick="createPvPRoom(true)" id="create-bot-room-btn" disabled class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 text-white font-bold text-xs rounded-xl transition">🤖 Lawan Bot Instan</button>
             </div>
           </div>
 
-          <!-- Live Battle Arena (Hidden until room joined & ready) -->
+          <!-- Live Battle Arena Room -->
           <div id="live-battle-room" class="hidden space-y-6 bg-slate-950 p-6 rounded-2xl border border-slate-800">
             <div class="flex justify-between items-center bg-slate-900 p-3 rounded-xl border border-slate-800">
-              <span id="room-status-badge" class="text-xs font-bold text-amber-400">Status: Menunggu Lawan Ready...</span>
+              <span id="room-status-badge" class="text-xs font-bold text-amber-400">Status: Menunggu Pemain Siap...</span>
               <button onclick="leaveRoom()" class="text-xs text-rose-400 hover:underline">Keluar Room</button>
             </div>
 
             <!-- Health Bars & Waifu Display -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-              <!-- Player 1 -->
               <div class="bg-slate-900 p-4 rounded-2xl border border-indigo-500/40 space-y-3 text-center">
                 <span class="text-xs bg-indigo-500/20 text-indigo-300 px-2.5 py-1 rounded-full font-bold" id="p1-name">Player 1</span>
                 <img id="p1-img" src="" class="w-24 h-24 mx-auto rounded-xl object-cover border border-slate-700">
                 <div class="space-y-1">
-                  <div class="flex justify-between text-[11px] font-mono"><span id="p1-hp-text">HP: 0/0</span><span id="p1-status-ready" class="text-emerald-400 font-bold">READY ✓</span></div>
+                  <div class="flex justify-between text-[11px] font-mono"><span id="p1-hp-text">HP: 0/0</span><span id="p1-status-ready" class="text-slate-400 font-bold">MENUNGGU READY...</span></div>
                   <div class="w-full bg-slate-800 h-3 rounded-full overflow-hidden border border-slate-700">
                     <div id="p1-hp-bar" class="bg-emerald-500 h-full transition-all duration-500" style="width: 100%;"></div>
                   </div>
                 </div>
               </div>
 
-              <!-- Player 2 -->
               <div class="bg-slate-900 p-4 rounded-2xl border border-rose-500/40 space-y-3 text-center">
                 <span class="text-xs bg-rose-500/20 text-rose-300 px-2.5 py-1 rounded-full font-bold" id="p2-name">Menunggu Lawan...</span>
                 <img id="p2-img" src="https://cdn.discordapp.com/embed/avatars/0.png" class="w-24 h-24 mx-auto rounded-xl object-cover border border-slate-700">
                 <div class="space-y-1">
-                  <div class="flex justify-between text-[11px] font-mono"><span id="p2-hp-text">HP: 0/0</span><span id="p2-status-ready" class="text-slate-500 font-bold">MENUNGGU...</span></div>
+                  <div class="flex justify-between text-[11px] font-mono"><span id="p2-hp-text">HP: 0/0</span><span id="p2-status-ready" class="text-slate-400 font-bold">MENUNGGU READY...</span></div>
                   <div class="w-full bg-slate-800 h-3 rounded-full overflow-hidden border border-slate-700">
                     <div id="p2-hp-bar" class="bg-rose-500 h-full transition-all duration-500" style="width: 100%;"></div>
                   </div>
@@ -175,9 +157,14 @@
               </div>
             </div>
 
-            <!-- Live Battle Combat Logs -->
+            <!-- Tombol Ready -->
+            <div id="ready-action-box" class="text-center pt-2">
+              <button onclick="setPlayerReady()" id="ready-btn" class="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg transition">✅ SIAP (READY)</button>
+            </div>
+
+            <!-- Combat Logs -->
             <div id="battle-combat-logs" class="bg-slate-900 p-4 rounded-xl border border-slate-800 h-40 overflow-y-auto font-mono text-xs space-y-1 text-slate-300">
-              <p class="text-slate-500">Menunggu pertarungan dimulai...</p>
+              <p class="text-slate-500">Tekan tombol Ready untuk memulai pertarungan real-time...</p>
             </div>
           </div>
 
@@ -320,21 +307,22 @@
       selectedBattleInstanceId = id;
       renderBattleSelection();
       document.getElementById('create-room-btn').disabled = false;
+      document.getElementById('create-bot-room-btn').disabled = false;
     }
 
     // PVP REAL-TIME LOGIC
     async function renderOpenRooms(rooms) {
       const list = document.getElementById('open-rooms-list');
-      if (!rooms || rooms.length === 0) { list.innerHTML = '<p class="text-xs text-slate-500">Tidak ada room terbuka. Buat room baru sekarang!</p>'; return; }
+      if (!rooms || rooms.length === 0) { list.innerHTML = '<p class="text-xs text-slate-500">Tidak ada room terbuka. Buat room baru atau lawan bot!</p>'; return; }
       list.innerHTML = '';
       rooms.forEach(r => {
-        list.innerHTML += `<div class="flex justify-between items-center bg-slate-900 p-3 rounded-xl border border-slate-800"><div class="flex items-center space-x-2"><img src="${r.player1.waifu.image}" class="w-8 h-8 rounded-lg object-cover"><span class="text-xs text-white font-bold">Room Host: ${r.player1.name} (${r.player1.waifu.name})</span></div><button onclick="joinPvPRoom('${r._id}')" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg">Masuk Room</button></div>`;
+        list.innerHTML += `<div class="flex justify-between items-center bg-slate-900 p-3 rounded-xl border border-slate-800"><div class="flex items-center space-x-2"><img src="${r.player1.waifu.image}" class="w-8 h-8 rounded-lg object-cover"><span class="text-xs text-white font-bold">Room: ${r.player1.name} (${r.player1.waifu.name})</span></div><button onclick="joinPvPRoom('${r._id}')" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg">Masuk Room</button></div>`;
       });
     }
 
-    async function createPvPRoom() {
+    async function createPvPRoom(isBot) {
       if (!selectedBattleInstanceId) return alert('Pilih waifu andalan Anda terlebih dahulu di bawah!');
-      const res = await fetch('/api/gacha', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'create_pvp_room', userId:currentUser.id, instanceId:selectedBattleInstanceId}) });
+      const res = await fetch('/api/gacha', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'create_pvp_room', userId:currentUser.id, instanceId:selectedBattleInstanceId, isBot}) });
       const data = await res.json();
       if(data.success) {
         activeRoomId = data.roomId;
@@ -357,6 +345,18 @@
       } else alert(data.error);
     }
 
+    async function setPlayerReady() {
+      playAudio('audio-pop');
+      if (!activeRoomId) return;
+      const res = await fetch('/api/gacha', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'player_ready', userId:currentUser.id, roomId:activeRoomId}) });
+      const data = await res.json();
+      if(data.success) {
+        document.getElementById('ready-btn').disabled = true;
+        document.getElementById('ready-btn').innerText = '✓ READY';
+        document.getElementById('ready-btn').className = 'px-8 py-3 bg-slate-800 text-slate-400 font-bold text-sm rounded-xl cursor-not-allowed';
+      }
+    }
+
     function setupRoomUI(room) {
       const isP1 = room.player1.id === currentUser.id;
       const me = isP1 ? room.player1 : room.player2;
@@ -365,13 +365,18 @@
       document.getElementById('p1-name').innerText = me ? me.name : 'Anda';
       document.getElementById('p1-img').src = me ? me.waifu.image : '';
       document.getElementById('p1-hp-text').innerText = me ? `HP: ${me.currentHp}/${me.maxHp}` : '';
-      
+      document.getElementById('p1-status-ready').innerText = me && me.ready ? "READY ✓" : "MENUNGGU READY...";
+      document.getElementById('p1-status-ready').className = me && me.ready ? "text-emerald-400 font-bold" : "text-amber-400 font-bold";
+
       if (op) {
         document.getElementById('p2-name').innerText = op.name;
         document.getElementById('p2-img').src = op.waifu.image;
         document.getElementById('p2-hp-text').innerText = `HP: ${op.currentHp}/${op.maxHp}`;
-        document.getElementById('p2-status-ready').innerText = "READY ✓";
-        document.getElementById('room-status-badge').innerText = "Status: Lawan Bergabung! Memulai Pertarungan...";
+        document.getElementById('p2-status-ready').innerText = op.ready ? "READY ✓" : "MENUNGGU READY...";
+        document.getElementById('p2-status-ready').className = op.ready ? "text-emerald-400 font-bold" : "text-amber-400 font-bold";
+        document.getElementById('room-status-badge').innerText = room.status === 'battling' ? "Status: Pertarungan Sedang Berlangsung!" : "Status: Lawan Bergabung! Silakan tekan Ready.";
+      } else {
+        document.getElementById('room-status-badge').innerText = "Status: Menunggu Lawan Bergabung ke Room...";
       }
     }
 
@@ -385,29 +390,64 @@
           const room = data.room;
           setupRoomUI(room);
 
-          if (room.status === 'finished') {
-            clearInterval(pollInterval);
-            renderBattleLogs(room.logs, room.winner);
+          if (room.status === 'battling' || room.status === 'finished') {
+            // Minta server jalankan turn simulation jika belum diproses
+            const turnRes = await fetch('/api/gacha', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'get_pvp_status', userId:currentUser.id, roomId:activeRoomId}) });
+            const turnData = await turnRes.json();
+            if (turnData.success && turnData.room.status === 'finished') {
+              clearInterval(pollInterval);
+              renderBattleAnimationAndLogs(turnData.room.logs, turnData.room.winner, turnData.room);
+            }
           }
         }
       }, 2000);
     }
 
-    function renderBattleLogs(logs, winner) {
+    async function renderBattleAnimationAndLogs(logs, winner, room) {
       const logBox = document.getElementById('battle-combat-logs');
-      logBox.innerHTML = '';
-      logs.forEach(l => {
+      logBox.innerHTML = '<p class="text-pink-400 animate-pulse">⚔️ Pertarungan Real-Time Dimulai...</p>';
+      
+      const isP1 = room.player1.id === currentUser.id;
+      const meOriginalHp = isP1 ? room.player1.maxHp : room.player2.maxHp;
+      const opOriginalHp = isP1 ? room.player2.maxHp : room.player1.maxHp;
+
+      for (let i = 0; i < logs.length; i++) {
+        await new Promise(r => setTimeout(r, 1200));
+        playAudio('audio-pop');
+        const l = logs[i];
         logBox.innerHTML += `<p>Turn ${l.turn}: <span class="text-pink-400">${l.attacker}</span> menyerang <span class="text-indigo-400">${l.defender}</span> sebesar <span class="text-rose-400">-${l.damage} DMG</span></p>`;
-      });
-      logBox.innerHTML += `<p class="font-bold text-emerald-400 mt-2">🎉 PEMENANG: ${winner}!</p>`;
-      document.getElementById('room-status-badge').innerText = `Status: Selesai! Pemenang: ${winner}`;
+        logBox.scrollTop = logBox.scrollHeight;
+
+        // Update real-time health bar
+        if (isP1) {
+          document.getElementById('p1-hp-text').innerText = `HP: ${l.p1Hp}/${room.player1.maxHp}`;
+          document.getElementById('p1-hp-bar').style.width = `${Math.max(0, (l.p1Hp / room.player1.maxHp) * 100)}%`;
+          document.getElementById('p2-hp-text').innerText = `HP: ${l.p2Hp}/${room.player2.maxHp}`;
+          document.getElementById('p2-hp-bar').style.width = `${Math.max(0, (l.p2Hp / room.player2.maxHp) * 100)}%`;
+        } else {
+          document.getElementById('p1-hp-text').innerText = `HP: ${l.p2Hp}/${room.player2.maxHp}`;
+          document.getElementById('p1-hp-bar').style.width = `${Math.max(0, (l.p2Hp / room.player2.maxHp) * 100)}%`;
+          document.getElementById('p2-hp-text').innerText = `HP: ${l.p1Hp}/${room.player1.maxHp}`;
+          document.getElementById('p2-hp-bar').style.width = `${Math.max(0, (l.p1Hp / room.player1.maxHp) * 100)}%`;
+        }
+      }
+
+      playAudio('audio-chime');
+      logBox.innerHTML += `<p class="font-bold text-emerald-400 mt-2 text-sm">🎉 PEMENANG: ${winner}!</p>`;
+      document.getElementById('room-status-badge').innerText = `Status: Pertarungan Selesai! Pemenang: ${winner}`;
     }
 
-    function leaveRoom() {
+    async function leaveRoom() {
+      if (activeRoomId) {
+        await fetch('/api/gacha', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'leave_room', userId:currentUser.id, roomId:activeRoomId}) });
+      }
       if (pollInterval) clearInterval(pollInterval);
       activeRoomId = null;
       document.getElementById('live-battle-room').classList.add('hidden');
       document.getElementById('pvp-lobby').classList.remove('hidden');
+      document.getElementById('ready-btn').disabled = false;
+      document.getElementById('ready-btn').innerText = '✅ SIAP (READY)';
+      document.getElementById('ready-btn').className = 'px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg transition';
       fetchUserData();
     }
 
