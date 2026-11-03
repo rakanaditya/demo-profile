@@ -79,7 +79,7 @@ export default async function handler(req, res) {
    }
 
    if (action === 'join') {
-    if (giveaway.status === 'ended') {
+    if (giveaway.status === 'ended' || giveaway.status === 'claimed') {
      return res.status(400).json({ success: false, error: 'Giveaway sudah berakhir.' });
     }
 
@@ -97,13 +97,11 @@ export default async function handler(req, res) {
    }
 
    if (action === 'roll') {
-    // Validasi hak akses Admin/Owner untuk melakukan roll
     const userId = user?.id || user;
     if (!ADMIN_IDS.includes(userId)) {
      return res.status(403).json({ success: false, error: 'Hanya Owner atau Admin yang dapat melakukan roll giveaway.' });
     }
 
-    // Jika sudah di-roll sebelumnya di database, langsung kembalikan data pemenang yang tersimpan tanpa mengacak ulang
     if (giveaway.status === 'ended' && giveaway.winners && giveaway.winners.length > 0) {
      return res.status(200).json({ success: true, data: giveaway, isAlreadyEnded: true });
     }
@@ -113,15 +111,12 @@ export default async function handler(req, res) {
      return res.status(400).json({ success: false, error: 'Tidak ada peserta yang terdaftar untuk dikocok.' });
     }
 
-    // Proses Pengacakan Pemenang (System Rolling)
     const shuffled = [...participants].sort(() => 0.5 - Math.random());
     const count = Math.min(giveaway.winnersCount || 1, participants.length);
     const winners = shuffled.slice(0, count);
 
-    // Batas waktu klaim hadiah 5 menit dari sekarang
     const claimExpiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
-    // Update status ke database menjadi ended, simpan pemenang, dan beri batas waktu klaim
     await collection.updateOne(
      { _id: gwId },
      { 
@@ -142,7 +137,6 @@ export default async function handler(req, res) {
    }
 
    if (action === 'reroll') {
-    // Aksi untuk mencari pemenang pengganti karena pemenang sebelumnya tidak klaim dalam 5 menit
     const userId = user?.id || user;
     if (!ADMIN_IDS.includes(userId)) {
      return res.status(403).json({ success: false, error: 'Hanya Owner atau Admin yang dapat melakukan reroll giveaway.' });
@@ -152,25 +146,21 @@ export default async function handler(req, res) {
     const currentWinners = giveaway.winners || [];
     const previousWinners = giveaway.previousWinners || [];
 
-    // Kumpulkan ID peserta yang sudah pernah menang (pemenang saat ini + riwayat pemenang sebelumnya)
     const excludedIds = new Set([
       ...currentWinners.map(w => w.id),
       ...previousWinners.map(w => w.id)
     ]);
 
-    // Saring peserta yang belum pernah menang sama sekali
     const eligibleParticipants = participants.filter(p => !excludedIds.has(p.id));
 
     if (eligibleParticipants.length === 0) {
      return res.status(400).json({ success: false, error: 'Tidak ada peserta lain yang tersedia untuk digantikan (reroll).' });
     }
 
-    // Acak peserta yang belum pernah menang
     const shuffled = [...eligibleParticipants].sort(() => 0.5 - Math.random());
     const count = Math.min(giveaway.winnersCount || 1, shuffled.length);
     const newWinners = shuffled.slice(0, count);
 
-    // Pindahkan pemenang lama ke previousWinners, lalu set pemenang baru dan perpanjang waktu klaim 5 menit
     const updatedPreviousWinners = [...previousWinners, ...currentWinners];
     const newClaimExpiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
@@ -193,6 +183,27 @@ export default async function handler(req, res) {
     return res.status(200).json({ success: true, message: 'Berhasil mencari pemenang pengganti (reroll)!', data: giveaway });
    }
 
+   if (action === 'claim') {
+    const userId = user?.id || user;
+    const isWinner = giveaway.winners.some(w => w.id === userId);
+
+    if (!isWinner) {
+     return res.status(403).json({ success: false, error: 'Anda bukan pemenang dari giveaway ini.' });
+    }
+
+    if (giveaway.status === 'claimed') {
+     return res.status(400).json({ success: false, error: 'Hadiah sudah diklaim sebelumnya.' });
+    }
+
+    await collection.updateOne(
+     { _id: gwId },
+     { $set: { status: 'claimed', claimedAt: new Date(), claimedBy: userId } }
+    );
+
+    giveaway.status = 'claimed';
+    return res.status(200).json({ success: true, message: 'Hadiah berhasil diklaim!', data: giveaway });
+   }
+
   } catch (e) {
    return res.status(500).json({ success: false, error: 'Terjadi kesalahan server.' });
   }
@@ -202,7 +213,6 @@ export default async function handler(req, res) {
   try {
    const { giveawayId, userId } = req.body;
    
-   // Validasi hak akses penghapusan
    if (!ADMIN_IDS.includes(userId)) {
     return res.status(403).json({ success: false, error: 'Hanya Owner atau Admin yang dapat menghapus giveaway.' });
    }
