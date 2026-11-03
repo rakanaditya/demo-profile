@@ -28,15 +28,8 @@
   <style>
   body { font-family: 'gg Sans', sans-serif; }
   
-  /* Animation Keyframes */
   @keyframes pulse-fast { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
   .animate-pulse-fast { animation: pulse-fast 0.15s infinite; }
-
-  @keyframes scroll-carousel {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
-  .animate-carousel { animation: scroll-carousel 0.25s linear infinite; }
 
   @keyframes zoom-in-glow {
     0% { transform: scale(0.3); opacity: 0; filter: drop-shadow(0 0 0px #eab308); }
@@ -86,12 +79,10 @@
       </div>
       
       <div class="flex items-center space-x-3">
-        <!-- Control Audio & Sound -->
         <button onclick="toggleAudioMute()" id="btn-audio-toggle" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold border border-slate-700 transition flex items-center space-x-1">
           <span id="audio-icon">🔊</span> <span id="audio-text">Sound ON</span>
         </button>
 
-        <!-- Button Live OBS Fullscreen -->
         <button onclick="toggleLiveDisplayMode()" class="px-3 py-1.5 bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition shadow-lg shadow-indigo-600/30 flex items-center space-x-1">
           <span>🖥️ Live Display (Press ESC to Exit)</span>
         </button>
@@ -182,16 +173,14 @@
 
   </main>
 
-  <!-- OVERLAY COUNTDOWN DRAMATIS (KHUSUS ROLL MANUAL HOST) -->
+  <!-- OVERLAY COUNTDOWN DRAMATIS -->
   <div id="countdown-overlay" class="hidden fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-xl flex flex-col items-center justify-center p-4 transition-all">
     <div id="countdown-card" class="text-center space-y-6">
       <p id="countdown-subtext" class="text-amber-400 font-bold tracking-widest uppercase text-sm sm:text-base animate-pulse">🎯 PREPARING GIVEAWAY ROLL</p>
-      
       <div class="relative flex items-center justify-center w-48 h-48 sm:w-64 sm:h-64">
         <div id="countdown-glow-ring" class="absolute inset-0 rounded-full border-4 border-amber-500/40 animate-ping opacity-50"></div>
         <h1 id="countdown-number" class="text-7xl sm:text-9xl font-black text-white tracking-tighter drop-shadow-[0_0_35px_rgba(234,179,8,0.8)]">5</h1>
       </div>
-
       <p class="text-xs text-slate-400 font-mono">LIVE DISPLAY MODE &bull; RAKAN ADITYA COMMUNITY</p>
     </div>
   </div>
@@ -199,37 +188,30 @@
   <!-- MODAL ANIMASI ROLLING GIVEAWAY -->
   <div id="rolling-modal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
     <div class="bg-[#111827] border border-amber-500/60 w-full max-w-lg rounded-3xl p-6 sm:p-8 text-center space-y-6 shadow-2xl relative overflow-hidden">
-      
-      <!-- Status Badge & Title -->
       <div id="rolling-status" class="space-y-2">
         <span id="status-badge" class="inline-block px-4 py-1.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-bold tracking-wide uppercase">WINNER SELECTED</span>
         <h3 id="rolling-title" class="text-xl font-extrabold text-white">Mengocok Pemenang</h3>
       </div>
 
-      <!-- CAROUSEL CONTAINER (Saat Rolling) -->
       <div id="carousel-container" class="relative w-full overflow-hidden py-6 bg-slate-950/80 border border-slate-800 rounded-2xl flex items-center justify-center shadow-inner">
         <div class="absolute inset-y-0 w-1 bg-amber-500 z-20 shadow-[0_0_15px_#eab308]"></div>
         <div id="roll-track" class="flex items-center space-x-4 transition-transform duration-75 ease-out px-4"></div>
       </div>
 
-      <!-- DISCORD USER PROFILE CARD (Tampilan Pemenang Sesuai Referensi Gambar) -->
       <div id="winner-display-info" class="hidden flex flex-col items-center justify-center space-y-4 py-4">
         <div class="relative inline-block">
           <img id="winner-profile-avatar" src="" class="w-28 h-28 rounded-full border-4 border-indigo-500 shadow-2xl object-cover bg-slate-800">
           <span id="winner-entry-badge" class="absolute -top-1 -right-1 bg-amber-500 text-slate-950 text-xs font-black px-2.5 py-0.5 rounded-full shadow-lg border border-amber-300">#1</span>
         </div>
-        
         <div class="space-y-1">
           <h4 id="winner-profile-globalname" class="text-2xl font-black text-white tracking-wide">...</h4>
           <p id="winner-profile-username" class="text-xs text-slate-400 font-mono">@...</p>
         </div>
       </div>
 
-      <!-- Auto Refresh Timer Indicator -->
       <div id="refresh-indicator" class="hidden text-xs text-amber-400 bg-amber-500/10 border border-amber-500/30 rounded-xl py-2.5 px-4 font-medium flex items-center justify-center space-x-1.5">
         <span>🔄 Halaman akan refresh otomatis dalam <span id="refresh-timer-val" class="font-bold">10</span> detik...</span>
       </div>
-
     </div>
   </div>
 
@@ -250,7 +232,6 @@
 
   <script>
     const OWNER_ID = '628205121704296458';
-    // Daftar Admin ID yang diizinkan untuk Panel Admin
     const ADMIN_IDS = [
       '628205121704296458', // Owner
       '1128149108566269962', // Admin 1
@@ -302,9 +283,7 @@
     }
 
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && isLiveMode) {
-        toggleLiveDisplayMode();
-      }
+      if (e.key === 'Escape' && isLiveMode) toggleLiveDisplayMode();
     });
 
     document.addEventListener('fullscreenchange', () => {
@@ -366,7 +345,6 @@
           ? `https://cdn.discordapp.com/avatars/${currentUser.id}/${currentUser.avatar}.png`
           : 'https://cdn.discordapp.com/embed/avatars/0.png';
 
-        // Jika user adalah Owner atau Admin terdaftar, tampilkan panel manajemen
         if (ADMIN_IDS.includes(currentUser.id)) {
           document.getElementById('owner-panel').classList.remove('hidden');
         }
@@ -493,16 +471,9 @@
             refreshTimerVal.innerText = refreshSeconds;
             if (refreshSeconds <= 0) {
               clearInterval(refreshCountdown);
-              window.location.href = 'https://demo-profile-dun.vercel.app/giveaway';
+              window.location.reload();
             }
           }, 1000);
-
-          localStorage.setItem('recent_winner_notification', JSON.stringify({
-            winnerName: firstWinner.global_name || firstWinner.username,
-            prize: prize,
-            title: giveawayTitle,
-            timestamp: Date.now()
-          }));
 
           if (onFinish) onFinish();
         }, 800);
@@ -525,20 +496,28 @@
           const participants = gw.participants || [];
           const isJoined = currentUser && participants.some(p => p.id === currentUser.id);
           const isEnded = gw.status === 'ended';
+          const isClaimed = gw.status === 'claimed';
 
           let statusText = 'READY';
           let statusStyle = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
 
           if (isEnded) {
-            statusText = 'COMPLETED';
-            statusStyle = 'bg-slate-800 text-slate-400 border-slate-700';
+            statusText = 'WAITING CLAIM (5 MIN)';
+            statusStyle = 'bg-amber-500/10 text-amber-400 border-amber-500/30';
+          } else if (isClaimed) {
+            statusText = 'COMPLETED (SUCCESSFULLY CLAIMED)';
+            statusStyle = 'bg-emerald-600/20 text-emerald-300 border-emerald-500/40';
           }
 
           const card = document.createElement('div');
           card.className = 'bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between space-y-4 relative overflow-hidden shadow-lg';
 
           let winnersHTML = '';
-          if (isEnded && gw.winners && gw.winners.length > 0) {
+          let isUserWinner = false;
+
+          if ((isEnded || isClaimed) && gw.winners && gw.winners.length > 0) {
+            isUserWinner = currentUser && gw.winners.some(w => w.id === currentUser.id);
+
             winnersHTML = `
               <div class="bg-gradient-to-r from-emerald-950/80 to-slate-900 border border-emerald-500/40 p-3 rounded-xl space-y-2">
                 <span class="font-bold text-xs text-emerald-400 flex items-center space-x-1">
@@ -556,6 +535,7 @@
                     `;
                   }).join('')}
                 </div>
+                ${isEnded ? `<div id="claim-timer-${gw._id}" class="text-[11px] font-mono text-amber-300 pt-1">⏳ Batas Waktu Klaim: Menghitung...</div>` : ''}
               </div>
             `;
           }
@@ -585,7 +565,7 @@
               <p class="text-xs text-indigo-400 font-medium">🎁 Hadiah: ${gw.prize}</p>
               <p class="text-xs text-slate-400">${gw.description || 'Tidak ada deskripsi.'}</p>
               
-              ${gw.endsAt && !isEnded ? `<div id="timer-${gw._id}" class="text-xs font-mono text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg w-fit">⏳ Menghitung...</div>` : ''}
+              ${gw.endsAt && !isEnded && !isClaimed ? `<div id="timer-${gw._id}" class="text-xs font-mono text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg w-fit">⏳ Menghitung...</div>` : ''}
 
               <div class="flex items-center justify-between border-t border-slate-800/60 pt-2">
                 <div class="space-y-1">
@@ -600,15 +580,27 @@
             </div>
 
             <div class="space-y-2 pt-2 border-t border-slate-800/60">
-              ${!isEnded ? `
+              ${!isEnded && !isClaimed ? `
                 <button onclick="joinGiveaway('${gw._id}')" ${isJoined ? 'disabled' : ''} class="w-full py-2 px-4 ${isJoined ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/20'} rounded-xl text-xs font-semibold transition">
                   ${isJoined ? '✓ Sudah Mengikuti' : '🎉 Ikuti Giveaway'}
                 </button>
               ` : ''}
 
+              ${isEnded && isUserWinner ? `
+                <button onclick="claimGiveaway('${gw._id}')" class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition shadow-lg shadow-emerald-600/30 animate-pulse">
+                  🎁 KLAIM HADIAH SEKARANG (CLAIM)
+                </button>
+              ` : ''}
+
+              ${isClaimed ? `
+                <div class="w-full py-2 px-4 bg-emerald-950/60 border border-emerald-500/50 text-emerald-300 rounded-xl text-xs font-semibold text-center">
+                  ✅ Successfully Claimed (Completed)
+                </div>
+              ` : ''}
+
               ${isAdmin ? `
-                <div class="flex space-x-2">
-                  ${!isEnded ? `<button onclick="triggerRollStart('${gw._id}')" class="flex-1 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-medium transition">🎲 START ROLL</button>` : ''}
+                <div class="flex space-x-2 pt-1">
+                  ${!isEnded && !isClaimed ? `<button onclick="triggerRollStart('${gw._id}')" class="flex-1 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-medium transition">🎲 START ROLL</button>` : ''}
                   ${isEnded ? `<button onclick="rerollGiveaway('${gw._id}')" class="flex-1 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-medium transition">🔄 REROLL (Ganti Pemenang)</button>` : ''}
                   <button onclick="deleteGiveaway('${gw._id}')" class="flex-1 py-1.5 bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white rounded-lg text-xs font-medium transition border border-rose-500/30">🗑️ Hapus</button>
                 </div>
@@ -618,7 +610,8 @@
 
           container.appendChild(card);
 
-          if (gw.endsAt && !isEnded) {
+          // Timer Hitung Mundur Event Utama
+          if (gw.endsAt && !isEnded && !isClaimed) {
             const timerElem = document.getElementById(`timer-${gw._id}`);
             const endTime = new Date(gw.endsAt).getTime();
 
@@ -647,6 +640,27 @@
               }
             }, 1000);
             timerIntervals.push(interval);
+          }
+
+          // Timer Hitung Mundur Klaim 5 Menit
+          if (isEnded && gw.claimExpiresAt) {
+            const claimTimerElem = document.getElementById(`claim-timer-${gw._id}`);
+            const expireTime = new Date(gw.claimExpiresAt).getTime();
+
+            const claimInterval = setInterval(() => {
+              const now = new Date().getTime();
+              const distance = expireTime - now;
+
+              if (distance <= 0) {
+                clearInterval(claimInterval);
+                if (claimTimerElem) claimTimerElem.innerText = '⚠️ Waktu klaim habis! Silakan lakukan Reroll.';
+              } else {
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                if (claimTimerElem) claimTimerElem.innerText = `⏳ Batas Waktu Klaim: ${minutes}m ${seconds}s lagi`;
+              }
+            }, 1000);
+            timerIntervals.push(claimInterval);
           }
         });
       } else if (data.success && data.data.length === 0) {
@@ -681,16 +695,35 @@
         startRollingAnimation(participants, winners, gw.title, gw.prize, () => {
           triggerWebhook({ type: 'winner', giveaway: gw, winners: winners });
           const winnerNames = winners.map(w => w.global_name || w.username).join(', ');
-          showToast(`Selamat! ${winnerNames} menang ${gw.prize}!`);
+          showToast(`Selamat! ${winnerNames} menang ${gw.prize}! Silakan klaim dalam 5 menit.`);
         });
       } else {
         showToast(data.error || 'Gagal mengocok pemenang.', true);
       }
     }
 
-    // Fungsi Reroll (Mencari Pemenang Pengganti jika tidak klaim dalam 5 menit)
+    // Fungsi Klaim Hadiah oleh Pemenang
+    async function claimGiveaway(id) {
+      if (!currentUser) return showToast('Silakan login terlebih dahulu!', true);
+
+      const data = await safeFetchJson('/api/giveaway', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'claim', giveawayId: id, user: currentUser })
+      });
+
+      if (data.success) {
+        playAudio('audio-win');
+        showToast('🎉 Successfully Claimed! Giveaway dianggap Completed.');
+        loadGiveaways();
+      } else {
+        showToast(data.error || 'Gagal melakukan klaim.', true);
+      }
+    }
+
+    // Fungsi Reroll (Mencari Pemenang Pengganti)
     async function rerollGiveaway(id) {
-      if (!confirm('Apakah pemenang sebelumnya tidak mengklaim hadiah dan Anda ingin mencari pemenang pengganti (reroll)?')) return;
+      if (!confirm('Apakah pemenang sebelumnya tidak mengklaim hadiah dan Anda ingin melakukan reroll (cari pemenang lain)?')) return;
 
       const data = await safeFetchJson('/api/giveaway', {
         method: 'PUT',
