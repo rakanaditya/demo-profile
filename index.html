@@ -55,9 +55,10 @@
     };
   </script>
 
-  <!-- 3. Memuat Tailwind CDN -->
+  <!-- 3. Memuat Tailwind CDN & FontAwesome -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=gg+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     body { font-family: 'gg Sans', 'Noto Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
   </style>
@@ -193,8 +194,10 @@
           </a>
         </div>
 
-       <!-- Navigation Buttons -->
+        <!-- Navigation Buttons Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          
+          <!-- Tombol Giveaway Panel -->
           <a href="/giveaway" 
              class="inline-flex items-center justify-between px-4 py-3 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 hover:from-indigo-900 border border-amber-500/40 text-slate-100 rounded-2xl transition shadow-lg group">
             <div class="flex items-center space-x-2">
@@ -207,6 +210,7 @@
             <span class="text-xs text-amber-400 group-hover:translate-x-1 transition">&rarr;</span>
           </a>
 
+          <!-- Tombol Top Leaderboard -->
           <a href="/giveawayleaderboard" 
              class="inline-flex items-center justify-between px-4 py-3 bg-gradient-to-r from-slate-900 via-amber-950/40 to-slate-900 hover:from-amber-900/40 border border-amber-500/30 text-slate-100 rounded-2xl transition shadow-lg group">
             <div class="flex items-center space-x-2">
@@ -218,25 +222,23 @@
             </div>
             <span class="text-xs text-amber-400 group-hover:translate-x-1 transition">&rarr;</span>
           </a>
-        </div>
 
-<a href="/trakteer" 
-   class="inline-flex items-center justify-between px-4 py-3 bg-gradient-to-r from-slate-900 via-amber-950/40 to-slate-900 hover:from-amber-900/40 border border-amber-500/30 text-slate-100 rounded-2xl transition shadow-lg group">
-  <div class="flex items-center space-x-3">
-    <!-- Gambar Trakteer Asset -->
-    <img src="Assets/trakteer.png" alt="Trakteer"  class="w-full inline-flex items-center justify-between px-4 py-3 bg-gradient-to-r from-[#5865F2]/20 via-indigo-950 to-[#5865F2]/20 hover:from-[#5865F2]/40 border border-[#5865F2]/50 text-slate-150 rounded-2xl transition shadow-lg group">
-    <div class="text-left">
-      <p class="text-xs font-bold text-white group-hover:text-amber-400">Trakteer</p>
-      <p class="text-[10px] text-slate-300">Riwayat Dukungan Terbaru</p>
-    </div>
-  </div>
-<span class="text-xs text-[#5865F2] group-hover:translate-x-1 transition font-bold">&rarr;</span>
-</a>
-        
-        <!-- Tombol Gabung Server Discord (Full Width / Lebar Penuh) -->
-        <div class="pt-1">
+          <!-- Tombol Trakteer (Sejajar Grid) -->
+          <a href="/trakteer" 
+             class="inline-flex items-center justify-between px-4 py-3 bg-gradient-to-r from-slate-900 via-rose-950/40 to-slate-900 hover:from-rose-900/40 border border-rose-500/30 text-slate-100 rounded-2xl transition shadow-lg group">
+            <div class="flex items-center space-x-3">
+              <img src="Assets/trakteer.png" alt="Trakteer" class="w-5 h-5 object-contain">
+              <div class="text-left">
+                <p class="text-xs font-bold text-white group-hover:text-rose-300">Trakteer</p>
+                <p class="text-[10px] text-slate-400">Riwayat Dukungan Terbaru</p>
+              </div>
+            </div>
+            <span class="text-xs text-rose-400 group-hover:translate-x-1 transition">&rarr;</span>
+          </a>
+
+          <!-- Tombol Gabung Server Discord (Sejajar Grid) -->
           <a href="https://discord.com/invite/qjnSUrv3aa" target="_blank" rel="noopener noreferrer"
-             class="w-full inline-flex items-center justify-between px-4 py-3 bg-gradient-to-r from-[#5865F2]/20 via-indigo-950 to-[#5865F2]/20 hover:from-[#5865F2]/40 border border-[#5865F2]/50 text-slate-100 rounded-2xl transition shadow-lg group">
+             class="inline-flex items-center justify-between px-4 py-3 bg-gradient-to-r from-[#5865F2]/20 via-indigo-950 to-[#5865F2]/20 hover:from-[#5865F2]/40 border border-[#5865F2]/50 text-slate-100 rounded-2xl transition shadow-lg group">
             <div class="flex items-center space-x-2.5">
               <span class="text-base text-[#5865F2]"><i class="fa-brands fa-discord"></i></span>
               <div class="text-left">
@@ -246,6 +248,7 @@
             </div>
             <span class="text-xs text-[#5865F2] group-hover:translate-x-1 transition font-bold">&rarr;</span>
           </a>
+
         </div>
 
       </div>
@@ -487,14 +490,6 @@
         }
       }
     });
-
-    function showNotification(msg) {
-      const toast = document.createElement('div');
-      toast.className = 'fixed bottom-5 right-5 z-50 bg-emerald-600 border border-emerald-400 text-white px-5 py-3 rounded-xl shadow-2xl text-xs sm:text-sm font-medium flex items-center space-x-2 animate-bounce';
-      toast.innerHTML = `<span>🏆</span><span>${msg}</span>`;
-      document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 5000);
-    }
 
     function checkWinnerNotification() {
       const savedWinner = localStorage.getItem('recent_winner_notification');
