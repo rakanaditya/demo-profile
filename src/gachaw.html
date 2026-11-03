@@ -53,6 +53,7 @@
         </div>
         <a href="/" class="text-xs text-slate-400 hover:text-white">← Beranda</a>
         <a href="/src/gachawleaderboard.html" class="px-5 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800">🏆 Leaderboard</a>
+        <button onclick="switchTab('shop')" id="tab-btn-shop" class="px-5 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800">🛒 Waifu Shop</button>
         <div id="nav-user-badge" class="hidden flex items-center space-x-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full">
           <img id="nav-user-avatar" src="" alt="Avatar" class="w-6 h-6 rounded-full object-cover">
           <span id="nav-user-name" class="text-xs font-semibold text-white">User</span>
@@ -116,6 +117,8 @@
         <div id="inventory-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4"></div>
       </div>
 
+      
+
       <!-- SECTION 4: PVP ARENA REAL-TIME -->
       <div id="tab-battle" class="space-y-6 hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 space-y-6 shadow-xl">
@@ -123,6 +126,25 @@
             <h3 class="text-2xl font-black text-white">⚔️ PvP Arena Real-Time</h3>
             <p class="text-xs text-slate-400">Pilih waifu andalanmu, buat room PvP atau lawan Bot, tekan tombol Ready, dan nikmati animasi pertarungan real-time!</p>
           </div>
+
+          <!-- SECTION 5: SHOP -->
+      <div id="tab-shop" class="hidden space-y-6">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 space-y-6 shadow-xl">
+          <div class="flex justify-between items-center flex-wrap gap-2">
+            <div>
+              <h3 class="text-2xl font-black text-white">🛒 Waifu Item Shop</h3>
+              <p class="text-xs text-slate-400">Belanja item menggunakan Poin untuk memulihkan HP atau meningkatkan ATK & DEF waifu andalanmu!</p>
+            </div>
+            <button onclick="fetchShopItems()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-lg transition flex items-center space-x-1.5">
+              <i class="fa-solid fa-rotate"></i><span>Refresh Shop</span>
+            </button>
+          </div>
+
+          <div id="shop-items-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <p class="text-xs text-slate-500 col-span-3 text-center py-6">Memuat item shop...</p>
+          </div>
+        </div>
+      </div>
 
           <!-- Lobby Open Rooms -->
           <div id="pvp-lobby" class="space-y-4 bg-slate-950 p-6 rounded-2xl border border-slate-800">
@@ -212,9 +234,10 @@
     function playAudio(s) { try { const a = document.getElementById(s); if(a){a.currentTime=0;a.play().catch(e=>{});} }catch(e){} }
     function getAvatarUrl(u) { return u && u.avatar ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png'; }
 
+   // Update fungsi switchTab agar mendukung tab 'shop'
     function switchTab(t) {
       playAudio('audio-pop');
-      ['gacha','daily','inventory','battle'].forEach(tab => {
+      ['gacha','daily','inventory','battle','shop'].forEach(tab => {
         document.getElementById(`tab-${tab}`).classList.add('hidden');
         document.getElementById(`tab-btn-${tab}`).className = 'px-5 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800';
       });
@@ -222,6 +245,95 @@
       document.getElementById(`tab-btn-${t}`).className = 'px-5 py-2.5 rounded-xl text-xs font-bold transition bg-pink-600 text-white shadow-lg';
       if (t === 'daily') renderDailyStreakGrid();
       if (t === 'battle' && !activeRoomId) refreshOpenRooms();
+      if (t === 'shop') fetchShopItems();
+    }
+
+    // Fungsi Fetch Item Shop
+    async function fetchShopItems() {
+      try {
+        const res = await fetch('/api/shopw');
+        const data = await res.json();
+        if (data.success) {
+          renderShopGrid(data.items);
+        }
+      } catch (e) {}
+    }
+
+    function renderShopGrid(items) {
+      const grid = document.getElementById('shop-items-grid');
+      if (!items || items.length === 0) {
+        grid.innerHTML = '<p class="text-xs text-slate-500 col-span-3 text-center">Tidak ada item di shop.</p>';
+        return;
+      }
+
+      const inv = userData.inventory || [];
+      grid.innerHTML = '';
+
+      items.forEach(item => {
+        const isSoldOut = item.stock !== undefined && item.stock <= 0;
+        
+        // Buat opsi dropdown waifu milik user untuk target buff/heal
+        let waifuOptions = '<option value="">-- Pilih Waifu Target --</option>';
+        inv.forEach(w => {
+          waifuOptions += `<option value="${w.instanceId}">${w.name} (${w.rarity}) - HP: ${w.currentHp ?? w.hp}/${w.hp}</option>`;
+        });
+
+        grid.innerHTML += `
+          <div class="bg-slate-950 border ${isSoldOut ? 'border-rose-900/40 opacity-60' : 'border-slate-800'} p-5 rounded-2xl flex flex-col justify-between space-y-4 shadow-lg">
+            <div class="space-y-2">
+              <div class="flex justify-between items-start">
+                <h4 class="font-bold text-sm text-white">${item.name}</h4>
+                <span class="text-[10px] bg-pink-500/20 text-pink-400 px-2 py-0.5 rounded font-mono font-bold">💖 ${item.price} Poin</span>
+              </div>
+              <p class="text-xs text-slate-400">${item.description}</p>
+              <p class="text-[10px] text-slate-500 font-mono">Stok Tersedia: ${item.stock !== undefined ? item.stock : 'Unlimited'}</p>
+            </div>
+
+            <div class="space-y-2 pt-2 border-t border-slate-900">
+              <label class="text-[10px] text-slate-400 font-bold">Terapkan ke Waifu:</label>
+              <select id="target-waifu-${item.itemId}" class="w-full bg-slate-900 border border-slate-800 text-xs text-slate-200 rounded-xl p-2 focus:outline-none focus:border-pink-500">
+                ${waifuOptions}
+              </select>
+              <button onclick="buyShopItem('${item.itemId}')" ${isSoldOut ? 'disabled' : ''} class="w-full py-2.5 bg-pink-600 hover:bg-pink-500 disabled:bg-slate-800 disabled:text-slate-500 text-white font-bold text-xs rounded-xl transition shadow-md">
+                ${isSoldOut ? 'Stok Habis' : 'Beli Item'}
+              </button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    // Fungsi Eksekusi Pembelian Item Shop
+    async function buyShopItem(itemId) {
+      playAudio('audio-pop');
+      const selectEl = document.getElementById(`target-waifu-${itemId}`);
+      const instanceId = selectEl ? selectEl.value : '';
+
+      if (!instanceId && itemId !== 'gacha_ticket') {
+        return alert('Silakan pilih waifu target terlebih dahulu dari dropdown!');
+      }
+
+      try {
+        const res = await fetch('/api/shopw', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: currentUser.id, itemId, instanceId })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          playAudio('audio-chime');
+          userData.points = data.points;
+          userData.inventory = data.inventory;
+          updateUIState(); // Refresh inventory dan poin otomatis di halaman utama
+          fetchShopItems(); // Refresh stok shop
+          alert(data.message);
+        } else {
+          alert(data.error);
+        }
+      } catch (e) {
+        alert('Gagal melakukan pembelian item.');
+      }
     }
 
     async function initAuthAndData() {
