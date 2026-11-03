@@ -111,7 +111,7 @@ export default async function handler(req, res) {
         });
       }
 
-      // 2. GACHA PULL
+      // 2. GACHA PULL & AUTO DUPLICATE MERGE
       if (action === 'gacha') {
         const gachaCost = 50;
         if (dbUser.points < gachaCost) {
@@ -200,7 +200,7 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, inventory: inventory, message: 'Waifu berhasil dihapus dari inventory.' });
       }
 
-      // 4. MERGE DUPES
+      // 4. MANUAL MERGE DUPES
       if (action === 'merge_dupes') {
         let inventory = dbUser.inventory || [];
         const mergedMap = {};
@@ -226,7 +226,7 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, inventory: newInventory, message: 'Semua duplikat berhasil digabungkan dan statistik meningkat!' });
       }
 
-      // 5. ARENA BATTLE
+      // 5. ARENA BATTLE (Bot vs PvP User Lain)
       if (action === 'battle') {
         const { instanceId, opponentType, opponentUserId, opponentInstanceId } = req.body;
         const userWaifu = dbUser.inventory.find(item => item.instanceId === instanceId);
@@ -244,7 +244,7 @@ export default async function handler(req, res) {
             const targetWaifu = targetUser.inventory.find(i => i.instanceId === opponentInstanceId);
             if (targetWaifu) {
               enemyWaifu = targetWaifu;
-              enemyName = `[PVP] ${targetUser.global_name || targetUser.username} (${targetWaifu.name})`;
+              enemyName = `[PvP] ${targetUser.global_name || targetUser.username} (${targetWaifu.name})`;
             }
           }
         }
