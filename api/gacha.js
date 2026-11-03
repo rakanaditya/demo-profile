@@ -436,5 +436,41 @@ export default async function handler(req, res) {
       console.error(e);
       return res.status(500).json({ success: false, error: 'Terjadi kesalahan pada server.' });
     }
+
+    // 10. LEADERBOARD DATA ENDPOINT
+    if (getAction === 'leaderboard') {
+      const topPoints = await usersCollection.find({}).sort({ points: -1 }).limit(10).project({ id: 1, username: 1, global_name: 1, avatar: 1, points: 1 }).toArray();
+      const topStreak = await usersCollection.find({}).sort({ loginStreak: -1, points: -1 }).limit(10).project({ id: 1, username: 1, global_name: 1, avatar: 1, loginStreak: 1 }).toArray();
+      
+      // Top Inventory Count & Top PVP (Diasumsikan ada field pvpWins atau dihitung dari inventory length)
+      const allUsers = await usersCollection.find({}).toArray();
+      
+      const topInventory = allUsers.map(u => ({
+        id: u.id,
+        username: u.username,
+        global_name: u.global_name,
+        avatar: u.avatar,
+        inventoryCount: u.inventory ? u.inventory.length : 0
+      })).sort((a, b) => b.inventoryCount - a.inventoryCount).slice(0, 10);
+
+      const topPvP = allUsers.map(u => ({
+        id: u.id,
+        username: u.username,
+        global_name: u.global_name,
+        avatar: u.avatar,
+        pvpWins: u.pvpWins || 0,
+        pvpLosses: u.pvpLosses || 0
+      })).sort((a, b) => b.pvpWins - a.pvpWins).slice(0, 10);
+
+      return res.status(200).json({
+        success: true,
+        leaderboard: {
+          points: topPoints,
+          streak: topStreak,
+          inventory: topInventory,
+          pvp: topPvP
+        }
+      });
+    }
   }
 }
