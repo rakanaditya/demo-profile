@@ -45,7 +45,6 @@ export default async function handler(req, res) {
       }
       
       const allWaifus = await waifusCollection.find({}).toArray();
-      // Hanya tampilkan room yang berstatus 'waiting' dan bukan milik user sendiri untuk menghindari duplikasi/room sendiri
       const openRooms = await pvpRoomsCollection.find({ status: 'waiting', 'player1.id': { $ne: id } }).toArray();
 
       return res.status(200).json({ success: true, user: dbUser, waifus: allWaifus, openRooms });
@@ -81,18 +80,171 @@ export default async function handler(req, res) {
 
       if (!dbUser) return res.status(404).json({ success: false, error: 'User tidak ditemukan.' });
 
-      // 1. CREATE PVP ROOM (Mencegah room duplicate aktif)
+      // 1. DAILY LOGIN REWARD
+      if (action === 'daily') {
+        const now = new Date();
+        const lastClaim = dbUser.lastDailyClaim ? new Date(dbUser.lastDailyClaim) : null;
+        let streak = dbUser.loginStreak || 0;
+        
+        if (lastClaim) {
+          const diffHours = (now - lastClaim) / (1000 * 60 * 60);
+          if (diffHours < 24) {
+            return res.status(400).json({ success: false, error: 'Reward harian sudah diambil hari ini. Coba lagi besok!' });
+          }
+          if (diffHours > 48) {
+            streak = 1;
+          } else {
+            streak = (streak % 7) + 1;
+          }
+        } else {
+          streak = 1;
+        }
+
+        const rewardPoints = streak * 100;
+        const newPoints = dbUser.points + rewardPoints;
+
+        await usersCollection.updateOne(
+          { id: userId },
+          { $set: { points: newPoints, lastDailyClaim: now, loginStreak: streak } }
+        );
+
+        return res.status(200).json({
+          success: true,
+          message: `Berhasil klaim Daily Reward Hari ke-${streak}! Mendapatkan +${rewardPoints} Poin.`,
+          points: newPoints,
+          streak: streak
+        });
+      }
+
+      // 2. GACHA PULL & AUTO DUPLICATE MERGE
+      if (action === 'gacha') {
+        const gachaCost = 50;
+        if (dbUser.points < gachaCost) {
+          return res.status(400).json({ success: false, error: 'Poin Anda tidak cukup! Lakukan Daily Login atau Battle.' });
+        }
+
+        const allWaifus = await waifusCollection.find({}).toArray();
+        if (allWaifus.length === 0) {
+          return res.status(400).json({ success: false, error: 'Belum ada data waifu.' });
+        }
+
+        const rand = Math.random() * 100;
+        let targetRarity = 'R';
+        if (rand < 10) targetRarity = 'SSR';
+        else if (rand < 40) targetRarity = 'SR';
+
+        let pool = allWaifus.filter(w => w.rarity === targetRarity);
+        if (pool.length === 0) pool = allWaifus;
+
+        const pulledWaifu = pool[Math.floor(Math.random() * pool.length)];
+        const newPoints = dbUser.points - gachaCost;
+
+        let inventory = dbUser.inventory || [];
+        let existingIndex = inventory.findIndex(item => item.waifuId === pulledWaifu.id);
+
+        let updatedItem;
+        if (existingIndex !== -1) {
+          let item = inventory[existingIndex];
+          item.dupes = (item.dupes || 1) + 1;
+          item.attack = Math.round(item.attack * 1.08);
+          item.defense = Math.round(item.defense * 1.08);
+          item.hp = Math.round(item.hp * 1.08);
+          updatedItem = item;
+          inventory[existingIndex] = item;
+        } else {
+          updatedItem = {
+            instanceId: new ObjectId().toString(),
+            waifuId: pulledWaifu.id,
+            name: pulledWaifu.name,
+            title: pulledWaifu.title,
+            rarity: pulledWaifu.rarity,
+            element: pulledWaifu.element,
+            attack: pulledWaifu.attack,
+            defense: pulledWaifu.defense,
+            hp: pulledWaifu.hp,
+            image: pulledWaifu.image,
+            dupes: 1,
+            obtainedAt: new Date()
+          };
+          inventory.push(updatedItem);
+        }
+
+        await usersCollection.updateOne(
+          { id: userId },
+          { $set: { points: newPoints, inventory: inventory } }
+        );
+
+        const isDuplicate = existingIndex !== -1;
+        return res.status(200).json({
+          success: true,
+          isDuplicate: isDuplicate,
+          message: isDuplicate 
+            ? `Duplikat! ${pulledWaifu.name} digabungkan (Dupes: x${updatedItem.dupes}, Stats Meningkat!).`
+            : `Selamat! Anda mendapatkan ${pulledWaifu.name} (${pulledWaifu.rarity}) baru!`,
+          waifu: updatedItem,
+          points: newPoints
+        });
+      }
+
+      // 3. DELETE WAIFU FROM INVENTORY
+      if (action === 'delete_waifu') {
+        const { instanceId } = req.body;
+        let inventory = dbUser.inventory || [];
+        const initialLen = inventory.length;
+        inventory = inventory.filter(item => item.instanceId !== instanceId);
+
+        if (inventory.length === initialLen) {
+          return res.status(400).json({ success: false, error: 'Waifu tidak ditemukan di inventory.' });
+        }
+
+        await usersCollection.updateOne(
+          { id: userId },
+          { $set: { inventory: inventory } }
+        );
+
+        return res.status(200).json({ success: true, inventory: inventory, message: 'Waifu berhasil dihapus dari inventory.' });
+      }
+
+      // 4. MANUAL MERGE DUPES
+      if (action === 'merge_dupes') {
+        let inventory = dbUser.inventory || [];
+        const mergedMap = {};
+
+        inventory.forEach(item => {
+          const key = item.waifuId || item.name;
+          if (!mergedMap[key]) {
+            mergedMap[key] = { ...item };
+          } else {
+            mergedMap[key].dupes = (mergedMap[key].dupes || 1) + (item.dupes || 1);
+            mergedMap[key].attack = Math.round(mergedMap[key].attack * 1.08);
+            mergedMap[key].defense = Math.round(mergedMap[key].defense * 1.08);
+            mergedMap[key].hp = Math.round(mergedMap[key].hp * 1.08);
+          }
+        });
+
+        const newInventory = Object.values(mergedMap);
+        await usersCollection.updateOne(
+          { id: userId },
+          { $set: { inventory: newInventory } }
+        );
+
+        return res.status(200).json({ success: true, inventory: newInventory, message: 'Semua duplikat berhasil digabungkan dan statistik meningkat!' });
+      }
+
+      // 5. PVP ROOM: CREATE ROOM (Anti Duplicate Active Room)
       if (action === 'create_pvp_room') {
         const { instanceId, isBot } = req.body;
         const waifu = (dbUser.inventory || []).find(i => i.instanceId === instanceId);
         if (!waifu) return res.status(400).json({ success: false, error: 'Waifu tidak ditemukan.' });
 
-        // Cek apakah user sudah memiliki room yang berstatus waiting / battling
         const existingRoom = await pvpRoomsCollection.findOne({
-          $or: [{ 'player1.id': userId, status: { $in: ['waiting', 'battling'] } }, { 'player2.id': userId, status: { $in: ['waiting', 'battling'] } }]
+          $or: [
+            { 'player1.id': userId, status: { $in: ['waiting', 'battling'] } },
+            { 'player2.id': userId, status: { $in: ['waiting', 'battling'] } }
+          ]
         });
         if (existingRoom) {
-          return res.status(400).json({ success: false, error: 'Anda masih memiliki room aktif yang belum selesai. Selesaikan atau keluar terlebih dahulu.' });
+          return res.status(400).json({ success: false, error: 'Anda masih memiliki room aktif yang belum selesai.' });
         }
 
         let player2Data = null;
@@ -110,7 +262,7 @@ export default async function handler(req, res) {
             maxHp: randBotWaifu.hp,
             ready: true
           };
-          initialStatus = 'battling'; // Bot langsung ready
+          initialStatus = 'battling';
         }
 
         const newRoom = {
@@ -122,7 +274,7 @@ export default async function handler(req, res) {
             waifu: waifu,
             currentHp: waifu.hp,
             maxHp: waifu.hp,
-            ready: false // Membutuhkan klik tombol Ready
+            ready: false
           },
           player2: player2Data,
           logs: [],
@@ -134,7 +286,7 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, roomId: result.insertedId.toString(), room: newRoom });
       }
 
-      // 2. JOIN PVP ROOM
+      // 6. PVP ROOM: JOIN ROOM
       if (action === 'join_pvp_room') {
         const { roomId, instanceId } = req.body;
         const waifu = (dbUser.inventory || []).find(i => i.instanceId === instanceId);
@@ -158,7 +310,7 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, roomId });
       }
 
-      // 3. PLAYER READY ACTION
+      // 7. PLAYER READY ACTION
       if (action === 'player_ready') {
         const { roomId } = req.body;
         const room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
@@ -170,7 +322,6 @@ export default async function handler(req, res) {
 
         await pvpRoomsCollection.updateOne({ _id: new ObjectId(roomId) }, { $set: updateField });
 
-        // Periksa apakah kedua player sudah ready
         const updatedRoom = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
         if (updatedRoom.player1 && updatedRoom.player1.ready && updatedRoom.player2 && updatedRoom.player2.ready && updatedRoom.status === 'waiting') {
           await pvpRoomsCollection.updateOne({ _id: new ObjectId(roomId) }, { $set: { status: 'battling' } });
@@ -179,7 +330,7 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true });
       }
 
-      // 4. GET / PROCESS PVP TURN SIMULATION & LOGS
+      // 8. PROCESS PVP TURN SIMULATION & LOGS
       if (action === 'get_pvp_status') {
         const { roomId } = req.body;
         let room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
@@ -223,7 +374,7 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, room });
       }
 
-      // 5. LEAVE / CANCEL ROOM
+      // 9. LEAVE / CANCEL ROOM
       if (action === 'leave_room') {
         const { roomId } = req.body;
         await pvpRoomsCollection.deleteOne({ _id: new ObjectId(roomId), status: 'waiting' });
