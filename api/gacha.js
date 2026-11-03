@@ -56,6 +56,11 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, room });
     }
 
+    if (getAction === 'get_open_rooms') {
+      const openRooms = await pvpRoomsCollection.find({ status: 'waiting', 'player1.id': { $ne: id } }).toArray();
+      return res.status(200).json({ success: true, openRooms });
+    }
+
     const allWaifus = await waifusCollection.find({}).toArray();
     return res.status(200).json({ success: true, waifus: allWaifus });
   }
@@ -231,11 +236,16 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, inventory: newInventory, message: 'Semua duplikat berhasil digabungkan dan statistik meningkat!' });
       }
 
-      // 5. PVP ROOM: CREATE ROOM (Anti Duplicate Active Room)
+      // 5. PVP ROOM: CREATE ROOM (Validasi HP > 0)
       if (action === 'create_pvp_room') {
         const { instanceId, isBot } = req.body;
         const waifu = (dbUser.inventory || []).find(i => i.instanceId === instanceId);
         if (!waifu) return res.status(400).json({ success: false, error: 'Waifu tidak ditemukan.' });
+        
+        // Cek apakah HP waifu sudah 0 (habis)
+        if (waifu.currentHp !== undefined && waifu.currentHp <= 0) {
+          return res.status(400).json({ success: false, error: 'Waifu ini memiliki HP 0 dan tidak bisa bertarung lagi! Pilih waifu lain.' });
+        }
 
         const existingRoom = await pvpRoomsCollection.findOne({
           $or: [
@@ -271,8 +281,8 @@ export default async function handler(req, res) {
             id: dbUser.id,
             name: dbUser.global_name || dbUser.username,
             avatar: dbUser.avatar,
-            waifu: waifu,
-            currentHp: waifu.hp,
+            waifu: { ...waifu, currentHp: waifu.currentHp ?? waifu.hp },
+            currentHp: waifu.currentHp ?? waifu.hp,
             maxHp: waifu.hp,
             ready: false
           },
@@ -286,11 +296,15 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, roomId: result.insertedId.toString(), room: newRoom });
       }
 
-      // 6. PVP ROOM: JOIN ROOM
+      // 6. PVP ROOM: JOIN ROOM (Validasi HP > 0)
       if (action === 'join_pvp_room') {
         const { roomId, instanceId } = req.body;
         const waifu = (dbUser.inventory || []).find(i => i.instanceId === instanceId);
         if (!waifu) return res.status(400).json({ success: false, error: 'Waifu tidak ditemukan.' });
+        
+        if (waifu.currentHp !== undefined && waifu.currentHp <= 0) {
+          return res.status(400).json({ success: false, error: 'Waifu ini memiliki HP 0 dan tidak bisa bertarung lagi! Pilih waifu lain.' });
+        }
 
         const room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
         if (!room || room.status !== 'waiting') return res.status(400).json({ success: false, error: 'Room tidak valid atau sudah dimulai.' });
@@ -300,8 +314,8 @@ export default async function handler(req, res) {
           id: dbUser.id,
           name: dbUser.global_name || dbUser.username,
           avatar: dbUser.avatar,
-          waifu: waifu,
-          currentHp: waifu.hp,
+          waifu: { ...waifu, currentHp: waifu.currentHp ?? waifu.hp },
+          currentHp: waifu.currentHp ?? waifu.hp,
           maxHp: waifu.hp,
           ready: false
         };
@@ -310,11 +324,30 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, roomId });
       }
 
-      // 7. PLAYER READY ACTION
+      // 7. PLAYER READY ACTION (Mendukung Rematch jika status 'finished')
       if (action === 'player_ready') {
         const { roomId } = req.body;
-        const room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
+        let room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
         if (!room) return res.status(400).json({ success: false, error: 'Room tidak ditemukan.' });
+
+        // Jika room sudah selesai (finished), reset HP dan status ready untuk Rematch
+        if (room.status === 'finished') {
+          await pvpRoomsCollection.updateOne(
+            { _id: new ObjectId(roomId) },
+            { 
+              $set: { 
+                status: 'waiting', 
+                logs: [], 
+                winner: null, 
+                'player1.currentHp': room.player1.maxHp, 
+                'player1.ready': false,
+                'player2.currentHp': room.player2.maxHp, 
+                'player2.ready': false 
+              } 
+            }
+          );
+          room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
+        }
 
         let updateField = {};
         if (room.player1 && room.player1.id === userId) updateField['player1.ready'] = true;
@@ -363,6 +396,20 @@ export default async function handler(req, res) {
             { $set: { status: 'finished', logs, winner, 'player1.currentHp': p1Hp, 'player2.currentHp': p2Hp } }
           );
 
+          // Update currentHp ke database inventory user agar HP tersimpan permanen
+          if (room.player1.id !== 'bot_ai') {
+            await usersCollection.updateOne(
+              { id: room.player1.id, "inventory.instanceId": room.player1.waifu.instanceId },
+              { $set: { "inventory.$.currentHp": p1Hp } }
+            );
+          }
+          if (room.player2 && room.player2.id !== 'bot_ai') {
+            await usersCollection.updateOne(
+              { id: room.player2.id, "inventory.instanceId": room.player2.waifu.instanceId },
+              { $set: { "inventory.$.currentHp": p2Hp } }
+            );
+          }
+
           room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
           if (winner === room.player1.name && room.player1.id !== 'bot_ai') {
             await usersCollection.updateOne({ id: room.player1.id }, { $inc: { points: 200 } });
@@ -377,7 +424,7 @@ export default async function handler(req, res) {
       // 9. LEAVE / CANCEL ROOM
       if (action === 'leave_room') {
         const { roomId } = req.body;
-        await pvpRoomsCollection.deleteOne({ _id: new ObjectId(roomId), status: 'waiting' });
+        await pvpRoomsCollection.deleteOne({ _id: new ObjectId(roomId) });
         return res.status(200).json({ success: true });
       }
 
