@@ -5,10 +5,10 @@ import { ObjectId } from 'mongodb';
 // Anda bisa menambahkan file baru di folder Assets/Waifu/ dan menambahkannya ke daftar ini atau database langsung.
 const DEFAULT_WAIFUS = [
   { id: 'lufas', name: 'Lufas Mapha', title: 'Black-Winged Sovereign', element: 'Dark', rarity: 'SSR', attack: 950, defense: 820, hp: 3200, image: '/Assets/Waifu/lufas.gif', description: 'Penguasa kegelapan bersayap hitam yang legendaris.' },
-  { id: 'rem', name: 'Rem', title: 'The Maid of Oni', element: 'Water', rarity: 'SR', attack: 780, defense: 750, hp: 2800, image: '/Assets/Waifu/rem.png', description: 'Pelayan setia dengan kekuatan oni yang luar biasa.' },
-  { id: 'asuna', name: 'Asuna Yuuki', title: 'The Lightning Flash', element: 'Light', rarity: 'SSR', attack: 910, defense: 700, hp: 2900, image: '/Assets/Waifu/asuna.jpg', description: 'Pendekar pedang super cepat dari dunia Aincrad.' },
-  { id: 'zero_two', name: 'Zero Two', title: 'Partner Killer', element: 'Fire', rarity: 'SSR', attack: 930, defense: 680, hp: 3100, image: '/Assets/Waifu/zerotwo.png', description: 'Gadis bertanduk dengan darah klakosaur di nadinya.' },
-  { id: 'miku', name: 'Hatsune Miku', title: 'Virtual Diva', element: 'Wind', rarity: 'R', attack: 650, defense: 600, hp: 2400, image: '/Assets/Waifu/miku.png', description: 'Idola virtual bersuara merdu yang menginspirasi dunia.' }
+  { id: 'rem', name: 'Rem', title: 'The Maid of Oni', element: 'Water', rarity: 'SR', attack: 780, defense: 750, hp: 2800, image: '/Assets/Waifu/rem.gif', description: 'Pelayan setia dengan kekuatan oni yang luar biasa.' },
+  { id: 'asuna', name: 'Asuna Yuuki', title: 'The Lightning Flash', element: 'Light', rarity: 'SSR', attack: 910, defense: 700, hp: 2900, image: '/Assets/Waifu/asuna.gif', description: 'Pendekar pedang super cepat dari dunia Aincrad.' },
+  { id: 'zero_two', name: 'Zero Two', title: 'Partner Killer', element: 'Fire', rarity: 'SSR', attack: 930, defense: 680, hp: 3100, image: '/Assets/Waifu/zerotwo.gif', description: 'Gadis bertanduk dengan darah klakosaur di nadinya.' },
+  { id: 'miku', name: 'Hatsune Miku', title: 'Virtual Diva', element: 'Wind', rarity: 'R', attack: 650, defense: 600, hp: 2400, image: '/Assets/Waifu/miku.gif', description: 'Idola virtual bersuara merdu yang menginspirasi dunia.' }
 ];
 
 export default async function handler(req, res) {
