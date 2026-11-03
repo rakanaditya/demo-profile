@@ -24,21 +24,36 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       const bodyData = req.body;
 
-      // Mendukung struktur data dari WebSocket maupun Webhook HTTP Trakteer
       const supporter_name = bodyData.supporter_name || bodyData.name || 'Seseorang';
       const unit = bodyData.unit || 'Dukungan';
-      const quantity = bodyData.quantity || bodyData.total_unit || 1;
+      const quantity = Number(bodyData.quantity || bodyData.total_unit || 1);
       const supporter_message = bodyData.supporter_message || bodyData.message || '';
       const supporter_avatar = bodyData.supporter_avatar || bodyData.avatar || 'https://edge-cdn.trakteer.id/images/mix/default-avatar.png';
-      const price = bodyData.price || bodyData.amount || 'Rp 0';
+      const price = String(bodyData.price || bodyData.amount || 'Rp 0');
+
+      // PENCEGAHAN SPAM / DOBEL:
+      // Cek apakah donasi dari orang yang sama dengan nominal & pesan serupa 
+      // sudah masuk dalam rentang waktu 10 detik terakhir.
+      const tenSecondsAgo = new Date(Date.now() - 10000);
+      const existingDonation = await collection.findOne({
+        supporter_name,
+        quantity,
+        supporter_message,
+        createdAt: { $gte: tenSecondsAgo }
+      });
+
+      if (existingDonation) {
+        // Jika data sudah tercatat dalam 10 detik ke belakang, abaikan (jangan simpan lagi)
+        return res.status(200).json({ success: true, message: 'Donasi duplikat diabaikan.' });
+      }
 
       const newDonation = {
         supporter_name,
         unit,
-        quantity: Number(quantity),
+        quantity,
         supporter_message,
         supporter_avatar,
-        price: String(price),
+        price,
         createdAt: new Date(),
       };
 
