@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Waifu Gacha & Battle Hub - Rakan Aditya Community</title>
+  <script>
+    const origConsoleWarn = console.warn;
+    console.warn = function(...args) {
+      if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) return;
+      origConsoleWarn.apply(console, args);
+    };
+    tailwind = {
+      config: {
+        theme: {
+          extend: {
+            colors: {
+              discord: { bg: '#313338', card: '#2b2d31', inner: '#1e1f22', accent: '#5865f2' }
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=gg+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { font-family: 'gg Sans', sans-serif; }
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 15px rgba(236, 72, 153, 0.4); }
+      50% { box-shadow: 0 0 30px rgba(236, 72, 153, 0.8); }
+    }
+    .gacha-glow { animation: pulseGlow 2s infinite; }
+    @keyframes cardSpin {
+      0% { transform: rotateY(0deg) scale(0.8); opacity: 0; }
+      100% { transform: rotateY(360deg) scale(1); opacity: 1; }
+    }
+    .summon-anim { animation: cardSpin 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+    @keyframes battleSlash {
+      0% { transform: translateX(0); }
+      50% { transform: translateX(20px) scale(1.1); }
+      100% { transform: translateX(0); }
+    }
+    .battle-anim { animation: battleSlash 0.5s ease-in-out; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-pink-500 selection:text-white">
+
+  <!-- Audio Effects -->
+  <audio id="audio-chime" preload="auto" src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3"></audio>
+  <audio id="audio-pop" preload="auto" src="https://assets.mixkit.co/active_storage/sfx/2578/2578-preview.mp3"></audio>
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <a href="/" class="w-10 h-10 rounded-2xl overflow-hidden flex items-center justify-center shadow-lg shadow-pink-600/30 hover:scale-105 transition border border-slate-700">
+          <img src="/Assets/server.png" alt="Server Icon" class="w-full h-full object-cover">
+        </a>
+        <div>
+          <h1 class="font-bold text-lg text-white leading-none">Waifu Gacha & Battle Hub</h1>
+          <span class="text-xs text-pink-400">Rakan Aditya Community</span>
+        </div>
+      </div>
+      
+      <div class="flex items-center space-x-3">
+        <div id="user-points-badge" class="hidden items-center space-x-2 bg-pink-950/40 border border-pink-500/40 px-3 py-1.5 rounded-full">
+          <span class="text-xs">💖</span>
+          <span id="user-points-val" class="text-xs font-bold text-pink-300">0 Poin</span>
+        </div>
+        <a href="/" class="text-xs text-slate-400 hover:text-white transition">← Beranda</a>
+        <div id="nav-user-badge" class="hidden flex items-center space-x-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full">
+          <img id="nav-user-avatar" src="" alt="Avatar" class="w-6 h-6 rounded-full object-cover">
+          <span id="nav-user-name" class="text-xs font-semibold text-white">User</span>
+          <button onclick="logoutSession()" class="text-slate-500 hover:text-rose-400 text-xs ml-1" title="Logout">✕</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-6xl mx-auto px-4 py-8 w-full flex-grow space-y-10">
+    
+    <!-- Login Required Banner -->
+    <div id="login-prompt" class="bg-gradient-to-r from-pink-950/60 via-slate-900 to-indigo-950/60 border border-pink-500/30 rounded-3xl p-8 text-center space-y-6 shadow-2xl">
+      <div class="w-16 h-16 rounded-2xl bg-pink-500/20 text-pink-400 mx-auto flex items-center justify-center text-3xl shadow-lg shadow-pink-500/20">
+        ✨
+      </div>
+      <div class="space-y-2 max-w-lg mx-auto">
+        <h2 class="text-2xl font-extrabold text-white">Koleksi Waifu Impianmu!</h2>
+        <p class="text-xs sm:text-sm text-slate-400">Login dengan akun Discord Anda untuk mendapatkan bonus awal <span class="text-pink-400 font-bold">100 Poin</span>, klaim Daily Reward, gacha waifu legendaris (.png, .jpg, .gif), dan bertarung di arena!</p>
+      </div>
+      <a href="https://discord.com/api/oauth2/authorize?client_id=1380868700688613416&redirect_uri=https%3A%2F%2Fdemo-profile-dun.vercel.app%2Fapi%2Fcallback&response_type=code&scope=identify%20guilds" 
+         class="inline-flex items-center space-x-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm rounded-xl transition shadow-lg shadow-indigo-600/30 active:scale-95">
+        <i class="fa-brands fa-discord"></i>
+        <span>Login dengan Discord untuk Mulai</span>
+      </a>
+    </div>
+
+    <!-- Dashboard App (Hidden unless logged in) -->
+    <div id="gacha-app" class="hidden space-y-8">
+      
+      <!-- Tab Navigation -->
+      <div class="flex justify-center space-x-2 border-b border-slate-800 pb-4 flex-wrap gap-2">
+        <button onclick="switchTab('gacha')" id="tab-btn-gacha" class="px-5 py-2.5 rounded-xl text-xs font-bold transition bg-pink-600 text-white shadow-lg shadow-pink-600/30">
+          🎁 Gacha Summon
+        </button>
+        <button onclick="switchTab('daily')" id="tab-btn-daily" class="px-5 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800">
+          📅 Daily Reward
+        </button>
+        <button onclick="switchTab('inventory')" id="tab-btn-inventory" class="px-5 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800">
+          🎒 Koleksi Waifu (<span id="inv-count">0</span>)
+        </button>
+        <button onclick="switchTab('battle')" id="tab-btn-battle" class="px-5 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800">
+          ⚔️ Arena Battle
+        </button>
+      </div>
+
+      <!-- SECTION 1: GACHA SUMMON -->
+      <div id="tab-gacha" class="space-y-6">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center space-y-6 relative overflow-hidden gacha-glow">
+          <div class="absolute inset-0 bg-gradient-to-b from-pink-500/5 via-transparent to-transparent pointer-events-none"></div>
+          <div class="space-y-2">
+            <span class="text-xs bg-pink-500/20 text-pink-300 border border-pink-500/30 px-3 py-1 rounded-full font-semibold">Banner Utama</span>
+            <h3 class="text-3xl font-black text-white">✨ Waifu Gacha Portal</h3>
+            <p class="text-xs text-slate-400">Peluang SSR: 10% | SR: 30% | R: 60%. Biaya Sekali Summon: <span class="text-pink-400 font-bold">50 Poin</span></p>
+          </div>
+
+          <div id="gacha-result-box" class="min-h-[260px] flex items-center justify-center">
+            <div class="text-slate-500 text-sm flex flex-col items-center space-y-2">
+              <span class="text-4xl">🌟</span>
+              <span>Tekan tombol di bawah untuk melakukan summon waifu!</span>
+            </div>
+          </div>
+
+          <div class="flex justify-center space-x-4 pt-2">
+            <button onclick="doGachaPull()" class="px-8 py-3.5 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white font-bold text-sm rounded-2xl transition shadow-xl shadow-pink-600/35 active:scale-95 flex items-center space-x-2">
+              <span>🔮 Summon 1x (50 Poin)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 2: DAILY REWARD (Day 1 - Day 7) -->
+      <div id="tab-daily" class="hidden space-y-6">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 space-y-6 shadow-xl">
+          <div class="text-center space-y-2">
+            <h3 class="text-2xl font-black text-white">📅 Daily Login Reward (7 Hari Streak)</h3>
+            <p class="text-xs text-slate-400">Login setiap hari untuk klaim poin: Day 1 (+100 Poin) s.d Day 7 (+700 Poin)!</p>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3" id="daily-streak-grid">
+            <!-- Render via JS -->
+          </div>
+
+          <div class="text-center pt-4">
+            <button onclick="claimDailyReward()" id="claim-daily-btn" class="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition shadow-lg shadow-emerald-600/30">
+              🎁 Klaim Reward Hari Ini
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 3: INVENTORY KOLEKSI WAIFU -->
+      <div id="tab-inventory" class="hidden space-y-6">
+        <div class="flex justify-between items-center">
+          <h3 class="font-bold text-xl text-white flex items-center space-x-2">
+            <span>🎒 Koleksi Waifu Anda</span>
+          </h3>
+          <span class="text-xs text-slate-400" id="inventory-sub-count">0 Waifu terkumpul</span>
+        </div>
+
+        <div id="inventory-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <p class="text-slate-500 text-sm col-span-4 text-center py-10">Belum ada waifu. Lakukan gacha summon sekarang!</p>
+        </div>
+      </div>
+
+      <!-- SECTION 4: ARENA BATTLE DENGAN ANIMASI -->
+      <div id="tab-battle" class="space-y-6 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 space-y-6 shadow-xl">
+          <div class="text-center space-y-2">
+            <h3 class="text-2xl font-black text-white">⚔️ Waifu Arena Battle</h3>
+            <p class="text-xs text-slate-400">Pilih waifu dengan statistik ATK tertinggi untuk bertarung dan menangkan Poin!</p>
+          </div>
+
+          <div id="battle-arena" class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center bg-slate-950 p-6 rounded-2xl border border-slate-800">
+            <div id="battle-player-side" class="text-center space-y-3">
+              <span class="text-xs bg-indigo-500/20 text-indigo-300 px-2.5 py-1 rounded-full font-bold">Waifu Anda</span>
+              <div id="selected-battle-waifu-preview" class="border border-slate-800 bg-slate-900 p-4 rounded-xl flex flex-col items-center space-y-2 min-h-[180px] justify-center">
+                <span class="text-3xl">🛡️</span>
+                <span class="text-xs text-slate-500">Pilih waifu di bawah</span>
+              </div>
+            </div>
+
+            <div class="text-center space-y-4">
+              <span id="vs-badge" class="text-3xl font-black text-pink-500 block animate-pulse">VS</span>
+              <button onclick="startBattle()" id="start-battle-btn" disabled class="px-6 py-3 bg-pink-600 hover:bg-pink-500 disabled:bg-slate-800 disabled:text-slate-600 text-white font-bold text-xs rounded-xl transition shadow-lg shadow-pink-600/30">
+                ⚔️ Mulai Pertarungan!
+              </button>
+            </div>
+
+            <div id="battle-enemy-side" class="text-center space-y-3">
+              <span class="text-xs bg-rose-500/20 text-rose-300 px-2.5 py-1 rounded-full font-bold">Lawan Arena</span>
+              <div id="enemy-preview" class="border border-slate-800 bg-slate-900 p-4 rounded-xl flex flex-col items-center space-y-2 min-h-[180px] justify-center">
+                <span class="text-3xl">👾</span>
+                <span class="text-xs text-slate-500">Menunggu penantang...</span>
+              </div>
+            </div>
+          </div>
+
+          <div id="battle-result-log" class="hidden bg-slate-950 p-4 rounded-xl border border-slate-800 text-center space-y-2 animate-fade-in">
+          </div>
+
+          <div class="space-y-3 pt-4">
+            <h4 class="font-bold text-sm text-slate-300">Pilih Waifu untuk Bertarung:</h4>
+            <div id="battle-inventory-select" class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-h-60 overflow-y-auto pr-1">
+              <p class="text-slate-500 text-xs col-span-4 text-center">Inventory kosong.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <footer class="border-t border-slate-800 py-6 bg-slate-900/40 text-center text-xs text-slate-500">
+    <p>Rakan Aditya Community &bull; Waifu Gacha & Battle System</p>
+  </footer>
+
+  <script>
+    let currentUser = null;
+    let userData = null;
+    let allWaifusMaster = [];
+    let selectedBattleInstanceId = null;
+
+    function playAudio(soundId) {
+      try {
+        const audio = document.getElementById(soundId);
+        if (audio) { audio.currentTime = 0; audio.play().catch(e => {}); }
+      } catch (e) {}
+    }
+
+    function getAvatarUrl(user) {
+      if (!user) return 'https://cdn.discordapp.com/embed/avatars/0.png';
+      return user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png';
+    }
+
+    function switchTab(tabName) {
+      playAudio('audio-pop');
+      ['gacha', 'daily', 'inventory', 'battle'].forEach(t => {
+        document.getElementById(`tab-${t}`).classList.add('hidden');
+        document.getElementById(`tab-btn-${t}`).className = 'px-5 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800';
+      });
+      document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+      document.getElementById(`tab-btn-${tabName}`).className = 'px-5 py-2.5 rounded-xl text-xs font-bold transition bg-pink-600 text-white shadow-lg shadow-pink-600/30';
+    }
+
+    async function initAuthAndData() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const userParam = urlParams.get('user');
+
+      if (userParam) {
+        try {
+          currentUser = JSON.parse(decodeURIComponent(userParam));
+          localStorage.setItem('discord_user', JSON.stringify(currentUser));
+          window.history.replaceState({}, document.title, window.location.pathname);
+        } catch (e) {}
+      } else {
+        const saved = localStorage.getItem('discord_user');
+        if (saved) currentUser = JSON.parse(saved);
+      }
+
+      if (currentUser && currentUser.id) {
+        document.getElementById('login-prompt').classList.add('hidden');
+        document.getElementById('gacha-app').classList.remove('hidden');
+        document.getElementById('user-points-badge').classList.remove('hidden');
+        document.getElementById('nav-user-badge').classList.remove('hidden');
+        document.getElementById('nav-user-name').innerText = currentUser.global_name || currentUser.username;
+        document.getElementById('nav-user-avatar').src = getAvatarUrl(currentUser);
+
+        await fetchUserData();
+      } else {
+        document.getElementById('login-prompt').classList.remove('hidden');
+        document.getElementById('gacha-app').classList.add('hidden');
+      }
+    }
+
+    async function fetchUserData() {
+      try {
+        const res = await fetch(`/api/gacha?action=profile&id=${currentUser.id}&username=${encodeURIComponent(currentUser.username)}&global_name=${encodeURIComponent(currentUser.global_name || currentUser.username)}&avatar=${currentUser.avatar || ''}`);
+        const data = await res.json();
+        if (data.success) {
+          userData = data.user;
+          allWaifusMaster = data.waifus;
+          updateUIState();
+        }
+      } catch (err) {
+        console.error("Gagal memuat profil gacha:", err);
+      }
+    }
+
+    function updateUIState() {
+      if (!userData) return;
+      document.getElementById('user-points-val').innerText = `${userData.points} Poin`;
+      document.getElementById('inv-count').innerText = userData.inventory ? userData.inventory.length : 0;
+      document.getElementById('inventory-sub-count').innerText = `${userData.inventory ? userData.inventory.length : 0} Waifu terkumpul`;
+
+      renderDailyGrid();
+      renderInventory();
+      renderBattleSelection();
+    }
+
+    // GACHA PULL
+    async function doGachaPull() {
+      playAudio('audio-pop');
+      const box = document.getElementById('gacha-result-box');
+      box.innerHTML = '<div class="text-pink-400 text-sm animate-pulse flex flex-col items-center space-y-2"><span class="text-4xl animate-spin">🔮</span><span>Membuka portal summon waifu...</span></div>';
+
+      try {
+        const res = await fetch('/api/gacha', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'gacha', userId: currentUser.id })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          playAudio('audio-chime');
+          userData.points = data.points;
+          userData.inventory.push(data.waifu);
+          updateUIState();
+
+          const w = data.waifu;
+          let rarityColor = 'text-blue-400 border-blue-500/40 bg-blue-950/40';
+          if (w.rarity === 'SSR') rarityColor = 'text-amber-400 border-amber-500/60 bg-amber-950/40';
+          else if (w.rarity === 'SR') rarityColor = 'text-purple-400 border-purple-500/50 bg-purple-950/40';
+
+          box.innerHTML = `
+            <div class="summon-anim bg-slate-950 border-2 ${rarityColor} p-6 rounded-2xl flex flex-col items-center space-y-3 max-w-xs shadow-2xl relative">
+              <span class="absolute top-2 right-3 text-xs font-black uppercase px-2 py-0.5 rounded-full border ${rarityColor}">${w.rarity}</span>
+              <img src="${w.image}" class="w-28 h-28 rounded-xl object-cover border-2 border-slate-700 shadow-md">
+              <div class="text-center">
+                <h4 class="font-bold text-base text-white">${w.name}</h4>
+                <p class="text-[11px] text-pink-400">${w.title}</p>
+                <div class="flex justify-center space-x-3 text-[10px] text-slate-400 mt-2 font-mono">
+                  <span>⚔️ ATK: ${w.attack}</span>
+                  <span>🛡️ DEF: ${w.defense}</span>
+                  <span>❤️ HP: ${w.hp}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        } else {
+          box.innerHTML = `<p class="text-rose-400 text-sm">${data.error}</p>`;
+        }
+      } catch (err) {
+        box.innerHTML = `<p class="text-rose-400 text-sm">Gagal melakukan summon.</p>`;
+      }
+    }
+
+    // DAILY REWARD GRID
+    function renderDailyGrid() {
+      const grid = document.getElementById('daily-streak-grid');
+      const currentStreak = userData.loginStreak || 0;
+      let gridHTML = '';
+
+      for (let i = 1; i <= 7; i++) {
+        let isClaimed = i <= currentStreak;
+        let isToday = i === currentStreak + 1 || (currentStreak === 0 && i === 1);
+        let border = isClaimed ? 'border-emerald-500/50 bg-emerald-950/20' : (isToday ? 'border-pink-500 bg-pink-950/30' : 'border-slate-800 bg-slate-950');
+
+        gridHTML += `
+          <div class="border ${border} p-4 rounded-2xl text-center space-y-2 flex flex-col justify-between">
+            <span class="text-xs font-bold text-slate-400">Hari ${i}</span>
+            <span class="text-2xl">${i === 7 ? '👑' : '🎁'}</span>
+            <span class="text-xs font-black text-pink-400">+${i * 100} Poin</span>
+            <span class="text-[10px] ${isClaimed ? 'text-emerald-400 font-bold' : 'text-slate-500'}">${isClaimed ? '✓ Diklaim' : (isToday ? 'Hari Ini' : 'Terkunci')}</span>
+          </div>
+        `;
+      }
+      grid.innerHTML = gridHTML;
+    }
+
+    async function claimDailyReward() {
+      playAudio('audio-pop');
+      try {
+        const res = await fetch('/api/gacha', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'daily', userId: currentUser.id })
+        });
+        const data = await res.json();
+        if (data.success) {
+          playAudio('audio-chime');
+          userData.points = data.points;
+          userData.loginStreak = data.streak;
+          updateUIState();
+          alert(data.message);
+        } else {
+          alert(data.error);
+        }
+      } catch (err) {
+        alert('Gagal klaim daily reward.');
+      }
+    }
+
+    // INVENTORY
+    function renderInventory() {
+      const container = document.getElementById('inventory-grid');
+      const inv = userData.inventory || [];
+
+      if (inv.length === 0) {
+        container.innerHTML = '<p class="text-slate-500 text-sm col-span-4 text-center py-10">Belum ada waifu. Lakukan gacha summon sekarang!</p>';
+        return;
+      }
+
+      container.innerHTML = '';
+      inv.forEach(w => {
+        let rarityColor = 'text-blue-400 border-blue-500/40';
+        if (w.rarity === 'SSR') rarityColor = 'text-amber-400 border-amber-500/60';
+        else if (w.rarity === 'SR') rarityColor = 'text-purple-400 border-purple-500/50';
+
+        const card = document.createElement('div');
+        card.className = `bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-3 relative shadow-md`;
+        card.innerHTML = `
+          <span class="absolute top-2 right-3 text-[10px] font-black uppercase px-2 py-0.5 rounded-full border ${rarityColor}">${w.rarity}</span>
+          <img src="${w.image}" class="w-full h-36 rounded-xl object-cover border border-slate-700">
+          <div class="space-y-1">
+            <h4 class="font-bold text-sm text-white truncate">${w.name}</h4>
+            <p class="text-[11px] text-pink-400 truncate">${w.title}</p>
+            <div class="flex justify-between text-[10px] text-slate-400 font-mono pt-1">
+              <span>⚔️ ${w.attack}</span>
+              <span>🛡️ ${w.defense}</span>
+              <span>❤️ ${w.hp}</span>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // BATTLE ARENA DENGAN ANIMASI
+    function renderBattleSelection() {
+      const container = document.getElementById('battle-inventory-select');
+      const inv = userData.inventory || [];
+
+      if (inv.length === 0) {
+        container.innerHTML = '<p class="text-slate-500 text-xs col-span-4 text-center">Inventory kosong. Summon waifu terlebih dahulu.</p>';
+        return;
+      }
+
+      container.innerHTML = '';
+      inv.forEach(w => {
+        const isSelected = selectedBattleInstanceId === w.instanceId;
+        const btn = document.createElement('div');
+        btn.className = `cursor-pointer p-3 rounded-xl border ${isSelected ? 'border-pink-500 bg-pink-950/30' : 'border-slate-800 bg-slate-900'} flex items-center space-x-3 transition hover:border-pink-400`;
+        btn.onclick = () => selectBattleWaifu(w);
+        btn.innerHTML = `
+          <img src="${w.image}" class="w-10 h-10 rounded-lg object-cover">
+          <div class="overflow-hidden">
+            <h5 class="font-bold text-xs text-white truncate">${w.name}</h5>
+            <p class="text-[10px] text-pink-400">ATK: ${w.attack}</p>
+          </div>
+        `;
+        container.appendChild(btn);
+      });
+    }
+
+    function selectBattleWaifu(w) {
+      playAudio('audio-pop');
+      selectedBattleInstanceId = w.instanceId;
+      renderBattleSelection();
+
+      const preview = document.getElementById('selected-battle-waifu-preview');
+      preview.innerHTML = `
+        <img src="${w.image}" class="w-20 h-20 rounded-xl object-cover border border-slate-700 shadow-md">
+        <div class="text-center">
+          <h5 class="font-bold text-xs text-white">${w.name}</h5>
+          <p class="text-[10px] text-pink-400 font-mono">ATK: ${w.attack} | DEF: ${w.defense}</p>
+        </div>
+      `;
+      document.getElementById('start-battle-btn').disabled = false;
+    }
+
+    async function startBattle() {
+      playAudio('audio-pop');
+      if (!selectedBattleInstanceId) return;
+
+      const arena = document.getElementById('battle-arena');
+      arena.classList.add('battle-anim');
+      setTimeout(() => arena.classList.remove('battle-anim'), 500);
+
+      const logBox = document.getElementById('battle-result-log');
+      logBox.classList.remove('hidden');
+      logBox.innerHTML = '<p class="text-xs text-pink-400 animate-pulse">⚔️ Pertarungan sengit sedang berlangsung dengan animasi...</p>';
+
+      try {
+        const res = await fetch('/api/gacha', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'battle', userId: currentUser.id, instanceId: selectedBattleInstanceId })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          playAudio('audio-chime');
+          userData.points = data.points;
+          updateUIState();
+
+          const enemy = data.enemy;
+          document.getElementById('enemy-preview').innerHTML = `
+            <img src="${enemy.image}" class="w-20 h-20 rounded-xl object-cover border border-slate-700 shadow-md">
+            <div class="text-center">
+              <h5 class="font-bold text-xs text-white">${enemy.name}</h5>
+              <p class="text-[10px] text-rose-400 font-mono">ATK: ${enemy.attack} | DEF: ${enemy.defense}</p>
+            </div>
+          `;
+
+          logBox.innerHTML = `
+            <div class="p-4 rounded-xl ${data.win ? 'bg-emerald-950/40 border border-emerald-500/40 text-emerald-300' : 'bg-amber-950/40 border border-amber-500/40 text-amber-300'} space-y-1">
+              <h4 class="font-bold text-sm">${data.win ? '🎉 KEMENANGAN ARENA!' : '💥 PERTARUNGAN SELESAI'}</h4>
+              <p class="text-xs">${data.message}</p>
+            </div>
+          `;
+        } else {
+          logBox.innerHTML = `<p class="text-xs text-rose-400">${data.error}</p>`;
+        }
+      } catch (err) {
+        logBox.innerHTML = `<p class="text-xs text-rose-400">Gagal menjalankan pertempuran.</p>`;
+      }
+    }
+
+    function logoutSession() {
+      localStorage.removeItem('discord_user');
+      window.location.reload();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initAuthAndData();
+    });
+  </script>
+</body>
+</html>
