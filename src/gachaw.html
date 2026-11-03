@@ -52,9 +52,9 @@
           <span id="user-points-val" class="text-xs font-bold text-pink-300">0 Poin</span>
         </div>
         <a href="/" class="text-xs text-slate-400 hover:text-white">← Beranda</a>
-         <button onclick="switchTab('shop')" id="tab-btn-shop" class="px-5 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800">🛒 Waifu Shop</button>
+        <button onclick="switchTab('shop')" id="tab-btn-shop" class="px-5 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800">🛒 Waifu Shop</button>
         <a href="/src/gachawleaderboard.html" class="px-5 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800">🏆 Leaderboard</a>
-       
+        
         <div id="nav-user-badge" class="hidden flex items-center space-x-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full">
           <img id="nav-user-avatar" src="" alt="Avatar" class="w-6 h-6 rounded-full object-cover">
           <span id="nav-user-name" class="text-xs font-semibold text-white">User</span>
@@ -118,8 +118,6 @@
         <div id="inventory-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4"></div>
       </div>
 
-      
-
       <!-- SECTION 4: PVP ARENA REAL-TIME -->
       <div id="tab-battle" class="space-y-6 hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 space-y-6 shadow-xl">
@@ -127,25 +125,6 @@
             <h3 class="text-2xl font-black text-white">⚔️ PvP Arena Real-Time</h3>
             <p class="text-xs text-slate-400">Pilih waifu andalanmu, buat room PvP atau lawan Bot, tekan tombol Ready, dan nikmati animasi pertarungan real-time!</p>
           </div>
-
-          <!-- SECTION 5: SHOP -->
-      <div id="tab-shop" class="hidden space-y-6">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 space-y-6 shadow-xl">
-          <div class="flex justify-between items-center flex-wrap gap-2">
-            <div>
-              <h3 class="text-2xl font-black text-white">🛒 Waifu Item Shop</h3>
-              <p class="text-xs text-slate-400">Belanja item menggunakan Poin untuk memulihkan HP atau meningkatkan ATK & DEF waifu andalanmu!</p>
-            </div>
-            <button onclick="fetchShopItems()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-lg transition flex items-center space-x-1.5">
-              <i class="fa-solid fa-rotate"></i><span>Refresh Shop</span>
-            </button>
-          </div>
-
-          <div id="shop-items-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <p class="text-xs text-slate-500 col-span-3 text-center py-6">Memuat item shop...</p>
-          </div>
-        </div>
-      </div>
 
           <!-- Lobby Open Rooms -->
           <div id="pvp-lobby" class="space-y-4 bg-slate-950 p-6 rounded-2xl border border-slate-800">
@@ -218,6 +197,25 @@
         </div>
       </div>
 
+      <!-- SECTION 5: SHOP -->
+      <div id="tab-shop" class="hidden space-y-6">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 space-y-6 shadow-xl">
+          <div class="flex justify-between items-center flex-wrap gap-2">
+            <div>
+              <h3 class="text-2xl font-black text-white">🛒 Waifu Item Shop</h3>
+              <p class="text-xs text-slate-400">Belanja item menggunakan Poin untuk memulihkan HP atau meningkatkan ATK & DEF waifu andalanmu!</p>
+            </div>
+            <button onclick="fetchShopItems()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-lg transition flex items-center space-x-1.5">
+              <i class="fa-solid fa-rotate"></i><span>Refresh Shop</span>
+            </button>
+          </div>
+
+          <div id="shop-items-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <p class="text-xs text-slate-500 col-span-3 text-center py-6">Memuat item shop...</p>
+          </div>
+        </div>
+      </div>
+
     </div>
   </main>
 
@@ -235,7 +233,7 @@
     function playAudio(s) { try { const a = document.getElementById(s); if(a){a.currentTime=0;a.play().catch(e=>{});} }catch(e){} }
     function getAvatarUrl(u) { return u && u.avatar ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png'; }
 
-   // Update fungsi switchTab agar mendukung tab 'shop'
+    // Update fungsi switchTab agar mendukung tab 'shop'
     function switchTab(t) {
       playAudio('audio-pop');
       ['gacha','daily','inventory','battle','shop'].forEach(tab => {
@@ -273,7 +271,6 @@
       items.forEach(item => {
         const isSoldOut = item.stock !== undefined && item.stock <= 0;
         
-        // Buat opsi dropdown waifu milik user untuk target buff/heal
         let waifuOptions = '<option value="">-- Pilih Waifu Target --</option>';
         inv.forEach(w => {
           waifuOptions += `<option value="${w.instanceId}">${w.name} (${w.rarity}) - HP: ${w.currentHp ?? w.hp}/${w.hp}</option>`;
@@ -310,7 +307,7 @@
       const selectEl = document.getElementById(`target-waifu-${itemId}`);
       const instanceId = selectEl ? selectEl.value : '';
 
-      if (!instanceId && itemId !== 'gacha_ticket') {
+      if (!instanceId) {
         return alert('Silakan pilih waifu target terlebih dahulu dari dropdown!');
       }
 
@@ -326,8 +323,8 @@
           playAudio('audio-chime');
           userData.points = data.points;
           userData.inventory = data.inventory;
-          updateUIState(); // Refresh inventory dan poin otomatis di halaman utama
-          fetchShopItems(); // Refresh stok shop
+          updateUIState(); 
+          fetchShopItems(); 
           alert(data.message);
         } else {
           alert(data.error);
@@ -383,7 +380,6 @@
       renderDailyStreakGrid();
     }
 
-    // MANUAL REFRESH LOBBY ROOMS
     async function refreshOpenRooms() {
       playAudio('audio-pop');
       try {
@@ -482,7 +478,7 @@
             </div>
             <div>
               <h4 class="font-bold text-sm text-white">${w.name}</h4>
-              <p class="text-[10px] ${isDead ? 'text-rose-400' : 'text-pink-400'} font-mono">HP: ${curHp}/${w.hp} | ATK: ${w.attack}</p>
+              <p class="text-[10px] ${isDead ? 'text-rose-400' : 'text-pink-400'} font-mono">HP: ${curHp}/${w.hp} | ATK: ${w.attack} | DEF: ${w.defense}</p>
             </div>
             <button onclick="deleteWaifu('${w.instanceId}')" class="w-full py-1.5 bg-rose-950/80 hover:bg-rose-900 text-rose-300 text-xs font-bold rounded-xl transition">🗑️ Hapus</button>
           </div>
@@ -532,7 +528,6 @@
       document.getElementById('create-bot-room-btn').disabled = false;
     }
 
-    // PVP REAL-TIME LOGIC
     async function renderOpenRooms(rooms) {
       const list = document.getElementById('open-rooms-list');
       if (!rooms || rooms.length === 0) { list.innerHTML = '<p class="text-xs text-slate-500">Tidak ada room terbuka. Buat room baru atau lawan bot!</p>'; return; }
