@@ -19,6 +19,11 @@
     body { font-family: 'gg Sans', sans-serif; }
     @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 15px rgba(236, 72, 153, 0.4); } 50% { box-shadow: 0 0 30px rgba(236, 72, 153, 0.8); } }
     .gacha-glow { animation: pulseGlow 2s infinite; }
+    @keyframes cardSpin {
+      0% { transform: rotateY(0deg) scale(0.8); opacity: 0; }
+      100% { transform: rotateY(360deg) scale(1); opacity: 1; }
+    }
+    .summon-anim { animation: cardSpin 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-pink-500 selection:text-white">
@@ -59,7 +64,7 @@
       <div class="w-16 h-16 rounded-2xl bg-pink-500/20 text-pink-400 mx-auto flex items-center justify-center text-3xl">✨</div>
       <div class="space-y-2 max-w-lg mx-auto">
         <h2 class="text-2xl font-extrabold text-white">Koleksi Waifu Impianmu!</h2>
-        <p class="text-xs sm:text-sm text-slate-400">Login dengan Discord untuk mulai bertarung PvP Real-Time dengan tombol Ready!</p>
+        <p class="text-xs sm:text-sm text-slate-400">Login dengan Discord untuk mulai gacha, klaim reward harian, dan bertarung PvP!</p>
       </div>
       <a href="https://discord.com/api/oauth2/authorize?client_id=1380868700688613416&redirect_uri=https%3A%2F%2Fdemo-profile-dun.vercel.app%2Fapi%2Fcallback&response_type=code&scope=identify%20guilds" 
          class="inline-flex items-center space-x-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm rounded-xl transition shadow-lg">
@@ -83,7 +88,7 @@
           <div id="gacha-result-box" class="min-h-[260px] flex items-center justify-center">
             <span class="text-slate-500 text-sm">Tekan tombol untuk summon waifu!</span>
           </div>
-          <button onclick="doGachaPull()" class="px-8 py-3.5 bg-gradient-to-r from-pink-600 to-rose-600 text-white font-bold text-sm rounded-2xl shadow-xl">🔮 Summon 1x (50 Poin)</button>
+          <button onclick="doGachaPull()" class="px-8 py-3.5 bg-gradient-to-r from-pink-600 to-rose-600 text-white font-bold text-sm rounded-2xl shadow-xl transition hover:opacity-90">🔮 Summon 1x (50 Poin)</button>
         </div>
       </div>
 
@@ -91,8 +96,10 @@
       <div id="tab-daily" class="hidden space-y-6">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 space-y-6 shadow-xl text-center">
           <h3 class="text-2xl font-black text-white">📅 Daily Login Reward</h3>
-          <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3" id="daily-streak-grid"></div>
-          <button onclick="claimDailyReward()" class="px-8 py-3 bg-emerald-600 text-white font-bold text-xs rounded-xl">🎁 Klaim Reward</button>
+          <p class="text-xs text-slate-400">Klaim poin gratis setiap hari secara beruntun hingga 7 hari untuk menambah modal gacha!</p>
+          <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3 py-4" id="daily-streak-grid"></div>
+          <div id="daily-msg" class="text-xs font-bold text-pink-400"></div>
+          <button onclick="claimDailyReward()" class="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-lg transition">🎁 Klaim Reward Hari Ini</button>
         </div>
       </div>
 
@@ -100,7 +107,7 @@
       <div id="tab-inventory" class="hidden space-y-6">
         <div class="flex justify-between items-center">
           <h3 class="font-bold text-xl text-white">🎒 Koleksi Waifu (<span id="inventory-sub-count">0</span>)</h3>
-          <button onclick="mergeAllDupes()" class="px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-xl">⚡ Merge Duplikat Otomatis</button>
+          <button onclick="mergeAllDupes()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition">⚡ Merge Duplikat Otomatis</button>
         </div>
         <div id="inventory-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4"></div>
       </div>
@@ -204,6 +211,7 @@
       });
       document.getElementById(`tab-${t}`).classList.remove('hidden');
       document.getElementById(`tab-btn-${t}`).className = 'px-5 py-2.5 rounded-xl text-xs font-bold transition bg-pink-600 text-white shadow-lg';
+      if (t === 'daily') renderDailyStreakGrid();
     }
 
     async function initAuthAndData() {
@@ -237,6 +245,7 @@
           userData = data.user;
           updateUIState();
           renderOpenRooms(data.openRooms || []);
+          renderDailyStreakGrid();
         }
       } catch(e) {}
     }
@@ -248,12 +257,51 @@
       document.getElementById('inventory-sub-count').innerText = userData.inventory ? userData.inventory.length : 0;
       renderInventory();
       renderBattleSelection();
+      renderDailyStreakGrid();
     }
 
+    // DAILY STREAK RENDER
+    function renderDailyStreakGrid() {
+      const grid = document.getElementById('daily-streak-grid');
+      if (!grid || !userData) return;
+      const currentStreak = userData.loginStreak || 0;
+      grid.innerHTML = '';
+      for (let i = 1; i <= 7; i++) {
+        const isClaimed = i <= currentStreak;
+        grid.innerHTML += `
+          <div class="bg-slate-950 border ${isClaimed ? 'border-emerald-500 bg-emerald-950/20' : 'border-slate-800'} p-3 rounded-2xl flex flex-col items-center justify-center space-y-1">
+            <span class="text-[10px] text-slate-400 font-mono">Hari ${i}</span>
+            <span class="text-sm font-bold text-pink-400">+${i * 100}</span>
+            <span class="text-[10px] ${isClaimed ? 'text-emerald-400 font-bold' : 'text-slate-600'}">${isClaimed ? '✓ Diklaim' : 'Terkunci'}</span>
+          </div>
+        `;
+      }
+    }
+
+    async function claimDailyReward() {
+      playAudio('audio-pop');
+      try {
+        const res = await fetch('/api/gacha', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'daily', userId: currentUser.id }) });
+        const data = await res.json();
+        if (data.success) {
+          playAudio('audio-chime');
+          userData.points = data.points;
+          userData.loginStreak = data.streak;
+          updateUIState();
+          document.getElementById('daily-msg').innerText = data.message;
+        } else {
+          document.getElementById('daily-msg').innerText = data.error;
+        }
+      } catch(e) {
+        document.getElementById('daily-msg').innerText = 'Gagal melakukan klaim reward.';
+      }
+    }
+
+    // GACHA PULL DENGAN ANIMASI PUTAR KARTU
     async function doGachaPull() {
       playAudio('audio-pop');
       const box = document.getElementById('gacha-result-box');
-      box.innerHTML = '<span class="text-pink-400 animate-pulse">🔮 Membuka portal...</span>';
+      box.innerHTML = '<span class="text-pink-400 animate-pulse">🔮 Membuka portal gacha...</span>';
       try {
         const res = await fetch('/api/gacha', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'gacha', userId: currentUser.id }) });
         const data = await res.json();
@@ -263,9 +311,25 @@
           const idx = userData.inventory.findIndex(i => i.waifuId === data.waifu.waifuId);
           if (idx !== -1) userData.inventory[idx] = data.waifu; else userData.inventory.push(data.waifu);
           updateUIState();
-          box.innerHTML = `<div class="summon-anim bg-slate-950 p-4 rounded-xl border border-pink-500 text-center"><img src="${data.waifu.image}" class="w-24 h-24 mx-auto rounded-lg object-cover"><h4 class="font-bold text-white mt-2">${data.waifu.name}</h4><p class="text-xs text-pink-400">${data.waifu.rarity}</p></div>`;
-        } else { box.innerHTML = `<span class="text-rose-400">${data.error}</span>`; }
-      } catch(e) { box.innerHTML = `<span class="text-rose-400">Gagal summon.</span>`; }
+
+          box.innerHTML = `
+            <div class="summon-anim bg-slate-950 p-6 rounded-2xl border-2 border-pink-500 text-center space-y-3 shadow-2xl">
+              <span class="text-xs bg-pink-500/20 text-pink-300 px-3 py-1 rounded-full font-bold">${data.waifu.rarity} &bull; ${data.waifu.element}</span>
+              <img src="${data.waifu.image}" class="w-32 h-32 mx-auto rounded-xl object-cover border border-slate-700 shadow-md">
+              <div>
+                <h4 class="font-black text-lg text-white">${data.waifu.name}</h4>
+                <p class="text-xs text-pink-400 italic">${data.waifu.title}</p>
+                <p class="text-[10px] text-slate-400 font-mono mt-1">ATK: ${data.waifu.attack} | DEF: ${data.waifu.defense} | HP: ${data.waifu.hp}</p>
+              </div>
+              <p class="text-xs font-bold ${data.isDuplicate ? 'text-amber-400' : 'text-emerald-400'}">${data.message}</p>
+            </div>
+          `;
+        } else { 
+          box.innerHTML = `<span class="text-rose-400 text-sm font-bold">${data.error}</span>`; 
+        }
+      } catch(e) { 
+        box.innerHTML = `<span class="text-rose-400 text-sm">Gagal summon. Terjadi kesalahan koneksi.</span>`; 
+      }
     }
 
     function renderInventory() {
@@ -274,12 +338,25 @@
       if (inv.length === 0) { c.innerHTML = '<p class="text-slate-500 text-sm col-span-4 text-center py-10">Belum ada waifu.</p>'; return; }
       c.innerHTML = '';
       inv.forEach(w => {
-        c.innerHTML += `<div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-3 flex flex-col justify-between"><img src="${w.image}" class="w-full h-36 rounded-xl object-cover"><div><h4 class="font-bold text-sm text-white">${w.name}</h4><p class="text-[10px] text-pink-400 font-mono">ATK: ${w.attack} | DEF: ${w.defense} | HP: ${w.hp}</p></div><button onclick="deleteWaifu('${w.instanceId}')" class="w-full py-1.5 bg-rose-950 hover:bg-rose-900 text-rose-300 text-xs font-bold rounded-xl">🗑️ Hapus</button></div>`;
+        c.innerHTML += `
+          <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-3 flex flex-col justify-between shadow-lg">
+            <div class="relative">
+              <img src="${w.image}" class="w-full h-36 rounded-xl object-cover border border-slate-800">
+              <span class="absolute top-2 right-2 text-[10px] bg-black/60 px-2 py-0.5 rounded-md text-pink-400 font-bold">${w.rarity}</span>
+            </div>
+            <div>
+              <h4 class="font-bold text-sm text-white">${w.name}</h4>
+              <p class="text-[10px] text-pink-400 font-mono">ATK: ${w.attack} | DEF: ${w.defense} | HP: ${w.hp}</p>
+              <p class="text-[10px] text-slate-400">Dupes: x${w.dupes || 1}</p>
+            </div>
+            <button onclick="deleteWaifu('${w.instanceId}')" class="w-full py-1.5 bg-rose-950/80 hover:bg-rose-900 text-rose-300 text-xs font-bold rounded-xl transition">🗑️ Hapus</button>
+          </div>
+        `;
       });
     }
 
     async function deleteWaifu(id) {
-      if(!confirm('Hapus waifu?')) return;
+      if(!confirm('Hapus waifu dari koleksi?')) return;
       const res = await fetch('/api/gacha', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'delete_waifu', userId:currentUser.id, instanceId:id})});
       const data = await res.json();
       if(data.success) { userData.inventory = data.inventory; updateUIState(); }
@@ -298,7 +375,15 @@
       c.innerHTML = '';
       inv.forEach(w => {
         const isSel = selectedBattleInstanceId === w.instanceId;
-        c.innerHTML += `<div onclick="selectBattleWaifu('${w.instanceId}')" class="cursor-pointer p-3 rounded-xl border ${isSel ? 'border-pink-500 bg-pink-950/30':'border-slate-800 bg-slate-900'} flex items-center space-x-3"><img src="${w.image}" class="w-10 h-10 rounded-lg object-cover"><div><h5 class="font-bold text-xs text-white">${w.name}</h5><p class="text-[10px] text-pink-400">ATK: ${w.attack}</p></div></div>`;
+        c.innerHTML += `
+          <div onclick="selectBattleWaifu('${w.instanceId}')" class="cursor-pointer p-3 rounded-xl border ${isSel ? 'border-pink-500 bg-pink-950/30 shadow-lg':'border-slate-800 bg-slate-900'} flex items-center space-x-3 transition">
+            <img src="${w.image}" class="w-10 h-10 rounded-lg object-cover">
+            <div>
+              <h5 class="font-bold text-xs text-white">${w.name}</h5>
+              <p class="text-[10px] text-pink-400 font-mono">ATK: ${w.attack} | HP: ${w.hp}</p>
+            </div>
+          </div>
+        `;
       });
     }
 
@@ -316,7 +401,15 @@
       if (!rooms || rooms.length === 0) { list.innerHTML = '<p class="text-xs text-slate-500">Tidak ada room terbuka. Buat room baru atau lawan bot!</p>'; return; }
       list.innerHTML = '';
       rooms.forEach(r => {
-        list.innerHTML += `<div class="flex justify-between items-center bg-slate-900 p-3 rounded-xl border border-slate-800"><div class="flex items-center space-x-2"><img src="${r.player1.waifu.image}" class="w-8 h-8 rounded-lg object-cover"><span class="text-xs text-white font-bold">Room: ${r.player1.name} (${r.player1.waifu.name})</span></div><button onclick="joinPvPRoom('${r._id}')" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg">Masuk Room</button></div>`;
+        list.innerHTML += `
+          <div class="flex justify-between items-center bg-slate-900 p-3 rounded-xl border border-slate-800">
+            <div class="flex items-center space-x-2">
+              <img src="${r.player1.waifu.image}" class="w-8 h-8 rounded-lg object-cover">
+              <span class="text-xs text-white font-bold">Room: ${r.player1.name} (${r.player1.waifu.name})</span>
+            </div>
+            <button onclick="joinPvPRoom('${r._id}')" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg transition">Masuk Room</button>
+          </div>
+        `;
       });
     }
 
@@ -391,7 +484,6 @@
           setupRoomUI(room);
 
           if (room.status === 'battling' || room.status === 'finished') {
-            // Minta server jalankan turn simulation jika belum diproses
             const turnRes = await fetch('/api/gacha', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'get_pvp_status', userId:currentUser.id, roomId:activeRoomId}) });
             const turnData = await turnRes.json();
             if (turnData.success && turnData.room.status === 'finished') {
@@ -408,8 +500,6 @@
       logBox.innerHTML = '<p class="text-pink-400 animate-pulse">⚔️ Pertarungan Real-Time Dimulai...</p>';
       
       const isP1 = room.player1.id === currentUser.id;
-      const meOriginalHp = isP1 ? room.player1.maxHp : room.player2.maxHp;
-      const opOriginalHp = isP1 ? room.player2.maxHp : room.player1.maxHp;
 
       for (let i = 0; i < logs.length; i++) {
         await new Promise(r => setTimeout(r, 1200));
@@ -418,7 +508,6 @@
         logBox.innerHTML += `<p>Turn ${l.turn}: <span class="text-pink-400">${l.attacker}</span> menyerang <span class="text-indigo-400">${l.defender}</span> sebesar <span class="text-rose-400">-${l.damage} DMG</span></p>`;
         logBox.scrollTop = logBox.scrollHeight;
 
-        // Update real-time health bar
         if (isP1) {
           document.getElementById('p1-hp-text').innerText = `HP: ${l.p1Hp}/${room.player1.maxHp}`;
           document.getElementById('p1-hp-bar').style.width = `${Math.max(0, (l.p1Hp / room.player1.maxHp) * 100)}%`;
