@@ -1,8 +1,7 @@
 import { connectToDatabase } from './db.js';
 import { ObjectId } from 'mongodb';
 
-// Daftar Waifu Master Default (Secara otomatis tersinkronisasi ke MongoDB jika database kosong)
-// Anda bisa menambahkan file baru di folder Assets/Waifu/ dan menambahkannya ke daftar ini atau database langsung.
+// Daftar Waifu Default (Secara otomatis tersinkronisasi ke MongoDB jika database kosong)
 const DEFAULT_WAIFUS = [
   { id: 'lufas', name: 'Lufas Mapha', title: 'Black-Winged Sovereign', element: 'Dark', rarity: 'SSR', attack: 950, defense: 820, hp: 3200, image: '/Assets/Waifu/lufas.gif', description: 'Penguasa kegelapan bersayap hitam yang legendaris.' },
   { id: 'rem', name: 'Rem', title: 'The Maid of Oni', element: 'Water', rarity: 'SR', attack: 780, defense: 750, hp: 2800, image: '/Assets/Waifu/rem.gif', description: 'Pelayan setia dengan kekuatan oni yang luar biasa.' },
@@ -31,7 +30,7 @@ export default async function handler(req, res) {
       if (!id) return res.status(400).json({ success: false, error: 'User ID diperlukan.' });
       let dbUser = await usersCollection.findOne({ id: id });
       
-      // Jika user pertama kali login Discord, berikan bonus awal 100 poin
+      // Bonus awal 100 poin saat pertama kali login Discord
       if (!dbUser) {
         dbUser = {
           id: id,
@@ -48,7 +47,10 @@ export default async function handler(req, res) {
       }
       
       const allWaifus = await waifusCollection.find({}).toArray();
-      return res.status(200).json({ success: true, user: dbUser, waifus: allWaifus });
+      // Ambil daftar user lain yang memiliki waifu di inventory untuk mode PvP Arena
+      const activeUsers = await usersCollection.find({ id: { $ne: id }, 'inventory.0': { $exists: true } }).project({ id: 1, global_name: 1, username: 1, avatar: 1, inventory: 1 }).toArray();
+
+      return res.status(200).json({ success: true, user: dbUser, waifus: allWaifus, opponents: activeUsers });
     }
 
     const allWaifus = await waifusCollection.find({}).toArray();
@@ -77,7 +79,7 @@ export default async function handler(req, res) {
         return res.status(404).json({ success: false, error: 'User tidak ditemukan.' });
       }
 
-      // 1. SYSTEM DAILY LOGIN REWARD (Day 1 = 100 point, s.d Day 7)
+      // 1. SYSTEM DAILY LOGIN REWARD (Day 1 = 100 poin s.d Day 7)
       if (action === 'daily') {
         const now = new Date();
         const lastClaim = dbUser.lastDailyClaim ? new Date(dbUser.lastDailyClaim) : null;
@@ -97,7 +99,7 @@ export default async function handler(req, res) {
           streak = 1;
         }
 
-        const rewardPoints = streak * 100; // Day 1: 100, Day 2: 200, ..., Day 7: 700
+        const rewardPoints = streak * 100;
         const newPoints = dbUser.points + rewardPoints;
 
         await usersCollection.updateOne(
@@ -125,7 +127,6 @@ export default async function handler(req, res) {
           return res.status(400).json({ success: false, error: 'Belum ada data waifu di database.' });
         }
 
-        // Distribusi Rarity: SSR (10%), SR (30%), R (60%)
         const rand = Math.random() * 100;
         let targetRarity = 'R';
         if (rand < 10) targetRarity = 'SSR';
@@ -167,25 +168,45 @@ export default async function handler(req, res) {
         });
       }
 
-      // 3. SYSTEM BATTLE ARENA (Statistik berbeda & peluang menang berdasarkan ATK)
+      // 3. SYSTEM ARENA BATTLE (Lawan Bot Random ATAU Lawan User Discord Lain)
       if (action === 'battle') {
-        const { instanceId } = req.body;
+        const { instanceId, opponentType, opponentUserId, opponentInstanceId } = req.body;
         const userWaifu = dbUser.inventory.find(item => item.instanceId === instanceId);
         
         if (!userWaifu) {
           return res.status(400).json({ success: false, error: 'Waifu pilihan tidak ditemukan di inventory.' });
         }
 
-        const allWaifus = await waifusCollection.find({}).toArray();
-        const enemyWaifu = allWaifus[Math.floor(Math.random() * allWaifus.length)];
+        let enemyWaifu = null;
+        let enemyName = '';
 
-        // Kalkulasi peluang menang berdasarkan Attack & HP
+        if (opponentType === 'user' && opponentUserId && opponentInstanceId) {
+          // Mode PvP: Lawan waifu dari user Discord lain
+          const targetUser = await usersCollection.findOne({ id: opponentUserId });
+          if (targetUser && targetUser.inventory) {
+            const targetWaifu = targetUser.inventory.find(i => i.instanceId === opponentInstanceId);
+            if (targetWaifu) {
+              enemyWaifu = targetWaifu;
+              enemyName = `[PVP] ${targetUser.global_name || targetUser.username} (${targetWaifu.name})`;
+            }
+          }
+        }
+
+        // Fallback ke Bot Random jika PvP tidak ditemukan
+        if (!enemyWaifu) {
+          const allWaifus = await waifusCollection.find({}).toArray();
+          const randBot = allWaifus[Math.floor(Math.random() * allWaifus.length)];
+          enemyWaifu = randBot;
+          enemyName = `[Bot Arena] ${randBot.name}`;
+        }
+
+        // Kalkulasi perbandingan kekuatan ATK & HP
         const playerPower = userWaifu.attack * 1.2 + userWaifu.hp * 0.1;
         const enemyPower = enemyWaifu.attack * 1.2 + enemyWaifu.hp * 0.1;
         
         const winProbability = playerPower / (playerPower + enemyPower);
         const isWin = Math.random() < winProbability;
-        const rewardPoints = isWin ? 150 : 30;
+        const rewardPoints = isWin ? 180 : 40;
 
         const newPoints = dbUser.points + rewardPoints;
         await usersCollection.updateOne(
@@ -197,9 +218,10 @@ export default async function handler(req, res) {
           success: true,
           win: isWin,
           enemy: enemyWaifu,
+          enemyDisplayName: enemyName,
           reward: rewardPoints,
           points: newPoints,
-          message: isWin ? `Pertarungan Menang! Waifu Anda mengalahkan ${enemyWaifu.name} (+${rewardPoints} Poin)` : `Pertarungan Sengit! Kalah tapi tetap mendapat konsolasi +${rewardPoints} Poin.`
+          message: isWin ? `Kemenangan Gemilang melawan ${enemyName}! Mendapatkan +${rewardPoints} Poin.` : `Pertarungan Sengit melawan ${enemyName}! Kalah tapi tetap mendapat konsolasi +${rewardPoints} Poin.`
         });
       }
 
