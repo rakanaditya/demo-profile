@@ -100,14 +100,44 @@
         </div>
       </div>
 
-      <!-- SECTION 2: DAILY -->
+      <!-- SECTION 2: DAILY REWARD (REDESIGNED STYLISH & REAL-TIME TIMER) -->
       <div id="tab-daily" class="hidden space-y-6">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 space-y-6 shadow-xl text-center">
-          <h3 class="text-2xl font-black text-white">📅 Daily Login Reward</h3>
-          <p class="text-xs text-slate-400">Klaim poin gratis setiap hari secara beruntun hingga 7 hari untuk menambah modal gacha!</p>
-          <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3 py-4" id="daily-streak-grid"></div>
-          <div id="daily-msg" class="text-xs font-bold text-pink-400"></div>
-          <button onclick="claimDailyReward()" class="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-lg transition">🎁 Klaim Reward Hari Ini</button>
+        <div class="bg-gradient-to-b from-slate-900 via-slate-900/90 to-slate-950 border border-pink-500/30 rounded-3xl p-6 sm:p-10 space-y-8 shadow-2xl relative overflow-hidden">
+          
+          <!-- Background Glow Accent -->
+          <div class="absolute -top-24 -right-24 w-72 h-72 bg-pink-600/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div class="absolute -bottom-24 -left-24 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          <!-- Header Title & Countdown Box -->
+          <div class="text-center space-y-3 relative z-10">
+            <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-pink-600 to-rose-500 text-white shadow-lg shadow-pink-600/30 text-2xl mb-1">
+              <i class="fa-solid fa-calendar-check"></i>
+            </div>
+            <h3 class="text-3xl font-black text-white tracking-tight">Daily Login Reward</h3>
+            <p class="text-xs sm:text-sm text-slate-400 max-w-lg mx-auto">
+              Klaim poin gratis setiap hari secara beruntun hingga 7 hari untuk menambah modal gacha dan memperkuat waifu Anda!
+            </p>
+            
+            <!-- Real-Time Countdown Badge -->
+            <div id="daily-countdown-banner" class="hidden inline-flex items-center space-x-2 bg-slate-950/80 border border-pink-500/40 px-4 py-2 rounded-2xl shadow-inner mt-2">
+              <i class="fa-regular fa-clock text-pink-400 animate-pulse"></i>
+              <span class="text-xs text-slate-300">Reset / Klaim berikutnya dalam:</span>
+              <span id="daily-timer-val" class="text-xs font-mono font-bold text-pink-400">--:--:--</span>
+            </div>
+          </div>
+
+          <!-- Grid Streak 7 Hari dengan Style Mewah -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-4 relative z-10" id="daily-streak-grid"></div>
+
+          <!-- Status Message & Tombol Klaim -->
+          <div class="text-center space-y-4 pt-2 relative z-10">
+            <div id="daily-msg" class="text-xs font-bold text-pink-400 min-h-[20px]"></div>
+            <button onclick="claimDailyReward()" id="claim-daily-btn" class="px-10 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm rounded-2xl shadow-xl shadow-emerald-900/30 transition transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center space-x-2 mx-auto">
+              <i class="fa-solid fa-gift text-base"></i>
+              <span>Klaim Reward Hari Ini</span>
+            </button>
+          </div>
+
         </div>
       </div>
 
@@ -286,10 +316,11 @@
   <script>
     let currentUser = null;
     let userData = null;
-    let serverWaifusData = []; // Menyimpan master data waifu dari API
+    let serverWaifusData = [];
     let selectedBattleInstanceId = null;
     let activeRoomId = null;
     let pollInterval = null;
+    let dailyCountdownInterval = null;
 
     function playAudio(s) { try { const a = document.getElementById(s); if(a){a.currentTime=0;a.play().catch(e=>{});} }catch(e){} }
     function getAvatarUrl(u) { return u && u.avatar ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png'; }
@@ -445,14 +476,11 @@
       }
     }
 
-    // --- FUNGSI MODAL DETAIL WAIFU FOKUS ---
     function openWaifuDetailModal(instanceId) {
       playAudio('audio-pop');
       const inv = userData.inventory || [];
       const w = inv.find(item => item.instanceId === instanceId);
       if (!w) return;
-
-      // Cari deskripsi master waifu dari serverWaifusData, jika tidak ada gunakan default
       const masterWaifu = serverWaifusData.find(m => m.id === w.waifuId) || {};
       const loreDesc = masterWaifu.description || 'Tidak ada catatan lore untuk waifu ini.';
 
@@ -532,21 +560,74 @@
       } catch(e) {}
     }
 
+    // --- RENDER GRID STREAK & REAL-TIME COUNTDOWN TIMER ---
     function renderDailyStreakGrid() {
       const grid = document.getElementById('daily-streak-grid');
       if (!grid || !userData) return;
       const currentStreak = userData.loginStreak || 0;
       grid.innerHTML = '';
+      
       for (let i = 1; i <= 7; i++) {
         const isClaimed = i <= currentStreak;
         grid.innerHTML += `
-          <div class="bg-slate-950 border ${isClaimed ? 'border-emerald-500 bg-emerald-950/20' : 'border-slate-800'} p-3 rounded-2xl flex flex-col items-center justify-center space-y-1">
-            <span class="text-[10px] text-slate-400 font-mono">Hari ${i}</span>
-            <span class="text-sm font-bold text-pink-400">+${i * 100}</span>
-            <span class="text-[10px] ${isClaimed ? 'text-emerald-400 font-bold' : 'text-slate-600'}">${isClaimed ? '✓ Diklaim' : 'Terkunci'}</span>
+          <div class="relative bg-slate-950/90 border ${isClaimed ? 'border-emerald-500 bg-emerald-950/20 shadow-lg shadow-emerald-950/40' : 'border-slate-800'} p-4 rounded-2xl flex flex-col items-center justify-center space-y-2 transition transform hover:scale-105">
+            <span class="text-[11px] font-bold text-slate-400 font-mono uppercase tracking-wider">Hari ${i}</span>
+            <div class="w-10 h-10 rounded-xl bg-pink-500/10 text-pink-400 flex items-center justify-center text-sm font-black border border-pink-500/20 shadow-inner">
+              🎁
+            </div>
+            <span class="text-xs font-black text-pink-300 font-mono">+${i * 100} Poin</span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${isClaimed ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-slate-900 text-slate-500'}">
+              ${isClaimed ? '✓ Diklaim' : 'Terkunci'}
+            </span>
           </div>
         `;
       }
+
+      // Cek apakah sudah klaim dalam 24 jam terakhir dan aktifkan timer real-time
+      checkDailyClaimStatus();
+    }
+
+    function checkDailyClaimStatus() {
+      if (!userData || !userData.lastDailyClaim) {
+        document.getElementById('daily-countdown-banner').classList.add('hidden');
+        document.getElementById('daily-msg').innerText = '';
+        document.getElementById('claim-daily-btn').disabled = false;
+        document.getElementById('claim-daily-btn').className = 'px-10 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm rounded-2xl shadow-xl shadow-emerald-900/30 transition transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center space-x-2 mx-auto cursor-pointer';
+        return;
+      }
+
+      const lastClaimTime = new Date(userData.lastDailyClaim).getTime();
+      const nextClaimTime = lastClaimTime + (24 * 60 * 60 * 1000); // 24 jam kemudian
+
+      if (dailyCountdownInterval) clearInterval(dailyCountdownInterval);
+
+      dailyCountdownInterval = setInterval(() => {
+        const now = new Date().getTime();
+        const distance = nextClaimTime - now;
+
+        if (distance <= 0) {
+          clearInterval(dailyCountdownInterval);
+          document.getElementById('daily-countdown-banner').classList.add('hidden');
+          document.getElementById('daily-msg').innerText = '✨ Reward harian siap diklaim!';
+          const btn = document.getElementById('claim-daily-btn');
+          btn.disabled = false;
+          btn.className = 'px-10 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm rounded-2xl shadow-xl shadow-emerald-900/30 transition transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center space-x-2 mx-auto cursor-pointer';
+          return;
+        }
+
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        const pad = (n) => String(n).padStart(2, '0');
+        document.getElementById('daily-timer-val').innerText = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+        document.getElementById('daily-countdown-banner').classList.remove('hidden');
+        document.getElementById('daily-msg').innerText = 'Reward harian sudah diambil hari ini. Silakan tunggu timer selesai!';
+
+        const btn = document.getElementById('claim-daily-btn');
+        btn.disabled = true;
+        btn.className = 'px-10 py-4 bg-slate-800 text-slate-500 font-black text-sm rounded-2xl shadow-inner cursor-not-allowed flex items-center justify-center space-x-2 mx-auto';
+      }, 1000);
     }
 
     async function claimDailyReward() {
@@ -558,6 +639,7 @@
           playAudio('audio-chime');
           userData.points = data.points;
           userData.loginStreak = data.streak;
+          userData.lastDailyClaim = new Date(); // Update langsung agar timer langsung aktif
           updateUIState();
           document.getElementById('daily-msg').innerText = data.message;
         } else {
@@ -610,8 +692,6 @@
       inv.forEach(w => {
         const curHp = w.currentHp ?? w.hp;
         const isDead = curHp <= 0;
-        
-        // Cari deskripsi dari master data waifu
         const masterWaifu = serverWaifusData.find(m => m.id === w.waifuId) || {};
         const shortDesc = masterWaifu.description || 'Koleksi waifu istimewa Rakan Aditya Community.';
 
@@ -682,6 +762,17 @@
       renderBattleSelection();
       document.getElementById('create-room-btn').disabled = false;
       document.getElementById('create-bot-room-btn').disabled = false;
+    }
+
+    async function refreshOpenRooms() {
+      playAudio('audio-pop');
+      try {
+        const res = await fetch(`/api/gacha?action=get_open_rooms&id=${currentUser.id}`);
+        const data = await res.json();
+        if (data.success) {
+          renderOpenRooms(data.openRooms || []);
+        }
+      } catch(e) {}
     }
 
     async function renderOpenRooms(rooms) {
@@ -815,12 +906,12 @@
 
         if (isP1) {
           document.getElementById('p1-hp-text').innerText = `HP: ${l.p1Hp}/${room.player1.maxHp}`;
-          document.getElementById('p1-hp-bar').style.width = `${Math.max(0, (l.p1Hp / room.player1.maxHp) * 100)}%`;
+          document.getElementById('p1-hp-bar'].style.width = `${Math.max(0, (l.p1Hp / room.player1.maxHp) * 100)}%`;
           document.getElementById('p2-hp-text').innerText = `HP: ${l.p2Hp}/${room.player2.maxHp}`;
           document.getElementById('p2-hp-bar').style.width = `${Math.max(0, (l.p2Hp / room.player2.maxHp) * 100)}%`;
         } else {
           document.getElementById('p1-hp-text').innerText = `HP: ${l.p2Hp}/${room.player2.maxHp}`;
-          document.getElementById('p1-hp-bar').style.width = `${Math.max(0, (l.p2Hp / room.player2.maxHp) * 100)}%`;
+          document.getElementById('p1-hp-bar'].style.width = `${Math.max(0, (l.p2Hp / room.player2.maxHp) * 100)}%`;
           document.getElementById('p2-hp-text').innerText = `HP: ${l.p1Hp}/${room.player1.maxHp}`;
           document.getElementById('p2-hp-bar').style.width = `${Math.max(0, (l.p1Hp / room.player1.maxHp) * 100)}%`;
         }
