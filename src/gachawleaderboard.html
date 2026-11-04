@@ -50,7 +50,7 @@
     
     <div class="text-center space-y-2">
       <h2 class="text-3xl font-black text-white">🏆 Community Leaderboards</h2>
-      <p class="text-xs sm:text-sm text-slate-400">Peringkat player terbaik berdasarkan Poin, Daily Login Streak, Koleksi Waifu, dan Kemenangan PvP!</p>
+      <p class="text-xs sm:text-sm text-slate-400">Peringkat player terbaik berdasarkan Poin, Daily Login Streak, Koleksi Waifu, Kemenangan PvP, dan Aktivitas Gacha Summon!</p>
     </div>
 
     <!-- Tab Navigation -->
@@ -59,6 +59,7 @@
       <button onclick="switchLbTab('streak')" id="btn-lb-streak" class="px-5 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800">📅 Top Daily Login Streak</button>
       <button onclick="switchLbTab('inventory')" id="btn-lb-inventory" class="px-5 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800">🎒 Top Koleksi Waifu</button>
       <button onclick="switchLbTab('pvp')" id="btn-lb-pvp" class="px-5 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800">⚔️ Top PvP Menang</button>
+      <button onclick="switchLbTab('gacha')" id="btn-lb-gacha" class="px-5 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800">🔮 Top Gacha Summon</button>
     </div>
 
     <!-- Leaderboard Container -->
@@ -97,7 +98,7 @@
     }
 
     function switchLbTab(tab) {
-      ['points', 'streak', 'inventory', 'pvp'].forEach(t => {
+      ['points', 'streak', 'inventory', 'pvp', 'gacha'].forEach(t => {
         document.getElementById(`btn-lb-${t}`).className = 'px-5 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800';
       });
       document.getElementById(`btn-lb-${tab}`).className = 'px-5 py-2.5 rounded-xl text-xs font-bold transition bg-pink-600 text-white shadow-lg';
@@ -129,6 +130,7 @@
         else if (tab === 'streak') statText = `📅 Hari ke-${user.loginStreak || 0}`;
         else if (tab === 'inventory') statText = `🎒 ${user.inventoryCount || 0} Waifu`;
         else if (tab === 'pvp') statText = `⚔️ ${user.pvpWins || 0} Menang`;
+        else if (tab === 'gacha') statText = `🔮 ${user.gachaCount || 0} Kali Summon`;
 
         container.innerHTML += `
           <div class="flex items-center justify-between bg-slate-950 p-4 rounded-2xl border border-slate-800/80 hover:border-slate-700 transition">
