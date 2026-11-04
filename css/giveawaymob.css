@@ -1,1 +1,76 @@
+/* ==========================================================================
+   Rakan Aditya Community - Giveaway Mobile Responsive Stylesheet (giveawaymob.css)
+   ========================================================================== */
 
+/* Base Adjustments for Small Screens / Mobile */
+@media screen and (max-width: 768px) {
+  /* Container padding tightening */
+  main.max-w-4xl, 
+  main.max-w-6xl {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    padding-top: 1.25rem !important;
+    padding-bottom: 2rem !important;
+  }
+
+  /* Header adjustments for mobile */
+  header .max-w-6xl {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+  }
+
+  /* Penyesuaian tombol aksi header di mobile agar tidak meluber */
+  header .flex.items-center.space-x-3 {
+    gap: 0.35rem !important;
+  }
+
+  header button, 
+  header a.text-xs {
+    font-size: 11px !important;
+    padding: 0.3rem 0.5rem !important;
+  }
+
+  /* Judul utama halaman giveaway */
+  main h2.text-3xl {
+    font-size: 1.5rem !important;
+    line-height: 2rem !important;
+  }
+
+  /* Form Admin / Owner Panel grid adjustment */
+  #owner-panel .grid-cols-1.sm\:grid-cols-2 {
+    grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+    gap: 0.75rem !important;
+  }
+
+  /* Grid list giveaway menjadi 1 kolom di HP */
+  #giveaway-list.grid {
+    grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+  }
+
+  /* Modal Rolling & Countdown adjustment agar pas di layar kecil */
+  #rolling-modal > div {
+    max-width: 92% !important;
+    padding: 1.25rem !important;
+  }
+
+  #countdown-card h1 {
+    font-size: 5rem !important;
+  }
+}
+
+/* Extra Small Devices (Phones under 380px) */
+@media screen and (max-width: 380px) {
+  h1.font-bold.text-lg {
+    font-size: 0.9rem !important;
+  }
+
+  header span.text-xs {
+    font-size: 9.5px !important;
+  }
+
+  #btn-audio-toggle span {
+    font-size: 10px !important;
+  }
+}
