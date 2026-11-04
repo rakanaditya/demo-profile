@@ -64,17 +64,18 @@
   <style>
     body { font-family: 'gg Sans', 'Noto Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
     
-    /* Styling Navigasi ala Modern Tab Bar */
+    /* Styling Navigasi Profesional ala Halaman Gacha Waifu */
     .nav-item {
       position: relative;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 8px 4px;
-      font-size: 13px;
-      font-weight: 500;
+      gap: 7px;
+      padding: 10px 4px;
+      font-size: 14px;
+      font-weight: 600;
       color: #94a3b8;
       transition: color 0.2s ease;
+      white-space: nowrap;
     }
     .nav-item:hover {
       color: #ffffff;
@@ -85,10 +86,10 @@
     .nav-item.active::after {
       content: '';
       position: absolute;
-      bottom: -1px;
+      bottom: 0;
       left: 0;
       width: 100%;
-      height: 2px;
+      height: 2.5px;
       background-color: #3b82f6;
       border-radius: 2px 2px 0 0;
     }
@@ -111,9 +112,10 @@
 
   <!-- Header Navigation -->
   <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-40">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-3">
-      <div class="flex items-center space-x-3">
-        <!-- ICON DARI FOLDER Assets/server.png -->
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+      
+      <!-- Kiri: Logo & Judul -->
+      <div class="flex items-center space-x-3 flex-shrink-0">
         <a href="/" class="w-10 h-10 rounded-2xl overflow-hidden flex items-center justify-center shadow-lg shadow-indigo-600/30 hover:scale-105 transition border border-slate-700">
           <img src="/Assets/server.png" alt="Server Icon" class="w-full h-full object-cover">
         </a>
@@ -123,35 +125,36 @@
         </div>
       </div>
       
-     <!-- Navbar Links -->
-     <nav class="hidden md:flex items-center space-x-6 overflow-x-auto">
-       <a href="/" class="nav-item active">
-         <i class="fa-solid fa-house text-xs"></i><span>Home</span>
-       </a>
-       <a href="/giveaway" class="nav-item">
-         <i class="fa-solid fa-gift text-xs"></i><span>Giveaway</span>
-       </a>
-       <a href="/giveawayleaderboard" class="nav-item">
-         <i class="fa-solid fa-trophy text-xs text-amber-400"></i><span>Top Leaderboard</span>
-       </a>
-       <a href="/rating" class="nav-item">
-         <i class="fa-solid fa-star text-xs text-amber-400"></i><span>Ratings</span>
-       </a>
-       <a href="/gachaw" class="nav-item">
-         <i class="fa-solid fa-dice text-xs text-pink-400"></i><span>Gacha Waifu</span>
-       </a>
-       <!-- Menu Activity Log disembunyikan secara default (hidden) -->
-       <a id="nav-activity-link" href="/activitylog" class="hidden nav-item">
-         <i class="fa-solid fa-chart-line text-xs text-indigo-400"></i><span>Activity Log</span>
-       </a>
-       <a href="/announcements" class="nav-item">
-         <i class="fa-solid fa-bullhorn text-xs"></i><span>News</span>
-       </a>
-     </nav>
+      <!-- Tengah: Navbar Links (Font Lebih Besar & Rapi Sebaris) -->
+      <nav class="hidden lg:flex items-center space-x-6 overflow-x-auto no-scrollbar">
+        <a href="/" class="nav-item active">
+          <i class="fa-solid fa-house text-xs"></i><span>Home</span>
+        </a>
+        <a href="/giveaway" class="nav-item">
+          <i class="fa-solid fa-gift text-xs"></i><span>Giveaway</span>
+        </a>
+        <a href="/giveawayleaderboard" class="nav-item">
+          <i class="fa-solid fa-trophy text-xs text-amber-400"></i><span>Top Leaderboard</span>
+        </a>
+        <a href="/rating" class="nav-item">
+          <i class="fa-solid fa-star text-xs text-amber-400"></i><span>Ratings</span>
+        </a>
+        <a href="/gachaw" class="nav-item">
+          <i class="fa-solid fa-dice text-xs text-pink-400"></i><span>Gacha Waifu</span>
+        </a>
+        <!-- Menu Activity Log disembunyikan secara default (hidden) -->
+        <a id="nav-activity-link" href="/activitylog" class="hidden nav-item">
+          <i class="fa-solid fa-chart-line text-xs text-indigo-400"></i><span>Activity Log</span>
+        </a>
+        <a href="/announcements" class="nav-item">
+          <i class="fa-solid fa-bullhorn text-xs"></i><span>News</span>
+        </a>
+      </nav>
 
-      <div class="flex items-center space-x-3">
+      <!-- Kanan: Language Switcher & Profile User Discord -->
+      <div class="flex items-center space-x-3 flex-shrink-0">
         <!-- Language Switcher -->
-        <button onclick="toggleLanguage()" id="lang-btn" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold border border-slate-700 transition">
+        <button onclick="toggleLanguage()" id="lang-btn" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold border border-slate-700 transition">
           🇮🇩 ID
         </button>
 
