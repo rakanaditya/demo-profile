@@ -59,11 +59,48 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=gg+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<!-- TAMBAHKAN LINK CSS MOBILE DI SINI -->
   <link rel="stylesheet" href="/css/mobile.css">
   
   <style>
     body { font-family: 'gg Sans', 'Noto Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+    
+    /* Styling Navigasi ala Modern Tab Bar */
+    .nav-item {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 4px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #94a3b8;
+      transition: color 0.2s ease;
+    }
+    .nav-item:hover {
+      color: #ffffff;
+    }
+    .nav-item.active {
+      color: #3b82f6; 
+    }
+    .nav-item.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background-color: #3b82f6;
+      border-radius: 2px 2px 0 0;
+    }
+
+    /* Animasi Slide In dari Kiri ke Kanan untuk Pengumuman Pemenang */
+    @keyframes slideInFromLeft {
+      0% { transform: translateX(-100%); opacity: 0; }
+      100% { transform: translateX(0); opacity: 1; }
+    }
+    .animate-slide-in {
+      animation: slideInFromLeft 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
@@ -74,56 +111,52 @@
 
   <!-- Header Navigation -->
   <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-40">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between flex-wrap gap-2">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-3">
       <div class="flex items-center space-x-3">
-        
         <!-- ICON DARI FOLDER Assets/server.png -->
         <a href="/" class="w-10 h-10 rounded-2xl overflow-hidden flex items-center justify-center shadow-lg shadow-indigo-600/30 hover:scale-105 transition border border-slate-700">
           <img src="/Assets/server.png" alt="Server Icon" class="w-full h-full object-cover">
         </a>
-        
         <div>
-          <h1 class="font-bold text-lg text-white leading-none">Rakan Aditya Community</h1>
-          <span class="text-xs text-slate-400">Official Discord Community & Profile Hub</span>
+          <h1 class="font-bold text-base text-white leading-none">Rakan Aditya Community</h1>
+          <span class="text-[11px] text-slate-400">Official Discord Community & Profile Hub</span>
         </div>
       </div>
       
-     <!-- Nav Links -->
-     <div class="flex items-center space-x-3 sm:space-x-4">
-       <a href="/giveaway" class="text-xs font-medium text-slate-300 hover:text-indigo-400 transition flex items-center space-x-1">
-         <span>🎁 Giveaway</span>
+     <!-- Navbar Links -->
+     <nav class="hidden md:flex items-center space-x-6 overflow-x-auto">
+       <a href="/" class="nav-item active">
+         <i class="fa-solid fa-house text-xs"></i><span>Home</span>
        </a>
-       
-       <a href="/giveawayleaderboard" class="text-xs font-medium text-amber-400 hover:text-amber-300 transition flex items-center space-x-1">
-         <span>🏆 Top Leaderboard</span>
+       <a href="/giveaway" class="nav-item">
+         <i class="fa-solid fa-gift text-xs"></i><span>Giveaway</span>
        </a>
-
-       <a href="/rating" class="text-xs font-medium text-amber-400 hover:text-amber-300 transition flex items-center space-x-1">
-         <span>⭐ Ratings</span>
+       <a href="/giveawayleaderboard" class="nav-item">
+         <i class="fa-solid fa-trophy text-xs text-amber-400"></i><span>Top Leaderboard</span>
        </a>
-
-        <a href="/gachaw" class="text-xs font-medium text-amber-400 hover:text-amber-300 transition flex items-center space-x-1">
-         <span>🎲 Gacha Waifu</span>
+       <a href="/rating" class="nav-item">
+         <i class="fa-solid fa-star text-xs text-amber-400"></i><span>Ratings</span>
+       </a>
+       <a href="/gachaw" class="nav-item">
+         <i class="fa-solid fa-dice text-xs text-pink-400"></i><span>Gacha Waifu</span>
        </a>
        <!-- Menu Activity Log disembunyikan secara default (hidden) -->
-       <a id="nav-activity-link" href="/activitylog" class="hidden text-xs font-medium text-amber-400 hover:text-amber-300 transition items-center space-x-1">
-         <span>📊 Activity Log</span>
+       <a id="nav-activity-link" href="/activitylog" class="hidden nav-item">
+         <i class="fa-solid fa-chart-line text-xs text-indigo-400"></i><span>Activity Log</span>
        </a>
-       
-       <a href="/announcements" class="text-xs font-medium text-slate-300 hover:text-indigo-400 transition hidden sm:inline-block">
-         <span>📢 News</span>
+       <a href="/announcements" class="nav-item">
+         <i class="fa-solid fa-bullhorn text-xs"></i><span>News</span>
        </a>
-     </div>
+     </nav>
 
       <div class="flex items-center space-x-3">
         <!-- Language Switcher -->
-        <button onclick="toggleLanguage()" id="lang-btn" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold border border-slate-700 transition">
+        <button onclick="toggleLanguage()" id="lang-btn" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold border border-slate-700 transition">
           🇮🇩 ID
         </button>
 
         <!-- STATUS USER LOGIN NAV BADGE WITH DROPDOWN MENU -->
         <div id="nav-user-badge" class="hidden relative group">
-          
           <button onclick="toggleUserMenu()" class="flex items-center space-x-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full hover:border-indigo-500/50 transition focus:outline-none">
             <img id="nav-user-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Avatar" class="w-6 h-6 rounded-full object-cover">
             <span id="nav-user-name" class="text-xs font-semibold text-white">User</span>
@@ -149,7 +182,6 @@
               <span>🚪 Log Out</span>
             </button>
           </div>
-
         </div>
 
       </div>
@@ -161,6 +193,10 @@
     
     <!-- Hero Section -->
     <div id="auth-section" class="max-w-xl mx-auto text-center space-y-6">
+      
+      <!-- Container Toast / Running Text Banner Pemenang (Muncul di atas Badge Status Online) -->
+      <div id="winner-banner-container" class="w-full"></div>
+
       <div class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-slate-300 text-xs font-medium">
         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
         <span>Website status online</span>
@@ -407,18 +443,24 @@
       }
     }
 
-    function showNotification(message) {
+    // Fungsi Banner Pemenang Giveaway dengan Animasi Slide-in dari Kiri ke Kanan
+    function showWinnerBanner(message) {
       playAudio('audio-chime');
-      const toast = document.createElement('div');
-      toast.className = 'fixed bottom-5 right-5 z-50 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center space-x-2 border border-emerald-400 animate-bounce';
-      toast.innerHTML = `
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-        </svg>
-        <span class="font-medium text-xs sm:text-sm">${message}</span>
+      const container = document.getElementById('winner-banner-container');
+      if (!container) return;
+
+      const banner = document.createElement('div');
+      banner.className = 'animate-slide-in bg-gradient-to-r from-amber-950/80 via-amber-900/60 to-slate-900 border border-amber-500/50 text-amber-200 px-5 py-3 rounded-2xl shadow-xl flex items-center justify-between space-x-3 mb-4';
+      banner.innerHTML = `
+        <div class="flex items-center space-x-3 overflow-hidden">
+          <span class="flex-shrink-0 w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-base border border-amber-500/30">🏆</span>
+          <p class="text-xs sm:text-sm font-bold tracking-wide truncate">${message}</p>
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-amber-400 hover:text-white text-xs font-bold px-2 py-1">&times;</button>
       `;
-      document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 4000);
+
+      container.innerHTML = '';
+      container.appendChild(banner);
     }
 
     function updateNavUser(user) {
@@ -471,7 +513,7 @@
       playAudio('audio-pop');
       localStorage.removeItem('discord_user');
       updateNavUser(null);
-      showNotification("Anda telah keluar dari akun.");
+      showWinnerBanner("Anda telah keluar dari akun.");
       window.location.reload();
     }
 
@@ -484,7 +526,7 @@
           const userData = JSON.parse(decodeURIComponent(userParam));
           localStorage.setItem('discord_user', JSON.stringify(userData));
           updateNavUser(userData);
-          showNotification(`Selamat Datang, ${userData.global_name || userData.username}!`);
+          showWinnerBanner(`Selamat Datang, ${userData.global_name || userData.username}!`);
           window.history.replaceState({}, document.title, window.location.pathname);
         } catch (err) {}
       } else {
@@ -504,7 +546,7 @@
         try {
           const winData = JSON.parse(savedWinner);
           if (Date.now() - winData.timestamp < 3600000) {
-            showNotification(`🎉 SELAMAT! ${winData.winnerName} memenangkan ${winData.prize} pada ${winData.title}!`);
+            showWinnerBanner(`🎉 SELAMAT! ${winData.winnerName} memenangkan ${winData.prize} pada ${winData.title}!`);
           }
           localStorage.removeItem('recent_winner_notification');
         } catch(e) {}
