@@ -24,12 +24,20 @@
   /* Penyesuaian tombol aksi header di mobile agar tidak meluber */
   header .flex.items-center.space-x-3 {
     gap: 0.35rem !important;
+    flex-wrap: wrap;
   }
 
   header button, 
   header a.text-xs {
     font-size: 11px !important;
     padding: 0.3rem 0.5rem !important;
+  }
+
+  /* Menyesuaikan tombol kembali beranda (link ← Beranda) di header mobile */
+  header a[href="/"] {
+    font-size: 11px !important;
+    padding: 0.3rem 0.4rem !important;
+    white-space: nowrap !important;
   }
 
   /* Judul utama halaman giveaway */
@@ -71,6 +79,10 @@
   }
 
   #btn-audio-toggle span {
+    font-size: 10px !important;
+  }
+
+  header a[href="/"] {
     font-size: 10px !important;
   }
 }
