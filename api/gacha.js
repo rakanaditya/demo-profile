@@ -62,7 +62,6 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, openRooms });
     }
 
-    // <-- PINDAHKAN LEADERBOARD KE SINI (KARENA DIA MENGGUNAKAN METHOD GET) -->
     if (getAction === 'leaderboard') {
       const topPoints = await usersCollection.find({}).sort({ points: -1 }).limit(10).project({ id: 1, username: 1, global_name: 1, avatar: 1, points: 1 }).toArray();
       const topStreak = await usersCollection.find({}).sort({ loginStreak: -1, points: -1 }).limit(10).project({ id: 1, username: 1, global_name: 1, avatar: 1, loginStreak: 1 }).toArray();
@@ -86,13 +85,27 @@ export default async function handler(req, res) {
         pvpLosses: u.pvpLosses || 0
       })).sort((a, b) => b.pvpWins - a.pvpWins).slice(0, 10);
 
+      // --- TAMBAHAN: TOP GACHA SUMMON (Dihitung dari total gachaCount + total dupes) ---
+      const topGacha = allUsers.map(u => {
+        const totalDupes = (u.inventory || []).reduce((sum, item) => sum + (item.dupes || 1), 0);
+        const totalSummons = (u.gachaCount || 0) + totalDupes;
+        return {
+          id: u.id,
+          username: u.username,
+          global_name: u.global_name,
+          avatar: u.avatar,
+          gachaCount: totalSummons
+        };
+      }).sort((a, b) => b.gachaCount - a.gachaCount).slice(0, 10);
+
       return res.status(200).json({
         success: true,
         leaderboard: {
           points: topPoints,
           streak: topStreak,
           inventory: topInventory,
-          pvp: topPvP
+          pvp: topPvP,
+          gacha: topGacha // <-- Kirim data top gacha ke frontend
         }
       });
     }
