@@ -199,8 +199,32 @@
         </div>
       </div>
 
+      <!-- SECTION 5: SHOP -->
+      <div id="tab-shop" class="hidden space-y-6">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 space-y-6 shadow-xl">
+          <div class="flex justify-between items-center flex-wrap gap-2">
+            <div>
+              <h3 class="text-2xl font-black text-white">🛒 Waifu Item Shop</h3>
+              <p class="text-xs text-slate-400">Belanja item menggunakan Poin untuk memulihkan HP atau meningkatkan ATK & DEF!</p>
+            </div>
+            <div class="flex items-center space-x-3">
+              <span id="shop-reset-timer" class="text-xs font-mono bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-pink-400 font-bold">Reset dalam: --:--:--</span>
+              <button onclick="fetchShopItems()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-lg transition flex items-center space-x-1.5">
+                <i class="fa-solid fa-rotate"></i><span>Refresh Shop</span>
+              </button>
+            </div>
+          </div>
 
-<!-- MODAL REDEEM CODE -->
+          <div id="shop-items-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <p class="text-xs text-slate-500 col-span-3 text-center py-6">Memuat item shop...</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- MODAL REDEEM CODE -->
   <div id="redeem-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-5 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -218,32 +242,42 @@
     </div>
   </div>
 
-      
-      <!-- SECTION 5: SHOP -->
-      <div id="tab-shop" class="hidden space-y-6">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 space-y-6 shadow-xl">
-          <div class="flex justify-between items-center flex-wrap gap-2">
-            <div>
-              <h3 class="text-2xl font-black text-white">🛒 Waifu Item Shop</h3>
-              <p class="text-xs text-slate-400">Belanja item menggunakan Poin untuk memulihkan HP atau meningkatkan ATK & DEF!</p>
-            </div>
-            <div class="flex items-center space-x-3">
-              <span id="shop-reset-timer" class="text-xs font-mono bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-pink-400 font-bold">Reset dalam: --:--:--</span>
-              <button onclick="fetchShopItems()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-lg transition flex items-center space-x-1.5">
-                <i class="fa-solid fa-rotate"></i><span>Refresh Shop</span>
-              </button>
+  <!-- MODAL DETAIL WAIFU FOKUS (KLIK GAMBAR) -->
+  <div id="waifu-detail-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-pink-500/50 w-full max-w-lg rounded-3xl p-6 space-y-5 shadow-2xl relative">
+      <button onclick="closeWaifuDetailModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-base bg-slate-800/80 w-8 h-8 rounded-full flex items-center justify-center">✕</button>
+      <div class="text-center space-y-4">
+        <div class="relative inline-block">
+          <img id="detail-modal-img" src="" class="w-48 h-48 mx-auto rounded-2xl object-cover border-2 border-pink-500 shadow-xl gacha-glow">
+          <span id="detail-modal-rarity" class="absolute top-2 right-2 text-xs bg-black/70 px-2.5 py-1 rounded-lg text-pink-400 font-bold border border-pink-500/30">SSR</span>
+        </div>
+        <div>
+          <h3 id="detail-modal-name" class="text-2xl font-black text-white">Nama Waifu</h3>
+          <p id="detail-modal-title" class="text-xs text-pink-400 font-semibold italic">Title Waifu</p>
+          <span id="detail-modal-element" class="inline-block mt-2 text-[10px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-3 py-1 rounded-full font-bold">Element: Dark</span>
+        </div>
+        <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-left space-y-2">
+          <h5 class="text-xs font-bold text-slate-300 flex items-center space-x-1.5"><i class="fa-solid fa-book-open text-pink-400"></i><span>Deskripsi Lore:</span></h5>
+          <p id="detail-modal-desc" class="text-xs text-slate-400 leading-relaxed italic">Deskripsi lengkap waifu...</p>
+        </div>
+        <div class="grid grid-cols-3 gap-3 text-center">
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+            <span class="text-[10px] text-slate-500 block">HP MAKS</span>
+            <span id="detail-modal-hp" class="text-xs font-mono font-bold text-emerald-400">0/0</span>
           </div>
-
-          <div id="shop-items-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <p class="text-xs text-slate-500 col-span-3 text-center py-6">Memuat item shop...</p>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+            <span class="text-[10px] text-slate-500 block">ATTACK</span>
+            <span id="detail-modal-atk" class="text-xs font-mono font-bold text-pink-400">0</span>
+          </div>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+            <span class="text-[10px] text-slate-500 block">DEFENSE</span>
+            <span id="detail-modal-def" class="text-xs font-mono font-bold text-indigo-400">0</span>
           </div>
         </div>
+        <div class="text-[11px] font-mono text-slate-500 pt-1" id="detail-modal-dupes">Duplikat: x1</div>
       </div>
-
-
-        
     </div>
-  </main>
+  </div>
 
   <footer class="border-t border-slate-800 py-6 bg-slate-900/40 text-center text-xs text-slate-500">
     <p>Rakan Aditya Community &bull; Real-Time PvP Arena</p>
@@ -252,6 +286,7 @@
   <script>
     let currentUser = null;
     let userData = null;
+    let serverWaifusData = []; // Menyimpan master data waifu dari API
     let selectedBattleInstanceId = null;
     let activeRoomId = null;
     let pollInterval = null;
@@ -259,7 +294,6 @@
     function playAudio(s) { try { const a = document.getElementById(s); if(a){a.currentTime=0;a.play().catch(e=>{});} }catch(e){} }
     function getAvatarUrl(u) { return u && u.avatar ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png'; }
 
-    // Update fungsi switchTab agar mendukung tab 'shop'
     function switchTab(t) {
       playAudio('audio-pop');
       ['gacha','daily','inventory','battle','shop'].forEach(tab => {
@@ -292,22 +326,18 @@
 
     function startShopCountdown() {
       if (shopCountdownInterval) clearInterval(shopCountdownInterval);
-      
       shopCountdownInterval = setInterval(() => {
         if (!targetResetTimestamp) return;
         const now = new Date().getTime();
         const distance = targetResetTimestamp - now;
-
         if (distance <= 0) {
           document.getElementById('shop-reset-timer').innerText = 'Reset dalam: 00:00:00';
-          fetchShopItems(); // Otomatis refresh shop saat waktu habis
+          fetchShopItems();
           return;
         }
-
         const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
         const pad = (n) => String(n).padStart(2, '0');
         document.getElementById('shop-reset-timer').innerText = `Reset dalam: ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
       }, 1000);
@@ -319,18 +349,14 @@
         grid.innerHTML = '<p class="text-xs text-slate-500 col-span-3 text-center">Tidak ada item di shop.</p>';
         return;
       }
-
       const inv = userData.inventory || [];
       grid.innerHTML = '';
-
       items.forEach(item => {
         const isSoldOut = item.stock !== undefined && item.stock <= 0;
-        
         let waifuOptions = '<option value="">-- Pilih Waifu Target --</option>';
         inv.forEach(w => {
           waifuOptions += `<option value="${w.instanceId}">${w.name} (${w.rarity}) - HP: ${w.currentHp ?? w.hp}/${w.hp}</option>`;
         });
-
         grid.innerHTML += `
           <div class="bg-slate-950 border ${isSoldOut ? 'border-rose-900/40 opacity-60' : 'border-slate-800'} p-5 rounded-2xl flex flex-col justify-between space-y-4 shadow-lg">
             <div class="space-y-2">
@@ -341,7 +367,6 @@
               <p class="text-xs text-slate-400">${item.description}</p>
               <p class="text-[10px] text-slate-500 font-mono">Stok Tersedia: ${item.stock !== undefined ? item.stock : 'Unlimited'}</p>
             </div>
-
             <div class="space-y-2 pt-2 border-t border-slate-900">
               <label class="text-[10px] text-slate-400 font-bold">Terapkan ke Waifu:</label>
               <select id="target-waifu-${item.itemId}" class="w-full bg-slate-900 border border-slate-800 text-xs text-slate-200 rounded-xl p-2 focus:outline-none focus:border-pink-500">
@@ -356,16 +381,11 @@
       });
     }
 
-    // Fungsi Eksekusi Pembelian Item Shop
     async function buyShopItem(itemId) {
       playAudio('audio-pop');
       const selectEl = document.getElementById(`target-waifu-${itemId}`);
       const instanceId = selectEl ? selectEl.value : '';
-
-      if (!instanceId) {
-        return alert('Silakan pilih waifu target terlebih dahulu dari dropdown!');
-      }
-
+      if (!instanceId) return alert('Silakan pilih waifu target terlebih dahulu dari dropdown!');
       try {
         const res = await fetch('/api/shopw', {
           method: 'POST',
@@ -373,7 +393,6 @@
           body: JSON.stringify({ userId: currentUser.id, itemId, instanceId })
         });
         const data = await res.json();
-
         if (data.success) {
           playAudio('audio-chime');
           userData.points = data.points;
@@ -389,8 +408,7 @@
       }
     }
 
-
-function openRedeemModal() {
+    function openRedeemModal() {
       playAudio('audio-pop');
       document.getElementById('redeem-modal').classList.remove('hidden');
       document.getElementById('redeem-code-input').value = '';
@@ -404,15 +422,8 @@ function openRedeemModal() {
       playAudio('audio-pop');
       const codeInput = document.getElementById('redeem-code-input');
       const code = codeInput.value.trim();
-
-      if (!code) {
-        return alert('Silakan masukkan kode redeem terlebih dahulu!');
-      }
-
-      if (!currentUser || !currentUser.id) {
-        return alert('Anda harus login terlebih dahulu.');
-      }
-
+      if (!code) return alert('Silakan masukkan kode redeem terlebih dahulu!');
+      if (!currentUser || !currentUser.id) return alert('Anda harus login terlebih dahulu.');
       try {
         const res = await fetch('/api/redeem', {
           method: 'POST',
@@ -420,7 +431,6 @@ function openRedeemModal() {
           body: JSON.stringify({ userId: currentUser.id, code: code })
         });
         const data = await res.json();
-
         if (data.success) {
           playAudio('audio-chime');
           userData.points = data.points;
@@ -433,6 +443,35 @@ function openRedeemModal() {
       } catch (e) {
         alert('Gagal memproses kode redeem.');
       }
+    }
+
+    // --- FUNGSI MODAL DETAIL WAIFU FOKUS ---
+    function openWaifuDetailModal(instanceId) {
+      playAudio('audio-pop');
+      const inv = userData.inventory || [];
+      const w = inv.find(item => item.instanceId === instanceId);
+      if (!w) return;
+
+      // Cari deskripsi master waifu dari serverWaifusData, jika tidak ada gunakan default
+      const masterWaifu = serverWaifusData.find(m => m.id === w.waifuId) || {};
+      const loreDesc = masterWaifu.description || 'Tidak ada catatan lore untuk waifu ini.';
+
+      document.getElementById('detail-modal-img').src = w.image;
+      document.getElementById('detail-modal-rarity').innerText = w.rarity;
+      document.getElementById('detail-modal-name').innerText = w.name;
+      document.getElementById('detail-modal-title').innerText = w.title || '-';
+      document.getElementById('detail-modal-element').innerText = `Element: ${w.element || 'Normal'}`;
+      document.getElementById('detail-modal-desc').innerText = loreDesc;
+      document.getElementById('detail-modal-hp').innerText = `${w.currentHp ?? w.hp}/${w.hp}`;
+      document.getElementById('detail-modal-atk').innerText = w.attack;
+      document.getElementById('detail-modal-def').innerText = w.defense;
+      document.getElementById('detail-modal-dupes').innerText = `Duplikat / Level Merge: x${w.dupes || 1}`;
+
+      document.getElementById('waifu-detail-modal').classList.remove('hidden');
+    }
+
+    function closeWaifuDetailModal() {
+      document.getElementById('waifu-detail-modal').classList.add('hidden');
     }
     
     async function initAuthAndData() {
@@ -464,6 +503,7 @@ function openRedeemModal() {
         const data = await res.json();
         if (data.success) {
           userData = data.user;
+          serverWaifusData = data.waifus || [];
           updateUIState();
           renderOpenRooms(data.openRooms || []);
           renderDailyStreakGrid();
@@ -545,7 +585,7 @@ function openRedeemModal() {
           box.innerHTML = `
             <div class="summon-anim bg-slate-950 p-6 rounded-2xl border-2 border-pink-500 text-center space-y-3 shadow-2xl">
               <span class="text-xs bg-pink-500/20 text-pink-300 px-3 py-1 rounded-full font-bold">${data.waifu.rarity} &bull; ${data.waifu.element}</span>
-              <img src="${data.waifu.image}" class="w-32 h-32 mx-auto rounded-xl object-cover border border-slate-700 shadow-md">
+              <img src="${data.waifu.image}" onclick="openWaifuDetailModal('${data.waifu.instanceId}')" class="w-32 h-32 mx-auto rounded-xl object-cover border border-slate-700 shadow-md cursor-pointer hover:scale-105 transition">
               <div>
                 <h4 class="font-black text-lg text-white">${data.waifu.name}</h4>
                 <p class="text-xs text-pink-400 italic">${data.waifu.title}</p>
@@ -570,18 +610,33 @@ function openRedeemModal() {
       inv.forEach(w => {
         const curHp = w.currentHp ?? w.hp;
         const isDead = curHp <= 0;
+        
+        // Cari deskripsi dari master data waifu
+        const masterWaifu = serverWaifusData.find(m => m.id === w.waifuId) || {};
+        const shortDesc = masterWaifu.description || 'Koleksi waifu istimewa Rakan Aditya Community.';
+
         c.innerHTML += `
           <div class="bg-slate-900 border ${isDead ? 'border-rose-900/50 opacity-70' : 'border-slate-800'} p-4 rounded-2xl space-y-3 flex flex-col justify-between shadow-lg">
-            <div class="relative">
-              <img src="${w.image}" class="w-full h-36 rounded-xl object-cover border border-slate-800">
-              <span class="absolute top-2 right-2 text-[10px] bg-black/60 px-2 py-0.5 rounded-md text-pink-400 font-bold">${w.rarity}</span>
-              ${isDead ? '<span class="absolute inset-0 bg-black/60 flex items-center justify-center text-xs font-bold text-rose-400 rounded-xl">HP HABIS (0)</span>' : ''}
+            <div class="space-y-2">
+              <div class="relative cursor-pointer group" onclick="openWaifuDetailModal('${w.instanceId}')">
+                <img src="${w.image}" class="w-full h-36 rounded-xl object-cover border border-slate-800 group-hover:border-pink-500 transition">
+                <span class="absolute top-2 right-2 text-[10px] bg-black/70 px-2 py-0.5 rounded-md text-pink-400 font-bold">${w.rarity}</span>
+                <span class="absolute bottom-2 left-2 text-[9px] bg-black/70 px-2 py-0.5 rounded text-indigo-300 font-mono">🔍 Klik Fokus</span>
+                ${isDead ? '<span class="absolute inset-0 bg-black/60 flex items-center justify-center text-xs font-bold text-rose-400 rounded-xl">HP HABIS (0)</span>' : ''}
+              </div>
+              <div>
+                <h4 class="font-bold text-sm text-white">${w.name}</h4>
+                <p class="text-[11px] text-pink-400 italic">${w.title || ''}</p>
+                <p class="text-[10px] text-slate-400 mt-1 line-clamp-2">${shortDesc}</p>
+              </div>
             </div>
-            <div>
-              <h4 class="font-bold text-sm text-white">${w.name}</h4>
-              <p class="text-[10px] ${isDead ? 'text-rose-400' : 'text-pink-400'} font-mono">HP: ${curHp}/${w.hp} | ATK: ${w.attack} | DEF: ${w.defense}</p>
+            <div class="space-y-2 pt-2 border-t border-slate-800">
+              <div class="flex justify-between text-[10px] font-mono ${isDead ? 'text-rose-400' : 'text-slate-300'}">
+                <span>HP: ${curHp}/${w.hp}</span>
+                <span>ATK: ${w.attack} | DEF: ${w.defense}</span>
+              </div>
+              <button onclick="deleteWaifu('${w.instanceId}')" class="w-full py-1.5 bg-rose-950/80 hover:bg-rose-900 text-rose-300 text-xs font-bold rounded-xl transition">🗑️ Hapus</button>
             </div>
-            <button onclick="deleteWaifu('${w.instanceId}')" class="w-full py-1.5 bg-rose-950/80 hover:bg-rose-900 text-rose-300 text-xs font-bold rounded-xl transition">🗑️ Hapus</button>
           </div>
         `;
       });
