@@ -53,6 +53,7 @@
         </div>
         <a href="/" class="text-xs text-slate-400 hover:text-white">← Beranda</a>
         <button onclick="switchTab('shop')" id="tab-btn-shop" class="px-5 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800">🛒 Waifu Shop</button>
+        <button onclick="openRedeemModal()" class="px-4 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800">🎁 Redeem Code</button>
         <a href="/gachawleaderboard" class="px-5 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800">🏆 Leaderboard</a>
         
         <div id="nav-user-badge" class="hidden flex items-center space-x-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full">
@@ -218,6 +219,24 @@
         </div>
       </div>
 
+<!-- MODAL REDEEM CODE -->
+  <div id="redeem-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-5 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h4 class="font-bold text-white text-base flex items-center space-x-2"><span>🎁</span><span>Tukar Kode Redeem</span></h4>
+        <button onclick="closeRedeemModal()" class="text-slate-400 hover:text-white text-sm">✕</button>
+      </div>
+      <div class="space-y-3">
+        <p class="text-xs text-slate-400">Masukkan kode redeem untuk mendapatkan bonus poin atau hadiah menarik secara gratis!</p>
+        <input type="text" id="redeem-code-input" placeholder="Contoh: RELEASE" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white font-mono uppercase tracking-wider focus:outline-none focus:border-pink-500">
+      </div>
+      <div class="flex space-x-3 pt-2">
+        <button onclick="closeRedeemModal()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">Batal</button>
+        <button onclick="submitRedeemCode()" class="flex-1 py-2.5 bg-pink-600 hover:bg-pink-500 text-white font-bold text-xs rounded-xl transition shadow-lg">Tukarkan</button>
+      </div>
+    </div>
+  </div>
+        
     </div>
   </main>
 
@@ -365,6 +384,52 @@
       }
     }
 
+
+function openRedeemModal() {
+      playAudio('audio-pop');
+      document.getElementById('redeem-modal').classList.remove('hidden');
+      document.getElementById('redeem-code-input').value = '';
+    }
+
+    function closeRedeemModal() {
+      document.getElementById('redeem-modal').classList.add('hidden');
+    }
+
+    async function submitRedeemCode() {
+      playAudio('audio-pop');
+      const codeInput = document.getElementById('redeem-code-input');
+      const code = codeInput.value.trim();
+
+      if (!code) {
+        return alert('Silakan masukkan kode redeem terlebih dahulu!');
+      }
+
+      if (!currentUser || !currentUser.id) {
+        return alert('Anda harus login terlebih dahulu.');
+      }
+
+      try {
+        const res = await fetch('/api/redeem', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: currentUser.id, code: code })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          playAudio('audio-chime');
+          userData.points = data.points;
+          updateUIState();
+          alert(data.message);
+          closeRedeemModal();
+        } else {
+          alert(data.error);
+        }
+      } catch (e) {
+        alert('Gagal memproses kode redeem.');
+      }
+    }
+    
     async function initAuthAndData() {
       const urlParams = new URLSearchParams(window.location.search);
       const userParam = urlParams.get('user');
