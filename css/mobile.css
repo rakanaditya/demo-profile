@@ -18,6 +18,38 @@
   header .max-w-6xl {
     padding-top: 0.5rem !important;
     padding-bottom: 0.5rem !important;
+    flex-wrap: wrap !important;
+  }
+
+  /* MEMASTIKAN NAVBAR LINK TERLIHAT JELAS DI MOBILE DI BAWAH HEADER UTAMA */
+  header nav.hidden,
+  header nav.lg\:flex {
+    display: flex !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    order: 3 !important; /* Posisikan baris navigasi di bawah logo & tombol kanan */
+    margin-top: 0.5rem !important;
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.4rem !important;
+    border-top: 1px solid rgba(51, 65, 85, 0.4); /* Garis pemisah tipis */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Sembunyikan scrollbar bawaan pada navigasi mobile */
+  header nav::-webkit-scrollbar {
+    display: none;
+  }
+  header nav {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Ukuran item navbar agar nyaman disentuh di HP */
+  header nav .nav-item {
+    font-size: 12.5px !important;
+    padding: 6px 10px !important;
+    flex-shrink: 0;
   }
 
   /* Hero section typography tuning */
@@ -51,28 +83,6 @@
   #user-dropdown-menu {
     width: 160px !important;
     right: 0 !important;
-  }
-}
-
-/* Scrollbar horizontal helper untuk navigasi mobile jika meluber */
-@media screen and (max-width: 1024px) {
-  nav.hidden.lg\:flex {
-    display: flex !important;
-    overflow-x: auto;
-    max-width: 100%;
-    padding-bottom: 4px;
-    -webkit-overflow-scrolling: touch;
-  }
-  
-  /* Sembunyikan scrollbar bawaan agar tetap rapi */
-  nav.lg\:flex::-webkit-scrollbar,
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  nav.lg\:flex,
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
   }
 }
 
