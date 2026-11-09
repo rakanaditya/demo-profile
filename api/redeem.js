@@ -3,7 +3,10 @@ import { connectToDatabase } from './db.js';
 // Daftar kode redeem yang aktif beserta hadiahnya
 const REDEEM_CODES = {
   'RELEASE': { points: 500, description: 'Bonus Peluncuran Waifu Gacha Hub (+500 Poin)' },
-  'RAKANADITYA': { points: 1000, description: 'Kode Spesial Komunitas Rakan Aditya (+1000 Poin)' }
+  'RAKANADITYA': { points: 1000, description: 'Kode Spesial Komunitas Rakan Aditya (+1000 Poin)' },
+  'MARIN': { points: 1500, description: 'Kode Spesial Dari Marin Kitagawa Bot (+1500 Poin)' },
+  'WAIFU': { points: 2000, description: 'Kode Choose youw waifu (+2000 Poin)' },
+  'GACHA': { points: 3000, description: 'GACHA WAIFU (+3000 Poin)' }
 };
 
 export default async function handler(req, res) {
