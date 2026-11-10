@@ -256,6 +256,15 @@
             else statusDot.className += 'bg-slate-500';
           }
 
+          // Cek Banner Color dari Lanyard API jika user tidak memiliki banner gambar
+          if (!lData.discord_user.banner && lData.banner_color) {
+            const bannerElem = document.getElementById('user-banner');
+            if (bannerElem) {
+              bannerElem.style.backgroundImage = 'none';
+              bannerElem.style.backgroundColor = lData.banner_color;
+            }
+          }
+
           // Render Rich Presence Activities
           const actContainer = document.getElementById('activities-container');
           actContainer.innerHTML = '';
@@ -363,10 +372,17 @@
         avatarContainer.appendChild(frameImg);
       }
 
+      // Deteksi Banner Otomatis (Gambar Banner / GIF atau Fallback ke Banner Color)
+      const bannerElem = document.getElementById('user-banner');
       if (user.banner) {
         const bannerFormat = user.banner.startsWith('a_') ? 'gif' : 'png';
         const bannerUrl = `https://cdn.discordapp.com/banners/${user.id}/${user.banner}.${bannerFormat}?size=600`;
-        document.getElementById('user-banner').style.backgroundImage = `url('${bannerUrl}')`;
+        bannerElem.style.backgroundImage = `url('${bannerUrl}')`;
+        bannerElem.style.backgroundColor = 'transparent';
+      } else if (user.accent_color) {
+        // Jika user tidak punya banner gambar tapi memiliki warna aksen (banner color)
+        bannerElem.style.backgroundImage = 'none';
+        bannerElem.style.backgroundColor = `#${user.accent_color.toString(16).padStart(6, '0')}`;
       }
 
       renderBadges(user);
