@@ -1,0 +1,101 @@
+/* ==========================================================================
+   Rakan Aditya Community - Live Trakteer Support Responsive Stylesheet (trakteermob.css)
+   Tailwind CSS Slate & Rose/Trakteer Theme Aesthetic
+   ========================================================================== */
+
+/* Base Adjustments for Desktop / Large Screens */
+header nav#main-nav-links {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+/* Base Adjustments for Small Screens / Mobile (Max-width 768px) */
+@media screen and (max-width: 768px) {
+  /* Container padding tightening */
+  body.min-h-screen {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+    padding-top: 1rem !important;
+    padding-bottom: 2rem !important;
+  }
+
+  main.max-w-3xl {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-top: 0.5rem !important;
+    padding-bottom: 1rem !important;
+  }
+
+  /* Header adjustments & layout */
+  header .max-w-6xl {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+    flex-wrap: wrap !important;
+  }
+
+  /* MEMASTIKAN NAVBAR LINK / MENU HEADER BISA DIGESER (HORIZONTAL SCROLL) */
+  header nav#main-nav-links {
+    display: flex !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    order: 3 !important;
+    margin-top: 0.4rem !important;
+    padding-top: 0.3rem !important;
+    padding-bottom: 0.4rem !important;
+    border-top: 1px solid rgba(51, 65, 85, 0.4); /* Garis pemisah slate-700/40 */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Sembunyikan scrollbar bawaan pada header navigation */
+  header nav#main-nav-links::-webkit-scrollbar {
+    display: none;
+  }
+  header nav#main-nav-links {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Ukuran item nav header agar nyaman disentuh */
+  header nav#main-nav-links a.nav-item {
+    font-size: 11.5px !important;
+    padding: 5px 9px !important;
+    flex-shrink: 0;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s;
+  }
+
+  header nav#main-nav-links a.nav-item:hover {
+    background-color: rgba(30, 41, 59, 0.8); /* Slate-800 */
+  }
+
+  /* Typography Tuning untuk Judul Utama */
+  h1.text-3xl {
+    font-size: 1.5rem !important;
+    line-height: 2rem !important;
+  }
+
+  /* Tombol Traktir Sekarang di HP (Full Width) */
+  .glass a[href*="trakteer.id"] {
+    display: flex !important;
+    width: 100% !important;
+    justify-content: center !important;
+  }
+}
+
+/* Extra Small Devices (Phones under 380px) */
+@media screen and (max-width: 380px) {
+  header h1.font-bold {
+    font-size: 0.85rem !important;
+  }
+
+  header span.text-xs {
+    font-size: 9px !important;
+  }
+
+  header nav#main-nav-links a.nav-item {
+    font-size: 10.5px !important;
+    padding: 4px 7px !important;
+  }
+}
