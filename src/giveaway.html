@@ -600,10 +600,17 @@
               ` : ''}
 
               ${isAdmin ? `
-                <div class="flex space-x-2 pt-1">
-                  ${!isEnded && !isClaimed ? `<button onclick="triggerRollStart('${gw._id}')" class="flex-1 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-medium transition">🎲 START ROLL</button>` : ''}
-                  ${isEnded ? `<button onclick="rerollGiveaway('${gw._id}')" class="flex-1 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-medium transition">🔄 REROLL (Ganti Pemenang)</button>` : ''}
-                  <button onclick="deleteGiveaway('${gw._id}')" class="flex-1 py-1.5 bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white rounded-lg text-xs font-medium transition border border-rose-500/30">🗑️ Hapus</button>
+                <div class="space-y-2 pt-1">
+                  <div class="flex space-x-2">
+                    ${!isEnded && !isClaimed ? `<button onclick="triggerRollStart('${gw._id}')" class="flex-1 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-medium transition">🎲 START ROLL</button>` : ''}
+                    ${isEnded ? `<button onclick="rerollGiveaway('${gw._id}')" class="flex-1 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-medium transition">🔄 REROLL</button>` : ''}
+                    <button onclick="deleteGiveaway('${gw._id}')" class="flex-1 py-1.5 bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white rounded-lg text-xs font-medium transition border border-rose-500/30">🗑️ Hapus</button>
+                  </div>
+                  ${isEnded ? `
+                    <button onclick="completeGiveaway('${gw._id}')" class="w-full py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition shadow-md shadow-emerald-600/20 flex items-center justify-center space-x-1">
+                      <span>✅ Selesaikan Giveaway (Mark as Completed)</span>
+                    </button>
+                  ` : ''}
                 </div>
               ` : ''}
             </div>
@@ -670,6 +677,27 @@
         container.innerHTML = `<p class="text-rose-400 text-sm col-span-2">Gagal memuat data giveaway.</p>`;
       }
     }
+
+    // Fungsi Admin untuk Menyelesaikan/Menandai Giveaway Completed secara Manual
+    async function completeGiveaway(id) {
+      if (!confirm('Yakin ingin menandai giveaway ini sebagai selesai (Successfully Claimed)?')) return;
+
+      const data = await safeFetchJson('/api/giveaway', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'claim', giveawayId: id, user: currentUser })
+      });
+
+      if (data.success) {
+        playAudio('audio-win');
+        showToast('✅ Giveaway berhasil diselesaikan (Completed)!');
+        loadGiveaways();
+      } else {
+        showToast(data.error || 'Gagal menyelesaikan giveaway.', true);
+      }
+    }
+
+    
 
     async function triggerRollStart(id) {
       triggerWebhook({ type: 'roll_start' });
