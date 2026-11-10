@@ -678,14 +678,14 @@
       }
     }
 
-    // Fungsi Admin untuk Menyelesaikan/Menandai Giveaway Completed secara Manual
+  // Fungsi Admin untuk Menyelesaikan/Menandai Giveaway Completed secara Manual
     async function completeGiveaway(id) {
       if (!confirm('Yakin ingin menandai giveaway ini sebagai selesai (Successfully Claimed)?')) return;
 
       const data = await safeFetchJson('/api/giveaway', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'claim', giveawayId: id, user: currentUser })
+        body: JSON.stringify({ action: 'complete', giveawayId: id, user: currentUser })
       });
 
       if (data.success) {
@@ -696,7 +696,6 @@
         showToast(data.error || 'Gagal menyelesaikan giveaway.', true);
       }
     }
-
     
 
     async function triggerRollStart(id) {
