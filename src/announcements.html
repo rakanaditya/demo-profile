@@ -4,7 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Announcements & Events - Rakan Aditya Community</title>
+  
   <script>
+    const origConsoleWarn = console.warn;
+    console.warn = function(...args) {
+      if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) return;
+      origConsoleWarn.apply(console, args);
+    };
     tailwind = {
       config: {
         theme: {
@@ -17,25 +23,52 @@
       }
     };
   </script>
+  
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=gg+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style> body { font-family: 'gg Sans', sans-serif; } </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/announcements.css">
+  
+  <style> 
+    body { font-family: 'gg Sans', sans-serif; }
+    .scrollbar-none::-webkit-scrollbar { display: none; }
+    .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
 
-  <!-- Header -->
-  <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-40">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+  <!-- Header & Navbar Lengkap -->
+  <header id="main-header" class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-40 transition-all">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2">
+      <!-- Kiri: Logo & Title -->
       <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-600/30">
-          <span class="text-xl">📢</span>
-        </div>
+        <a href="/" class="w-10 h-10 rounded-2xl overflow-hidden flex items-center justify-center shadow-lg shadow-indigo-600/30 hover:scale-105 transition border border-slate-700">
+          <img src="/Assets/server.png" alt="Server Icon" class="w-full h-full object-cover">
+        </a>
         <div>
           <h1 class="font-bold text-lg text-white leading-none">Rakan Aditya Community</h1>
           <span class="text-xs text-slate-400">Community Announcements & News</span>
         </div>
       </div>
-      <a href="/" class="text-xs text-slate-400 hover:text-white transition">← Beranda</a>
+      
+      <!-- Kanan: Tombol Beranda -->
+      <div class="flex items-center space-x-2 sm:space-x-3">
+        <a href="/" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold border border-slate-700 transition flex items-center space-x-1">
+          <span>← Beranda</span>
+        </a>
+      </div>
+
+      <!-- Baris Navbar Menu Lengkap (Responsive Desktop & Mobile Horizontal Scroll) -->
+      <nav id="main-nav-links" class="w-full flex items-center space-x-1 overflow-x-auto py-1.5 border-t border-slate-800/60 mt-1 scrollbar-none">
+        <a href="/" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-house mr-1"></i>Home</a>
+        <a href="/giveaway" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-gift mr-1"></i>Giveaway</a>
+        <a href="/giveawayleaderboard" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-trophy mr-1 text-amber-400"></i>Top Leaderboard</a>
+        <a href="/rating" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-star mr-1 text-amber-400"></i>Rating</a>
+        <a href="/gachaw" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-dice mr-1 text-pink-400"></i>Gacha Waifu</a>
+        <a href="/announcements" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-indigo-400 bg-indigo-600/10 border border-indigo-500/20 whitespace-nowrap"><i class="fa-solid fa-bullhorn mr-1"></i>News</a>
+        <!-- Menu Khusus Owner -->
+        <a href="/activitylog" id="nav-activity-log" class="nav-item hidden px-3 py-1.5 rounded-lg text-xs font-medium text-amber-400 bg-amber-500/10 border border-amber-500/30 whitespace-nowrap"><i class="fa-solid fa-chart-line mr-1"></i>Activity Log</a>
+      </nav>
     </div>
   </header>
 
@@ -48,8 +81,8 @@
 
     <!-- POST LIST -->
     <div class="space-y-4">
-      <article class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-3">
-        <div class="flex justify-between items-center text-xs text-slate-400">
+      <article class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-3 shadow-lg">
+        <div class="flex justify-between items-center text-xs text-slate-400 flex-wrap gap-2">
           <span class="px-2.5 py-0.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full font-semibold">🎉 Event Komunitas</span>
           <span>Diposting oleh Owner &bull; Rakan Aditya</span>
         </div>
@@ -59,8 +92,8 @@
         </p>
       </article>
 
-      <article class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-3">
-        <div class="flex justify-between items-center text-xs text-slate-400">
+      <article class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-3 shadow-lg">
+        <div class="flex justify-between items-center text-xs text-slate-400 flex-wrap gap-2">
           <span class="px-2.5 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full font-semibold">🚀 System Update</span>
           <span>Website Update v3.2</span>
         </div>
@@ -70,18 +103,16 @@
         </p>
       </article>
 
- <article class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-3">
-        <div class="flex justify-between items-center text-xs text-slate-400">
+      <article class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-3 shadow-lg">
+        <div class="flex justify-between items-center text-xs text-slate-400 flex-wrap gap-2">
           <span class="px-2.5 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full font-semibold">🚀 System Update</span>
           <span>Website Update v3.3</span>
         </div>
         <h3 class="text-lg font-bold text-white">Halaman myprofile & Animasi Rolling giveaways</h3>
         <p class="text-xs text-slate-400 leading-relaxed">
-          Sistem baru telah resmi diimplementasikan! ketuk nama setelah login ada halaman myprofile & logout button dan animasi Rolling giveaways notifikasi giveaway dimulai berakhir.
+          Sistem baru telah resmi diimplementasikan! Ketuk nama setelah login ada halaman myprofile & logout button dan animasi Rolling giveaways notifikasi giveaway dimulai berakhir.
         </p>
       </article>
-
-      
     </div>
 
   </main>
@@ -90,5 +121,20 @@
     <p>Rakan Aditya Community &bull; Hosted on Vercel</p>
   </footer>
 
+  <script>
+    const OWNER_ID = '628205121704296458';
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedUser = localStorage.getItem('discord_user');
+      if (savedUser) {
+        try {
+          const user = JSON.parse(savedUser);
+          if (user.id === OWNER_ID) {
+            const activityNav = document.getElementById('nav-activity-log');
+            if (activityNav) activityNav.classList.remove('hidden');
+          }
+        } catch(e) {}
+      }
+    });
+  </script>
 </body>
 </html>
