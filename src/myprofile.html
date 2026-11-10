@@ -63,7 +63,7 @@
         </a>
       </div>
 
-      <!-- Baris Navbar Menu Lengkap (Responsive Desktop & Mobile Horizontal Scroll) -->
+      <!-- Baris Navbar Menu Lengkap -->
       <nav id="main-nav-links" class="w-full flex items-center space-x-1 overflow-x-auto py-1.5 border-t border-slate-800/60 mt-1 scrollbar-none">
         <a href="/" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-house mr-1"></i>Home</a>
         <a href="/giveaway" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-gift mr-1"></i>Giveaway</a>
@@ -78,7 +78,7 @@
   </header>
 
   <!-- Main Content -->
-  <main class="max-w-4xl mx-auto px-4 py-10 w-full flex-grow flex flex-col justify-center items-center">
+  <main class="max-w-4xl mx-auto px-4 py-10 w-full flex-grow flex flex-col justify-center items-center space-y-6">
     
     <div id="no-auth-warning" class="hidden text-center space-y-4 max-w-md">
       <div class="text-4xl">🔒</div>
@@ -114,8 +114,10 @@
 
           <div class="bg-[#111214] rounded-xl p-4 space-y-3">
             <div>
-              <div class="flex items-center space-x-2 flex-wrap">
+              <div class="flex items-center space-x-1.5 flex-wrap">
                 <h3 id="user-global-name" class="text-lg font-bold text-white leading-tight">Nama Pengguna</h3>
+                <img src="/Assets/iconverify.gif" alt="Verified" class="w-4 h-4 object-contain" title="Verified Community Member">
+                <span id="user-role-badge" class="px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase border">User</span>
                 <span id="user-clan-tag" class="hidden px-1.5 py-0.5 bg-slate-800 border border-slate-700 text-slate-300 font-semibold text-[11px] rounded tracking-wide"></span>
               </div>
               <p id="user-username" class="text-xs text-slate-400 mt-0.5">@username</p>
@@ -128,7 +130,7 @@
                 <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">ID Pengguna</h4>
                 <p id="user-id" class="font-mono text-slate-400">000000000000000000</p>
               </div>
-              <span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-[10px]">Succesfully saved</span>
+              <span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-[10px]">Successfully saved</span>
             </div>
           </div>
 
@@ -136,6 +138,9 @@
 
       </div>
     </div>
+
+    <!-- Container Real-time Lanyard Activities -->
+    <div id="activities-container" class="w-full max-w-sm space-y-3"></div>
 
   </main>
 
@@ -145,6 +150,13 @@
 
   <script>
     const OWNER_ID = '628205121704296458';
+    const ADMIN_IDS = [
+      '628205121704296458', // Owner
+      '1128149108566269962', // Admin 1
+      '995913592253710356'  // Admin 2
+    ];
+    const MOD_IDS = []; // Tambahkan ID Moderator jika ada
+
     const DISCORD_FLAGS = {
       STAFF: 1 << 0, PARTNER: 1 << 1, HYPESQUAD: 1 << 2, BUG_HUNTER_LEVEL_1: 1 << 3,
       HYPESQUAD_BRAVERY: 1 << 6, HYPESQUAD_BRILLIANCE: 1 << 7, HYPESQUAD_BALANCE: 1 << 8,
@@ -157,6 +169,35 @@
       window.location.href = '/';
     }
 
+    function formatTime(seconds) {
+      const hrs = Math.floor(seconds / 3600);
+      const mins = Math.floor((seconds % 3600) / 60);
+      const secs = Math.floor(seconds % 60);
+      if (hrs > 0) {
+        return `${hrs}:${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+      }
+      return `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    function getLanyardImageUrl(activity) {
+      if (!activity || !activity.assets || !activity.assets.large_image) {
+        return 'https://cdn.discordapp.com/embed/avatars/0.png';
+      }
+      const imgKey = activity.assets.large_image;
+      if (imgKey.startsWith('spotify:')) {
+        return `https://i.scdn.co/image/${imgKey.replace('spotify:', '')}`;
+      }
+      if (imgKey.startsWith('mp:external/')) {
+        const match = imgKey.match(/https?:\/\/.*/);
+        if (match) return match[0];
+        return `https://media.discordapp.net/${imgKey.replace('mp:', '')}`;
+      }
+      if (imgKey.startsWith('http://') || imgKey.startsWith('https://')) {
+        return imgKey;
+      }
+      return `https://cdn.discordapp.com/app-assets/${activity.application_id}/${imgKey}.png`;
+    }
+
     function renderBadges(user) {
       const container = document.getElementById('badges-container');
       container.innerHTML = '';
@@ -164,54 +205,22 @@
       const badges = [];
 
       if (flags & DISCORD_FLAGS.ACTIVE_DEVELOPER) {
-        badges.push({ 
-          title: 'Active Developers', 
-          imgUrl: 'https://cdn3.emoji.gg/emojis/6699-activedev-blue.png',
-          linkUrl: 'https://emoji.gg/emoji/6699-activedev-blue'
-        });
+        badges.push({ title: 'Active Developers', imgUrl: 'https://cdn3.emoji.gg/emojis/6699-activedev-blue.png', linkUrl: 'https://emoji.gg/emoji/6699-activedev-blue' });
       }
-
       if (user.premium_type && user.premium_type > 0) {
-        badges.push({ 
-          title: 'Nitro Subscribers', 
-          imgUrl: 'https://cdn3.emoji.gg/emojis/789630-nitro.png',
-          linkUrl: 'https://emoji.gg/emojis/789630-nitro'
-        });
+        badges.push({ title: 'Nitro Subscribers', imgUrl: 'https://cdn3.emoji.gg/emojis/789630-nitro.png', linkUrl: 'https://emoji.gg/emojis/789630-nitro' });
       }
-
       if (flags & DISCORD_FLAGS.HYPESQUAD_BRAVERY) {
-        badges.push({ 
-          title: 'HYPESQUAD BRAVERY', 
-          imgUrl: 'https://cdn3.emoji.gg/emojis/677453-houseofbravery.png',
-          linkUrl: 'https://emoji.gg/emojis/677453-houseofbravery'
-        });
+        badges.push({ title: 'HYPESQUAD BRAVERY', imgUrl: 'https://cdn3.emoji.gg/emojis/677453-houseofbravery.png', linkUrl: 'https://emoji.gg/emojis/677453-houseofbravery' });
       } else if (flags & DISCORD_FLAGS.HYPESQUAD_BRILLIANCE) {
-        badges.push({ 
-          title: 'HYPESQUAD BRILLIANCE', 
-          imgUrl: 'https://cdn3.emoji.gg/emojis/271697-houseofbrilliance.png',
-          linkUrl: 'https://emoji.gg/emojis/271697-houseofbrilliance'
-        });
+        badges.push({ title: 'HYPESQUAD BRILLIANCE', imgUrl: 'https://cdn3.emoji.gg/emojis/271697-houseofbrilliance.png', linkUrl: 'https://emoji.gg/emojis/271697-houseofbrilliance' });
       } else if (flags & DISCORD_FLAGS.HYPESQUAD_BALANCE) {
-        badges.push({ 
-          title: 'HYPESQUAD BALANCE', 
-          imgUrl: 'https://cdn3.emoji.gg/emojis/251341-discordhypesquadbalancebadge.png',
-          linkUrl: 'https://emoji.gg/emojis/251341-discordhypesquadbalancebadge'
-        });
+        badges.push({ title: 'HYPESQUAD BALANCE', imgUrl: 'https://cdn3.emoji.gg/emojis/251341-discordhypesquadbalancebadge.png', linkUrl: 'https://emoji.gg/emojis/251341-discordhypesquadbalancebadge' });
       }
-
       if (flags & DISCORD_FLAGS.PREMIUM_EARLY_SUPPORTER) {
-        badges.push({ 
-          title: 'PREMIUM EARLY SUPPORTER', 
-          imgUrl: 'https://cdn3.emoji.gg/emojis/544377-discordearlysupporterbadge.png',
-          linkUrl: 'https://emoji.gg/emojis/544377-discordearlysupporterbadge'
-        });
+        badges.push({ title: 'PREMIUM EARLY SUPPORTER', imgUrl: 'https://cdn3.emoji.gg/emojis/544377-discordearlysupporterbadge.png', linkUrl: 'https://emoji.gg/emojis/544377-discordearlysupporterbadge' });
       }
-
-      badges.push({ 
-        title: 'Completed Quest', 
-        imgUrl: 'https://cdn3.emoji.gg/emojis/215207-discordcompletedaquestbadge.png',
-        linkUrl: 'https://emoji.gg/emoji/215207-discordcompletedaquestbadge'
-      });
+      badges.push({ title: 'Completed Quest', imgUrl: 'https://cdn3.emoji.gg/emojis/215207-discordcompletedaquestbadge.png', linkUrl: 'https://emoji.gg/emoji/215207-discordcompletedaquestbadge' });
 
       badges.forEach(b => {
         const a = document.createElement('a');
@@ -236,7 +245,8 @@
         const res = await fetch(`https://api.lanyard.rest/v1/users/${userId}`);
         const data = await res.json();
         if (data.success) {
-          const status = data.data.discord_status;
+          const lData = data.data;
+          const status = lData.discord_status;
           const statusDot = document.getElementById('user-status-dot');
           if (statusDot) {
             statusDot.className = 'w-5 h-5 border-4 border-[#232428] rounded-full absolute bottom-0 right-0 z-20 ';
@@ -244,6 +254,57 @@
             else if (status === 'idle') statusDot.className += 'bg-amber-500';
             else if (status === 'dnd') statusDot.className += 'bg-rose-500';
             else statusDot.className += 'bg-slate-500';
+          }
+
+          // Render Rich Presence Activities
+          const actContainer = document.getElementById('activities-container');
+          actContainer.innerHTML = '';
+          const validActivities = lData.activities ? lData.activities.filter(a => a.type !== 4) : [];
+
+          if (validActivities.length > 0) {
+            validActivities.forEach(act => {
+              const actName = act.name || 'Application';
+              const actDetails = act.details || '';
+              const actState = act.state || '';
+              let headerTitle = 'PLAYING A GAME';
+              let iconSrc = getLanyardImageUrl(act);
+
+              const fullSearch = `${actName} ${actDetails} ${actState}`.toLowerCase();
+              if (fullSearch.includes('youtube')) {
+                iconSrc = '/Assets/youtube.png';
+                headerTitle = '📺 WATCHING YOUTUBE';
+              } else if (fullSearch.includes('spotify') || lData.listening_to_spotify) {
+                iconSrc = '/Assets/spotify.png';
+                headerTitle = '🎵 LISTENING TO SPOTIFY';
+              } else if (fullSearch.includes('otakudesu')) {
+                iconSrc = '/Assets/otakudesu.jpg';
+                headerTitle = '🍿 WATCHING ANIME';
+              }
+
+              let elapsedStr = '';
+              if (act.timestamps && act.timestamps.start) {
+                const diffSecs = Math.floor((Date.now() - act.timestamps.start) / 1000);
+                elapsedStr = `${formatTime(diffSecs)} elapsed`;
+              }
+
+              const actCard = document.createElement('div');
+              actCard.className = 'bg-[#232428] border border-slate-800 rounded-2xl p-4 shadow-xl space-y-2';
+              actCard.innerHTML = `
+                <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  <span>${headerTitle}</span>
+                  <span class="font-mono text-emerald-400 font-normal">${elapsedStr}</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                  <img src="${iconSrc}" class="w-12 h-12 rounded-xl object-cover bg-slate-900 border border-slate-700 flex-shrink-0" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+                  <div class="overflow-hidden space-y-0.5">
+                    <h4 class="font-bold text-xs text-white truncate">${actName}</h4>
+                    <p class="text-[11px] text-slate-300 truncate">${actDetails}</p>
+                    <p class="text-[11px] text-slate-400 truncate">${actState}</p>
+                  </div>
+                </div>
+              `;
+              actContainer.appendChild(actCard);
+            });
           }
         }
       } catch (err) {}
@@ -256,9 +317,22 @@
       document.getElementById('user-username').innerText = `@${user.username}`;
       document.getElementById('user-id').innerText = user.id;
 
+      // Role Detection & Badge Styling
+      const roleBadge = document.getElementById('user-role-badge');
       if (user.id === OWNER_ID) {
+        roleBadge.innerText = 'Owner';
+        roleBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-amber-500/20 text-amber-400 border border-amber-500/40';
         const activityNav = document.getElementById('nav-activity-log');
         if (activityNav) activityNav.classList.remove('hidden');
+      } else if (ADMIN_IDS.includes(user.id)) {
+        roleBadge.innerText = 'Admin';
+        roleBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-rose-500/20 text-rose-400 border border-rose-500/40';
+      } else if (MOD_IDS.includes(user.id)) {
+        roleBadge.innerText = 'Moderator';
+        roleBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-indigo-500/20 text-indigo-400 border border-indigo-500/40';
+      } else {
+        roleBadge.innerText = 'User';
+        roleBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-slate-800 text-slate-400 border border-slate-700';
       }
 
       const clanTagElem = document.getElementById('user-clan-tag');
@@ -297,6 +371,7 @@
 
       renderBadges(user);
       fetchRealtimeStatus(user.id);
+      setInterval(() => fetchRealtimeStatus(user.id), 10000);
     }
 
     window.addEventListener('DOMContentLoaded', () => {
