@@ -1,82 +1,132 @@
-/* =====================================================
-   MOBILE & TABLET RESPONSIVE ENHANCEMENTS FOR GACHA HUB
-  
-   ===================================================== */
+/* ==========================================================================
+   Rakan Aditya Community - Gacha Hub Responsive Stylesheet (gachwmob.css)
+   Tailwind CSS Slate & Discord Theme Aesthetic
+   ========================================================================== */
 
-@media (max-width: 768px) {
-  /* Atur padding dasar halaman agar tidak mentok di tepi layar HP */
+/* Base Adjustments for Desktop / Large Screens */
+header nav#main-nav-links,
+#gacha-app > div:first-of-type {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+/* Base Adjustments for Small Screens / Mobile (Max-width 768px) */
+@media screen and (max-width: 768px) {
+  /* Container padding tightening dengan palet slate */
+  main.max-w-4xl,
+  main.max-w-6xl, 
+  main.max-w-7xl,
   main {
     padding-left: 1rem !important;
     padding-right: 1rem !important;
-    padding-top: 1.5rem !important;
+    padding-top: 1.25rem !important;
     padding-bottom: 2rem !important;
   }
 
-  /* Header & Navbar Mobile Optimization */
+  /* Header adjustments & layout */
   header .max-w-6xl {
-    padding-left: 0.75rem !important;
-    padding-right: 0.75rem !important;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-  }
-
-  header .max-w-6xl > div:nth-child(2) {
-    width: 100%;
-    justify-content: flex-start;
-    overflow-x: auto;
-    padding-bottom: 0.35rem;
-    gap: 0.5rem;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* Ukuran tombol navigasi header agar muat & mudah ditekan di layar sentuh */
-  header button, 
-  header a {
-    font-size: 11px !important;
-    padding-left: 0.65rem !important;
-    padding-right: 0.65rem !important;
     padding-top: 0.5rem !important;
     padding-bottom: 0.5rem !important;
-    white-space: nowrap;
-    flex-shrink: 0;
+    flex-wrap: wrap !important;
   }
 
-  /* Tab Navigasi Utama (Gacha, Daily, Inventory, Battle) agar bisa di-scroll horizontal */
+  /* MEMASTIKAN NAVBAR LINK / MENU HEADER BISA DIGESER (HORIZONTAL SCROLL) */
+  header nav#main-nav-links,
+  header .max-w-6xl > div:nth-child(2) {
+    display: flex !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    order: 3 !important;
+    margin-top: 0.4rem !important;
+    padding-top: 0.3rem !important;
+    padding-bottom: 0.4rem !important;
+    border-top: 1px solid rgba(51, 65, 85, 0.4); /* Garis pemisah slate-700/40 */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Sembunyikan scrollbar bawaan pada header navigation */
+  header nav#main-nav-links::-webkit-scrollbar,
+  header .max-w-6xl > div:nth-child(2)::-webkit-scrollbar {
+    display: none;
+  }
+  header nav#main-nav-links,
+  header .max-w-6xl > div:nth-child(2) {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Ukuran item nav header agar nyaman disentuh */
+  header nav#main-nav-links a.nav-item,
+  header button, 
+  header a {
+    font-size: 11.5px !important;
+    padding: 5px 9px !important;
+    flex-shrink: 0;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s;
+  }
+
+  header nav#main-nav-links a.nav-item:hover {
+    background-color: rgba(30, 41, 59, 0.8); /* Slate-800 */
+  }
+
+  /* Tab Navigasi Utama Gacha (Gacha, Daily, Inventory, Battle) */
   #gacha-app > div:first-of-type {
-    overflow-x: auto;
+    overflow-x: auto !important;
     justify-content: flex-start !important;
-    padding-bottom: 0.5rem;
+    padding-bottom: 0.5rem !important;
     flex-wrap: nowrap !important;
     -webkit-overflow-scrolling: touch;
+    border-bottom: 1px solid rgba(51, 65, 85, 0.4);
+  }
+
+  #gacha-app > div:first-of-type::-webkit-scrollbar {
+    display: none;
+  }
+  #gacha-app > div:first-of-type {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 
   #gacha-app > div:first-of-type button {
-    flex-shrink: 0;
+    flex-shrink: 0 !important;
     font-size: 11px !important;
     padding: 0.5rem 0.85rem !important;
+    border-radius: 0.5rem !important;
   }
 
-  /* Portal Gacha Card */
+  /* Portal Gacha Card & Typography */
   #tab-gacha .bg-slate-900 {
     padding: 1.25rem !important;
   }
 
-  #tab-gacha h3 {
+  #tab-gacha h3,
+  main h2.text-3xl {
     font-size: 1.5rem !important;
+    line-height: 2rem !important;
+  }
+
+  main p.text-sm {
+    font-size: 0.825rem !important;
   }
 
   /* Grid Inventory & Shop menjadi 1 kolom di HP */
   #inventory-grid {
     grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+    gap: 1rem !important;
   }
 
   #shop-items-grid {
     grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+    gap: 1rem !important;
   }
 
   /* Grid Daily Streak menjadi 2 kolom agar proporsional */
   #daily-streak-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.75rem !important;
   }
 
   /* PvP Arena Layout Mobile & Tablet */
@@ -91,17 +141,30 @@
   }
 
   /* Modal Redeem Code & Dialog Center */
-  #redeem-modal > div {
-    max-width: 90% !important;
-    margin: 1rem;
+  #redeem-modal > div,
+  #rolling-modal > div,
+  #participants-modal > div {
+    max-width: 92vw !important;
+    margin: 1rem auto;
     padding: 1.25rem !important;
   }
 }
 
-/* Optimasi layar sangat kecil di bawah 400px (Android kecil / iPhone SE) */
-@media (max-width: 400px) {
-  header h1 {
-    font-size: 13px !important;
+/* Extra Small Devices (Phones under 380px / iPhone SE / Android kecil) */
+@media screen and (max-width: 380px) {
+  header h1,
+  header h1.font-bold.text-lg {
+    font-size: 0.85rem !important;
+  }
+
+  header span.text-xs {
+    font-size: 9px !important;
+  }
+
+  header nav#main-nav-links a.nav-item,
+  #gacha-app > div:first-of-type button {
+    font-size: 10.5px !important;
+    padding: 4px 7px !important;
   }
 
   .text-3xl {
