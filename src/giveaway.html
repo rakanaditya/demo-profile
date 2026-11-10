@@ -25,37 +25,40 @@
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=gg+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="/css/giveawaymob.css">
+  
   <style>
-  body { font-family: 'gg Sans', sans-serif; }
+    body { font-family: 'gg Sans', sans-serif; }
+    .scrollbar-none::-webkit-scrollbar { display: none; }
+    .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
   
-  @keyframes pulse-fast { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
-  .animate-pulse-fast { animation: pulse-fast 0.15s infinite; }
+    @keyframes pulse-fast { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+    .animate-pulse-fast { animation: pulse-fast 0.15s infinite; }
 
-  @keyframes zoom-in-glow {
-    0% { transform: scale(0.3); opacity: 0; filter: drop-shadow(0 0 0px #eab308); }
-    50% { opacity: 1; filter: drop-shadow(0 0 35px #eab308); }
-    100% { transform: scale(1.3); opacity: 0; filter: drop-shadow(0 0 50px #eab308); }
-  }
-  .animate-zoom-glow { animation: zoom-in-glow 0.9s ease-out forwards; }
+    @keyframes zoom-in-glow {
+      0% { transform: scale(0.3); opacity: 0; filter: drop-shadow(0 0 0px #eab308); }
+      50% { opacity: 1; filter: drop-shadow(0 0 35px #eab308); }
+      100% { transform: scale(1.3); opacity: 0; filter: drop-shadow(0 0 50px #eab308); }
+    }
+    .animate-zoom-glow { animation: zoom-in-glow 0.9s ease-out forwards; }
 
-  @keyframes shake-light {
-    0%, 100% { transform: translate(0, 0) rotate(0deg); }
-    20% { transform: translate(-4px, 4px) rotate(-2deg); }
-    40% { transform: translate(4px, -4px) rotate(2deg); }
-    60% { transform: translate(-3px, -2px) rotate(-1deg); }
-    80% { transform: translate(3px, 2px) rotate(1deg); }
-  }
-  .animate-shake { animation: shake-light 0.5s ease-in-out; }
+    @keyframes shake-light {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      20% { transform: translate(-4px, 4px) rotate(-2deg); }
+      40% { transform: translate(4px, -4px) rotate(2deg); }
+      60% { transform: translate(-3px, -2px) rotate(-1deg); }
+      80% { transform: translate(3px, 2px) rotate(1deg); }
+    }
+    .animate-shake { animation: shake-light 0.5s ease-in-out; }
 
-  @keyframes flash-dramatic {
-    0% { opacity: 0; background-color: rgba(255, 255, 255, 0.8); }
-    30% { opacity: 1; background-color: transparent; }
-    100% { opacity: 1; }
-  }
-  .animate-flash { animation: flash-dramatic 0.8s ease-out forwards; }
-</style>
-  
+    @keyframes flash-dramatic {
+      0% { opacity: 0; background-color: rgba(255, 255, 255, 0.8); }
+      30% { opacity: 1; background-color: transparent; }
+      100% { opacity: 1; }
+    }
+    .animate-flash { animation: flash-dramatic 0.8s ease-out forwards; }
+  </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white relative">
 
@@ -66,36 +69,48 @@
   <audio id="audio-tick" preload="auto" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"></audio>
   <audio id="audio-dramatic" preload="auto" src="https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3"></audio>
 
-  <!-- Header -->
+  <!-- Header & Navbar Lengkap -->
   <header id="main-header" class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-40 transition-all">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2">
+      <!-- Kiri: Logo & Title -->
       <div class="flex items-center space-x-3">
         <a href="/" class="w-10 h-10 rounded-2xl overflow-hidden flex items-center justify-center shadow-lg shadow-indigo-600/30 hover:scale-105 transition border border-slate-700">
           <img src="/Assets/server.png" alt="Server Icon" class="w-full h-full object-cover">
         </a>
         <div>
-          <h1 class="font-bold text-lg text-white leading-none">Rakan Aditya Community</h1>
+          <h1 class="font-bold text-base sm:text-lg text-white leading-none">Rakan Aditya Community</h1>
           <span class="text-xs text-slate-400">Giveaway & Live Stream Panel</span>
         </div>
       </div>
       
-      <div class="flex items-center space-x-3">
+      <!-- Kanan: Tombol Aksi (Sound, Live Display, User Badge) -->
+      <div class="flex items-center space-x-2 sm:space-x-3">
         <button onclick="toggleAudioMute()" id="btn-audio-toggle" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold border border-slate-700 transition flex items-center space-x-1">
-          <span id="audio-icon">🔊</span> <span id="audio-text">Sound ON</span>
+          <span id="audio-icon">🔊</span> <span id="audio-text" class="hidden sm:inline">Sound ON</span>
         </button>
 
         <button onclick="toggleLiveDisplayMode()" class="px-3 py-1.5 bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition shadow-lg shadow-indigo-600/30 flex items-center space-x-1">
-          <span>🖥️ Live Display (Press ESC to Exit)</span>
+          <span>🖥️ <span class="hidden md:inline">Live Display</span></span>
         </button>
-
-        <a href="/" class="text-xs text-slate-400 hover:text-white transition hidden sm:inline-block">← Beranda</a>
         
-        <div id="user-badge" class="hidden flex items-center space-x-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full">
+        <div id="user-badge" class="hidden flex items-center space-x-2 bg-slate-900 border border-slate-800 px-2.5 py-1.5 rounded-full">
           <img id="nav-avatar" class="w-5 h-5 rounded-full object-cover" src="" alt="Avatar">
-          <span id="nav-name" class="text-xs font-semibold text-white">User</span>
+          <span id="nav-name" class="text-xs font-semibold text-white max-w-[80px] sm:max-w-none truncate">User</span>
           <button onclick="logoutSession()" class="text-slate-500 hover:text-rose-400 text-xs ml-1" title="Logout">✕</button>
         </div>
       </div>
+
+      <!-- Baris Navbar Menu Lengkap (Responsive Desktop & Mobile Horizontal Scroll) -->
+      <nav id="main-nav-links" class="w-full flex items-center space-x-1 overflow-x-auto py-1.5 border-t border-slate-800/60 mt-1 scrollbar-none">
+        <a href="/" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-house mr-1"></i>Home</a>
+        <a href="/giveaway" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-indigo-400 bg-indigo-600/10 border border-indigo-500/20 whitespace-nowrap"><i class="fa-solid fa-gift mr-1"></i>Giveaway</a>
+        <a href="/giveawayleaderboard" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-trophy mr-1 text-amber-400"></i>Top Leaderboard</a>
+        <a href="/rating" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-star mr-1 text-amber-400"></i>Rating</a>
+        <a href="/gachaw" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-dice mr-1 text-pink-400"></i>Gacha Waifu</a>
+        <a href="/announcements" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-bullhorn mr-1"></i>News</a>
+        <!-- Menu Khusus Owner -->
+        <a href="/activitylog" id="nav-activity-log" class="nav-item hidden px-3 py-1.5 rounded-lg text-xs font-medium text-amber-400 bg-amber-500/10 border border-amber-500/30 whitespace-nowrap"><i class="fa-solid fa-chart-line mr-1"></i>Activity Log</a>
+      </nav>
     </div>
   </header>
 
@@ -348,6 +363,10 @@
 
         if (ADMIN_IDS.includes(currentUser.id)) {
           document.getElementById('owner-panel').classList.remove('hidden');
+        }
+        if (currentUser.id === OWNER_ID) {
+          const activityNav = document.getElementById('nav-activity-log');
+          if (activityNav) activityNav.classList.remove('hidden');
         }
       }
     }
@@ -618,7 +637,6 @@
 
           container.appendChild(card);
 
-          // Timer Hitung Mundur Event Utama
           if (gw.endsAt && !isEnded && !isClaimed) {
             const timerElem = document.getElementById(`timer-${gw._id}`);
             const endTime = new Date(gw.endsAt).getTime();
@@ -650,7 +668,6 @@
             timerIntervals.push(interval);
           }
 
-          // Timer Hitung Mundur Klaim 5 Menit
           if (isEnded && gw.claimExpiresAt) {
             const claimTimerElem = document.getElementById(`claim-timer-${gw._id}`);
             const expireTime = new Date(gw.claimExpiresAt).getTime();
@@ -678,7 +695,6 @@
       }
     }
 
-  // Fungsi Admin untuk Menyelesaikan/Menandai Giveaway Completed secara Manual
     async function completeGiveaway(id) {
       if (!confirm('Yakin ingin menandai giveaway ini sebagai selesai (Successfully Claimed)?')) return;
 
@@ -696,7 +712,6 @@
         showToast(data.error || 'Gagal menyelesaikan giveaway.', true);
       }
     }
-    
 
     async function triggerRollStart(id) {
       triggerWebhook({ type: 'roll_start' });
@@ -730,7 +745,6 @@
       }
     }
 
-    // Fungsi Klaim Hadiah oleh Pemenang
     async function claimGiveaway(id) {
       if (!currentUser) return showToast('Silakan login terlebih dahulu!', true);
 
@@ -749,7 +763,6 @@
       }
     }
 
-    // Fungsi Reroll (Mencari Pemenang Pengganti)
     async function rerollGiveaway(id) {
       if (!confirm('Apakah pemenang sebelumnya tidak mengklaim hadiah dan Anda ingin melakukan reroll (cari pemenang lain)?')) return;
 
