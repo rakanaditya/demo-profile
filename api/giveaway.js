@@ -78,6 +78,21 @@ export default async function handler(req, res) {
     return res.status(404).json({ success: false, error: 'Giveaway tidak ditemukan.' });
    }
 
+if (action === 'complete') {
+    const userId = user?.id || user;
+    if (!ADMIN_IDS.includes(userId)) {
+     return res.status(403).json({ success: false, error: 'Hanya Owner atau Admin yang dapat menyelesaikan giveaway.' });
+    }
+
+    await collection.updateOne(
+     { _id: gwId },
+     { $set: { status: 'claimed', claimedAt: new Date(), claimedBy: userId } }
+    );
+
+    giveaway.status = 'claimed';
+    return res.status(200).json({ success: true, message: 'Giveaway berhasil diselesaikan oleh admin!', data: giveaway });
+   }
+    
    if (action === 'join') {
     if (giveaway.status === 'ended' || giveaway.status === 'claimed') {
      return res.status(400).json({ success: false, error: 'Giveaway sudah berakhir.' });
