@@ -92,7 +92,7 @@
       <div class="bg-[#232428] rounded-2xl overflow-hidden shadow-2xl border border-slate-800">
         
         <!-- Banner -->
-        <div id="user-banner" class="h-28 bg-gradient-to-r from-indigo-600 to-purple-600 relative bg-cover bg-center">
+        <div id="user-banner" class="h-28 bg-gradient-to-r from-indigo-600 to-purple-600 relative bg-cover bg-center transition-all">
           <button onclick="logoutSession()" class="absolute top-3 right-3 w-7 h-7 bg-rose-600/80 hover:bg-rose-600 text-white rounded-full flex items-center justify-center transition shadow-lg font-bold text-xs" title="Keluar / Logout">
             ✕
           </button>
@@ -240,7 +240,53 @@
       });
     }
 
-    async function fetchRealtimeStatus(userId) {
+    // PENGECEKAN BANNER MELALUI LANYARD API / OAUTH2 DATA
+    async function applyDiscordBanner(userId, oauthUser) {
+      const bannerElem = document.getElementById('user-banner');
+      if (!bannerElem) return;
+
+      try {
+        const res = await fetch(`https://api.lanyard.rest/v1/users/${userId}`);
+        const data = await res.json();
+
+        if (data.success && data.data) {
+          const lData = data.data;
+          const user = lData.discord_user;
+          const bannerColor = lData.banner_color;
+
+          // 1. Cek banner gambar/GIF dari Lanyard
+          if (user && user.banner) {
+            const format = user.banner.startsWith('a_') ? 'gif' : 'png';
+            const bannerUrl = `https://cdn.discordapp.com/banners/${user.id}/${user.banner}.${format}?size=600`;
+            bannerElem.style.backgroundImage = `url('${bannerUrl}')`;
+            bannerElem.style.backgroundColor = 'transparent';
+            return;
+          }
+
+          // 2. Cek banner color dari Lanyard
+          if (bannerColor) {
+            bannerElem.style.backgroundImage = 'none';
+            bannerElem.style.backgroundColor = bannerColor;
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn("Lanyard API banner fetch failed, falling back to OAuth data.", err);
+      }
+
+      // Fallback: Menggunakan data dari OAuth2 localStorage jika Lanyard gagal
+      if (oauthUser && oauthUser.banner) {
+        const bannerFormat = oauthUser.banner.startsWith('a_') ? 'gif' : 'png';
+        const bannerUrl = `https://cdn.discordapp.com/banners/${oauthUser.id}/${oauthUser.banner}.${bannerFormat}?size=600`;
+        bannerElem.style.backgroundImage = `url('${bannerUrl}')`;
+        bannerElem.style.backgroundColor = 'transparent';
+      } else if (oauthUser && oauthUser.accent_color) {
+        bannerElem.style.backgroundImage = 'none';
+        bannerElem.style.backgroundColor = `#${oauthUser.accent_color.toString(16).padStart(6, '0')}`;
+      }
+    }
+
+    async function fetchRealtimeStatus(userId, oauthUser) {
       try {
         const res = await fetch(`https://api.lanyard.rest/v1/users/${userId}`);
         const data = await res.json();
@@ -256,14 +302,8 @@
             else statusDot.className += 'bg-slate-500';
           }
 
-          // Cek Banner Color dari Lanyard API jika user tidak memiliki banner gambar
-          if (!lData.discord_user.banner && lData.banner_color) {
-            const bannerElem = document.getElementById('user-banner');
-            if (bannerElem) {
-              bannerElem.style.backgroundImage = 'none';
-              bannerElem.style.backgroundColor = lData.banner_color;
-            }
-          }
+          // Terapkan banner & warna latar belakang
+          applyDiscordBanner(userId, oauthUser);
 
           // Render Rich Presence Activities
           const actContainer = document.getElementById('activities-container');
@@ -372,22 +412,10 @@
         avatarContainer.appendChild(frameImg);
       }
 
-      // Deteksi Banner Otomatis (Gambar Banner / GIF atau Fallback ke Banner Color)
-      const bannerElem = document.getElementById('user-banner');
-      if (user.banner) {
-        const bannerFormat = user.banner.startsWith('a_') ? 'gif' : 'png';
-        const bannerUrl = `https://cdn.discordapp.com/banners/${user.id}/${user.banner}.${bannerFormat}?size=600`;
-        bannerElem.style.backgroundImage = `url('${bannerUrl}')`;
-        bannerElem.style.backgroundColor = 'transparent';
-      } else if (user.accent_color) {
-        // Jika user tidak punya banner gambar tapi memiliki warna aksen (banner color)
-        bannerElem.style.backgroundImage = 'none';
-        bannerElem.style.backgroundColor = `#${user.accent_color.toString(16).padStart(6, '0')}`;
-      }
-
       renderBadges(user);
-      fetchRealtimeStatus(user.id);
-      setInterval(() => fetchRealtimeStatus(user.id), 10000);
+      applyDiscordBanner(user.id, user);
+      fetchRealtimeStatus(user.id, user);
+      setInterval(() => fetchRealtimeStatus(user.id, user), 10000);
     }
 
     window.addEventListener('DOMContentLoaded', () => {
