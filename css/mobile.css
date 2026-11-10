@@ -1,41 +1,43 @@
 /* ==========================================================================
-   Rakan Aditya Community - Mobile Responsive Stylesheet (mobile.css)
+   Rakan Aditya Community - Mobile Responsive Stylesheet (giveawaymob.css)
+   Tailwind CSS Slate & Discord Theme Aesthetic
    ========================================================================== */
 
 /* Base Adjustments for Small Screens */
 @media screen and (max-width: 768px) {
-  /* Container padding tightening */
+  /* Container padding tightening dengan palet slate */
+  main.max-w-4xl,
   main.max-w-6xl, 
   main.max-w-7xl {
     padding-left: 1rem !important;
     padding-right: 1rem !important;
-    padding-top: 1.5rem !important;
+    padding-top: 1.25rem !important;
     padding-bottom: 2rem !important;
   }
 
-  /* Header adjustments */
-  header .w-full {
+  /* Header adjustments & layout */
+  header .max-w-6xl {
     padding-top: 0.5rem !important;
     padding-bottom: 0.5rem !important;
     flex-wrap: wrap !important;
   }
 
-  /* MEMASTIKAN NAVBAR LINK TERLIHAT JELAS DI MOBILE DI BAWAH HEADER UTAMA */
+  /* MEMASTIKAN NAVBAR LINK / MENU TERLIHAT JELAS DI MOBILE */
   header nav.hidden,
   header nav.lg\:flex {
     display: flex !important;
     width: 100% !important;
     overflow-x: auto !important;
     white-space: nowrap !important;
-    order: 3 !important; /* Posisikan baris navigasi di bawah logo & tombol kanan */
-    margin-top: 0.4rem !important;
-    padding-top: 0.2rem !important;
-    padding-bottom: 0.3rem !important;
-    border-top: 1px solid rgba(51, 65, 85, 0.4); /* Garis pemisah tipis */
+    order: 3 !important;
+    margin-top: 0.5rem !important;
+    padding-top: 0.3rem !important;
+    padding-bottom: 0.4rem !important;
+    border-top: 1px solid rgba(51, 65, 85, 0.4); /* Garis pemisah slate-700/40 */
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Sembunyikan scrollbar bawaan pada navigasi mobile agar terlihat bersih */
+  /* Sembunyikan scrollbar bawaan pada navigasi mobile */
   header nav::-webkit-scrollbar {
     display: none;
   }
@@ -45,61 +47,75 @@
   }
 
   /* Ukuran item navbar agar nyaman disentuh di HP */
-  header nav .nav-item {
+  header nav a,
+  header nav button {
     font-size: 11.5px !important;
-    padding: 5px 8px !important;
+    padding: 6px 10px !important;
     flex-shrink: 0;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s;
   }
 
-  /* Hero section typography tuning */
-  #auth-section h2 {
-    font-size: 1.75rem !important;
-    line-height: 2.25rem !important;
+  header nav a:hover,
+  header nav button:hover {
+    background-color: rgba(30, 41, 59, 0.6); /* Slate-800 dengan transparansi */
   }
 
-  #auth-section p {
-    font-size: 0.875rem !important;
+  /* Hero & Title Section Typography Tuning */
+  main h2.text-3xl {
+    font-size: 1.65rem !important;
+    line-height: 2.1rem !important;
   }
 
-  /* Navigation button grid single-column on mobile */
-  .grid-cols-1.sm:grid-cols-2 {
+  main p.text-sm {
+    font-size: 0.825rem !important;
+  }
+
+  /* Grid Layout Penyesuaian Kolom Kartu Giveaway */
+  .grid-cols-1.md\:grid-cols-2 {
     grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+    gap: 1rem !important;
   }
 
-  /* Stat cards alignment */
-  .grid-cols-1.sm:grid-cols-3 {
-    grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
-    gap: 0.75rem !important;
+  /* Form Admin Panel di Mobile */
+  #owner-panel {
+    padding: 1rem !important;
   }
 
-  /* Input and lookup section fixes */
-  #lookup-id-input {
-    font-size: 11px !important;
-    padding: 0.65rem 0.75rem !important;
+  #owner-panel form input,
+  #owner-panel form select,
+  #owner-panel form textarea {
+    font-size: 13px !important;
+    background-color: #020617 !important; /* bg-slate-950 */
+    border-color: #1e293b !important; /* border-slate-800 */
   }
 
-  /* Dropdown positioning fix for mobile screen bounds */
-  #user-dropdown-menu {
-    width: 160px !important;
-    right: 0 !important;
+  /* Modal Rolling & Participants Responsive Fixes */
+  #rolling-modal > div,
+  #participants-modal > div {
+    max-width: 92vw !important;
+    padding: 1.25rem !important;
+  }
+
+  #carousel-container {
+    height: 110px !important;
   }
 }
 
 /* Extra Small Devices (Phones under 380px) */
 @media screen and (max-width: 380px) {
-  h1.font-bold.text-base,
-  h1.font-bold.text-sm {
-    font-size: 0.85rem !important;
+  h1.font-bold {
+    font-size: 0.8rem !important;
   }
 
-  header span.text-\[10px\],
   header span.text-xs {
     font-size: 9px !important;
   }
 
-  /* Perkecil padding tombol bahasa & badge user agar muat di layar sangat kecil */
-  #lang-btn {
-    padding: 0.15rem 0.35rem !important;
-    font-size: 9.5px !important;
+  /* Tombol aksi card giveaway agar pas di layar sangat kecil */
+  #giveaway-list button {
+    font-size: 11px !important;
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
   }
 }
