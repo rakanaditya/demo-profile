@@ -1,10 +1,17 @@
 /* ==========================================================================
-   Rakan Aditya Community - Mobile Responsive Stylesheet (giveawaymob.css)
+   Rakan Aditya Community - Responsive Stylesheet (mobile.css)
    Tailwind CSS Slate & Discord Theme Aesthetic
    ========================================================================== */
 
-/* Base Adjustments for Small Screens */
-@media screen and (max-width: 768px) {
+/* Base Adjustments for Desktop & Large Screens */
+header nav#main-nav-links {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+/* Base Adjustments for Small Screens / Mobile */
+@media screen and (max-width: 1024px) {
   /* Container padding tightening dengan palet slate */
   main.max-w-4xl,
   main.max-w-6xl, 
@@ -22,49 +29,46 @@
     flex-wrap: wrap !important;
   }
 
-  /* MEMASTIKAN NAVBAR LINK / MENU TERLIHAT JELAS DI MOBILE */
-  header nav.hidden,
-  header nav.lg\:flex {
+  /* MEMASTIKAN NAVBAR LINK / MENU BISA DIGESER (HORIZONTAL SCROLL) DI MOBILE */
+  header nav#main-nav-links {
     display: flex !important;
     width: 100% !important;
     overflow-x: auto !important;
     white-space: nowrap !important;
     order: 3 !important;
-    margin-top: 0.5rem !important;
+    margin-top: 0.4rem !important;
     padding-top: 0.3rem !important;
     padding-bottom: 0.4rem !important;
     border-top: 1px solid rgba(51, 65, 85, 0.4); /* Garis pemisah slate-700/40 */
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Sembunyikan scrollbar bawaan pada navigasi mobile */
-  header nav::-webkit-scrollbar {
+  /* Sembunyikan scrollbar bawaan pada navigasi mobile agar bersih */
+  header nav#main-nav-links::-webkit-scrollbar {
     display: none;
   }
-  header nav {
+  header nav#main-nav-links {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
 
-  /* Ukuran item navbar agar nyaman disentuh di HP */
-  header nav a,
-  header nav button {
+  /* Ukuran item navbar agar pas dan nyaman disentuh di HP */
+  header nav#main-nav-links a.nav-item {
     font-size: 11.5px !important;
-    padding: 6px 10px !important;
+    padding: 5px 9px !important;
     flex-shrink: 0;
     border-radius: 0.5rem;
     transition: background-color 0.2s;
   }
 
-  header nav a:hover,
-  header nav button:hover {
-    background-color: rgba(30, 41, 59, 0.6); /* Slate-800 dengan transparansi */
+  header nav#main-nav-links a.nav-item:hover {
+    background-color: rgba(30, 41, 59, 0.8); /* Slate-800 */
   }
 
   /* Hero & Title Section Typography Tuning */
   main h2.text-3xl {
-    font-size: 1.65rem !important;
-    line-height: 2.1rem !important;
+    font-size: 1.5rem !important;
+    line-height: 2rem !important;
   }
 
   main p.text-sm {
@@ -104,12 +108,17 @@
 
 /* Extra Small Devices (Phones under 380px) */
 @media screen and (max-width: 380px) {
-  h1.font-bold {
-    font-size: 0.8rem !important;
+  h1.font-bold.text-lg {
+    font-size: 0.85rem !important;
   }
 
   header span.text-xs {
     font-size: 9px !important;
+  }
+
+  header nav#main-nav-links a.nav-item {
+    font-size: 10.5px !important;
+    padding: 4px 7px !important;
   }
 
   /* Tombol aksi card giveaway agar pas di layar sangat kecil */
