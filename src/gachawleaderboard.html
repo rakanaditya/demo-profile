@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Leaderboard - Waifu Gacha & Battle Hub BETA</title>
+  
   <script>
     const origConsoleWarn = console.warn;
     console.warn = function(...args) {
@@ -12,37 +13,57 @@
     };
     tailwind = { config: { theme: { extend: { colors: { discord: { bg: '#313338', card: '#2b2d31', inner: '#1e1f22', accent: '#5865f2' } } } } } };
   </script>
+  
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=gg+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/gachaleaderboardmob.css">
+  
   <style>
     body { font-family: 'gg Sans', sans-serif; }
     @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 15px rgba(236, 72, 153, 0.4); } 50% { box-shadow: 0 0 30px rgba(236, 72, 153, 0.8); } }
     .gacha-glow { animation: pulseGlow 2s infinite; }
+    .scrollbar-none::-webkit-scrollbar { display: none; }
+    .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-pink-500 selection:text-white">
 
-  <!-- Header -->
-  <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-40">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+  <!-- Header & Navbar Lengkap -->
+  <header id="main-header" class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-40 transition-all">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2">
+      <!-- Kiri: Logo & Title -->
       <div class="flex items-center space-x-3">
-        <a href="/gachaw" class="w-10 h-10 rounded-2xl overflow-hidden flex items-center justify-center shadow-lg border border-slate-700">
+        <a href="/gachaw" class="w-10 h-10 rounded-2xl overflow-hidden flex items-center justify-center shadow-lg border border-slate-700 hover:scale-105 transition">
           <img src="/Assets/server.png" alt="Server" class="w-full h-full object-cover">
         </a>
         <div>
           <div class="flex items-center space-x-2">
-            <h1 class="font-bold text-lg text-white leading-none">Leaderboard Hall of Fame</h1>
+            <h1 class="font-bold text-base sm:text-lg text-white leading-none">Leaderboard Hall of Fame</h1>
             <span class="text-[10px] bg-pink-500/20 text-pink-400 border border-pink-500/30 px-1.5 py-0.5 rounded font-mono font-bold">BETA</span>
           </div>
           <span class="text-xs text-pink-400">Rakan Aditya Community</span>
         </div>
       </div>
-      <div class="flex items-center space-x-3">
-        <a href="/gachaw" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-bold rounded-xl transition text-slate-300">
-          <i class="fa-solid fa-arrow-left mr-1.5"></i> Kembali ke Gacha Hub
+
+      <!-- Kanan: Tombol Kembali ke Gacha Hub -->
+      <div class="flex items-center space-x-2 sm:space-x-3">
+        <a href="/gachaw" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold rounded-xl transition text-slate-300 flex items-center space-x-1">
+          <i class="fa-solid fa-arrow-left"></i> <span class="hidden sm:inline">Kembali ke Gacha Hub</span>
         </a>
       </div>
+
+      <!-- Baris Navbar Menu Lengkap (Responsive Desktop & Mobile Horizontal Scroll) -->
+      <nav id="main-nav-links" class="w-full flex items-center space-x-1 overflow-x-auto py-1.5 border-t border-slate-800/60 mt-1 scrollbar-none">
+        <a href="/" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-house mr-1"></i>Home</a>
+        <a href="/giveaway" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-gift mr-1"></i>Giveaway</a>
+        <a href="/giveawayleaderboard" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-trophy mr-1 text-amber-400"></i>Top Leaderboard</a>
+        <a href="/rating" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-star mr-1 text-amber-400"></i>Rating</a>
+        <a href="/gachaw" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-dice mr-1 text-pink-400"></i>Gacha Waifu</a>
+        <a href="/announcements" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-bullhorn mr-1"></i>News</a>
+        <!-- Menu Khusus Owner -->
+        <a href="/activitylog" id="nav-activity-log" class="nav-item hidden px-3 py-1.5 rounded-lg text-xs font-medium text-amber-400 bg-amber-500/10 border border-amber-500/30 whitespace-nowrap"><i class="fa-solid fa-chart-line mr-1"></i>Activity Log</a>
+      </nav>
     </div>
   </header>
 
@@ -53,17 +74,17 @@
       <p class="text-xs sm:text-sm text-slate-400">Peringkat player terbaik berdasarkan Poin, Daily Login Streak, Koleksi Waifu, Kemenangan PvP, dan Aktivitas Gacha Summon!</p>
     </div>
 
-    <!-- Tab Navigation -->
-    <div class="flex justify-center space-x-2 border-b border-slate-800 pb-4 flex-wrap gap-2">
-      <button onclick="switchLbTab('points')" id="btn-lb-points" class="px-5 py-2.5 rounded-xl text-xs font-bold transition bg-pink-600 text-white shadow-lg">💖 Top Poin Terbanyak</button>
-      <button onclick="switchLbTab('streak')" id="btn-lb-streak" class="px-5 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800">📅 Top Daily Login Streak</button>
-      <button onclick="switchLbTab('inventory')" id="btn-lb-inventory" class="px-5 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800">🎒 Top Koleksi Waifu</button>
-      <button onclick="switchLbTab('pvp')" id="btn-lb-pvp" class="px-5 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800">⚔️ Top PvP Menang</button>
-      <button onclick="switchLbTab('gacha')" id="btn-lb-gacha" class="px-5 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800">🔮 Top Gacha Summon</button>
+    <!-- Tab Navigation Leaderboard (Bisa digeser horizontal di HP) -->
+    <div id="lb-tab-container" class="flex justify-center space-x-2 border-b border-slate-800 pb-4 overflow-x-auto scrollbar-none flex-nowrap sm:flex-wrap gap-2">
+      <button onclick="switchLbTab('points')" id="btn-lb-points" class="px-4 py-2.5 rounded-xl text-xs font-bold transition bg-pink-600 text-white shadow-lg whitespace-nowrap flex-shrink-0">💖 Top Poin Terbanyak</button>
+      <button onclick="switchLbTab('streak')" id="btn-lb-streak" class="px-4 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800 whitespace-nowrap flex-shrink-0">📅 Top Daily Streak</button>
+      <button onclick="switchLbTab('inventory')" id="btn-lb-inventory" class="px-4 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800 whitespace-nowrap flex-shrink-0">🎒 Koleksi Waifu</button>
+      <button onclick="switchLbTab('pvp')" id="btn-lb-pvp" class="px-4 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800 whitespace-nowrap flex-shrink-0">⚔️ PvP Menang</button>
+      <button onclick="switchLbTab('gacha')" id="btn-lb-gacha" class="px-4 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800 whitespace-nowrap flex-shrink-0">🔮 Gacha Summon</button>
     </div>
 
     <!-- Leaderboard Container -->
-    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl min-h-[350px]">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-4 sm:p-6 shadow-xl min-h-[350px]">
       <div id="leaderboard-content" class="space-y-3">
         <div class="text-center py-20 text-slate-500 animate-pulse text-xs font-mono">Memuat data leaderboard dari database...</div>
       </div>
@@ -76,6 +97,7 @@
   </footer>
 
   <script>
+    const OWNER_ID = '628205121704296458';
     let leaderboardData = null;
 
     function getAvatarUrl(u) { 
@@ -99,9 +121,9 @@
 
     function switchLbTab(tab) {
       ['points', 'streak', 'inventory', 'pvp', 'gacha'].forEach(t => {
-        document.getElementById(`btn-lb-${t}`).className = 'px-5 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800';
+        document.getElementById(`btn-lb-${t}`).className = 'px-4 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800 whitespace-nowrap flex-shrink-0';
       });
-      document.getElementById(`btn-lb-${tab}`).className = 'px-5 py-2.5 rounded-xl text-xs font-bold transition bg-pink-600 text-white shadow-lg';
+      document.getElementById(`btn-lb-${tab}`).className = 'px-4 py-2.5 rounded-xl text-xs font-bold transition bg-pink-600 text-white shadow-lg whitespace-nowrap flex-shrink-0';
       renderLeaderboardTab(tab);
     }
 
@@ -133,20 +155,20 @@
         else if (tab === 'gacha') statText = `🔮 ${user.gachaCount || 0} Kali Summon`;
 
         container.innerHTML += `
-          <div class="flex items-center justify-between bg-slate-950 p-4 rounded-2xl border border-slate-800/80 hover:border-slate-700 transition">
-            <div class="flex items-center space-x-4">
-              <div class="w-8 h-8 rounded-xl border ${badgeColor} flex items-center justify-center font-bold text-xs font-mono">
+          <div class="flex items-center justify-between bg-slate-950 p-3.5 sm:p-4 rounded-2xl border border-slate-800/80 hover:border-slate-700 transition gap-2">
+            <div class="flex items-center space-x-3 sm:space-x-4 min-w-0">
+              <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl border ${badgeColor} flex items-center justify-center font-bold text-xs font-mono flex-shrink-0">
                 #${index + 1}
               </div>
-              <div class="flex items-center space-x-3">
-                <img src="${getAvatarUrl(user)}" class="w-10 h-10 rounded-full object-cover border border-slate-700">
-                <div>
-                  <h4 class="font-bold text-sm text-white">${user.global_name || user.username || 'User'}</h4>
-                  <p class="text-[10px] text-slate-400 font-mono">@${user.username || 'user'}</p>
+              <div class="flex items-center space-x-2.5 min-w-0">
+                <img src="${getAvatarUrl(user)}" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover border border-slate-700 flex-shrink-0">
+                <div class="min-w-0">
+                  <h4 class="font-bold text-xs sm:text-sm text-white truncate">${user.global_name || user.username || 'User'}</h4>
+                  <p class="text-[10px] text-slate-400 font-mono truncate">@${user.username || 'user'}</p>
                 </div>
               </div>
             </div>
-            <div class="bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl text-xs font-bold font-mono text-pink-400">
+            <div class="bg-slate-900 border border-slate-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-bold font-mono text-pink-400 flex-shrink-0">
               ${statText}
             </div>
           </div>
@@ -156,6 +178,16 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       fetchLeaderboard();
+      const savedUser = localStorage.getItem('discord_user');
+      if (savedUser) {
+        try {
+          const user = JSON.parse(savedUser);
+          if (user.id === OWNER_ID) {
+            const activityNav = document.getElementById('nav-activity-log');
+            if (activityNav) activityNav.classList.remove('hidden');
+          }
+        } catch(e) {}
+      }
     });
   </script>
 </body>
