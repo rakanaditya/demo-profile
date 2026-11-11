@@ -10,6 +10,9 @@ export const config = {
   },
 };
 
+// Global cache sederhana untuk mencegah spam/duplikat dalam rentang waktu singkat (10 detik)
+const recentClaims = new Map();
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ success: false, error: 'Method not allowed' });
@@ -27,15 +30,30 @@ export default async function handler(req, res) {
       return res.status(500).json({ success: false, error: 'Gagal memproses form data' });
     }
 
-    // Ambil nilai field (karena formidable mengembalikan array untuk setiap field)
     const giveawayId = Array.isArray(fields.giveawayId) ? fields.giveawayId[0] : fields.giveawayId;
     const discordUsername = Array.isArray(fields.discordUsername) ? fields.discordUsername[0] : fields.discordUsername;
     const discordId = Array.isArray(fields.discordId) ? fields.discordId[0] : fields.discordId;
+    
     let user = null;
     try {
       const userStr = Array.isArray(fields.user) ? fields.user[0] : fields.user;
       user = JSON.parse(userStr);
     } catch (e) {}
+
+    // --- PROTEKSI DUPLIKAT (ANTI-SPAM / DOUBLE SUBMIT) ---
+    const claimKey = `${giveawayId}_${discordId}`;
+    const now = Date.now();
+    if (recentClaims.has(claimKey)) {
+      const lastTime = recentClaims.get(claimKey);
+      // Jika rentang waktu kurang dari 10 detik sejak klaim terakhir user ini, abaikan
+      if (now - lastTime < 10000) {
+        return res.status(200).json({ success: true, message: 'Klaim duplikat dicegah.' });
+      }
+    }
+    recentClaims.set(claimKey, now);
+    // Bersihkan memory cache lama secara berkala
+    setTimeout(() => recentClaims.delete(claimKey), 15000);
+    // ----------------------------------------------------
 
     const uploadedFile = files.proofFile ? (Array.isArray(files.proofFile) ? files.proofFile[0] : files.proofFile) : null;
 
@@ -58,15 +76,11 @@ export default async function handler(req, res) {
     const discordFormData = new FormData();
     
     if (uploadedFile) {
-      // Jika user mengirim gambar/file bukti
       embed.fields.push({ name: '📷 Status Bukti / Gambar', value: `✅ Mengirim gambar bukti: \`${uploadedFile.originalFilename || 'bukti.png'}\``, inline: false });
-      
-      // Lampirkan gambar agar Discord otomatis membuat preview/thumbnail di dalam embed
       embed.image = { url: `attachment://${uploadedFile.originalFilename || 'bukti.png'}` };
       
       discordFormData.append('file0', fs.createReadStream(uploadedFile.filepath), uploadedFile.originalFilename || 'bukti.png');
     } else {
-      // Jika user TIDAK mengirim gambar
       embed.fields.push({ name: '📷 Status Bukti / Gambar', value: '❌ User ini tidak mengirim gambar', inline: false });
     }
 
