@@ -254,11 +254,12 @@
         const res = await fetch(`/api/marin?action=config&guildId=${guildId}`);
         const data = await res.json();
         
-        serverCommands = data.commands || [
-          { name: 'giveaway', description: 'Melihat daftar giveaway aktif yang terhubung ke website.', enabled: true },
-          { name: 'gacha roll', description: 'Lakukan gacha summon waifu impian langsung dari Discord.', enabled: true },
-          { name: 'gacha profile', description: 'Melihat statistik poin, koleksi waifu, dan PvP.', enabled: true }
-        ];
+       serverCommands = data.commands || [
+    { name: 'giveaway list', description: 'Melihat daftar giveaway aktif.', enabled: true },
+    { name: 'giveaway start', description: 'Membuat event giveaway baru.', enabled: true },
+    { name: 'gacha roll', description: 'Lakukan gacha summon waifu impian.', enabled: true },
+    { name: 'gacha profile', description: 'Melihat statistik poin dan koleksi.', enabled: true }
+];
 
         renderCommandsList();
       } catch (e) {
