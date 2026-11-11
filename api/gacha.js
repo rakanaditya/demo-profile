@@ -5,7 +5,7 @@ const DEFAULT_WAIFUS = [
   // --- SSR (Super Super Rare) ---
   { id: 'lufas', name: 'LufasMapha', title: 'Black-Winged Sovereign', element: 'Dark', rarity: 'SSR', attack: 950, defense: 820, hp: 3200, image: '/Assets/Waifu/lufas.gif', description: 'Penguasa kegelapan bersayap hitam yang legendaris dengan kekuatan mutlak.' },
   { id: 'asuna', name: 'AsunaYuuki', title: 'The Lightning Flash', element: 'Light', rarity: 'SSR', attack: 910, defense: 700, hp: 2900, image: '/Assets/Waifu/asuna.gif', description: 'Pendekar pedang super cepat dari dunia Aincrad yang terkenal dengan tusukan kilatnya.' },
-  { id: 'zero_two', name: 'ZeroTwo', title: 'Partner Killer', element: 'Fire', rarity: 'SSR', attack: 930, defense: 680, hp: 3100, image: '/Assets/Waifu/zerotwo.gif', description: 'Gadis bertanduk dengan darah klakosaur di nadinya, petarung Franxx yang buas.' },
+  { id: 'zero_two', name: 'Zero Two', title: 'Partner Killer', element: 'Fire', rarity: 'SSR', attack: 930, defense: 680, hp: 3100, image: '/Assets/Waifu/zerotwo.gif', description: 'Gadis bertanduk dengan darah klakosaur di nadinya, petarung Franxx yang buas.' },
   { id: 'mikhail', name: 'Mikhail', title: 'The Case Study Of Vanitas', element: 'Shadow', rarity: 'SSR', attack: 960, defense: 750, hp: 3300, image: '/Assets/Waifu/vanitasmikhail.gif', description: 'Seorang manusia biasa yang mengaku sebagai dokter spesialis vampir. Ia mewarisi nama dan sebuah grimoire (buku sihir) terkutuk bernama Kitab Vanitas dari vampir legendaris (Vampir Bulan Biru). Ia menggunakan kekuatan buku tersebut untuk "menyembuhkan" para vampir yang kehilangan kendali' },
 
   // --- SR (Super Rare) ---
