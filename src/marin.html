@@ -71,9 +71,9 @@
     <div id="login-alert" class="hidden bg-indigo-950/60 border border-indigo-800 p-6 rounded-2xl text-center space-y-4">
       <p class="text-sm text-indigo-200">Anda harus masuk dengan akun Discord terlebih dahulu untuk mengakses konfigurasi bot.</p>
       <a href="https://discord.com/api/oauth2/authorize?client_id=1380868700688613416&redirect_uri=https%3A%2F%2Fdemo-profile-dun.vercel.app%2Fapi%2Fcallback&response_type=code&scope=identify%20guilds&state=marin" 
-   class="inline-flex items-center space-x-2 py-2.5 px-6 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition text-sm">
-  <span>Login dengan Discord</span>
-</a>
+         class="inline-flex items-center space-x-2 py-2.5 px-6 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition text-sm">
+        <span>Login dengan Discord</span>
+      </a>
     </div>
 
     <!-- Panel Konfigurasi Commands (Hanya tampil jika sudah login) -->
@@ -111,6 +111,56 @@
           Simpan Konfigurasi Server Ini
         </button>
       </div>
+
+      <!-- PANEL TUTORIAL PENGGUNAAN COMMANDS DI DISCORD -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5 shadow-xl">
+        <div class="flex items-center space-x-2 text-pink-400">
+          <span class="text-lg">📖</span>
+          <h3 class="font-bold text-base text-white">Tutorial Penggunaan Bot Commands di Discord</h3>
+        </div>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Semua command di bawah ini dapat langsung Anda ketikkan di kolom chat server Discord yang sudah terhubung dengan bot Rakan Aditya Community.
+        </p>
+
+        <div class="space-y-4">
+          <!-- Tutorial 1: Giveaway -->
+          <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl space-y-2">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono font-bold text-indigo-400 text-sm">/giveaway</span>
+              <span class="px-2 py-0.5 bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 rounded text-[10px]">Event & Hadiah</span>
+            </div>
+            <p class="text-xs text-slate-300">Menampilkan daftar event & giveaway aktif yang sedang berlangsung beserta sisa waktu dan tombol klaimnya.</p>
+            <div class="bg-slate-900 p-2.5 rounded-lg border border-slate-800 text-[11px] font-mono text-slate-400">
+              💡 <strong class="text-white">Cara Pakai:</strong> Ketik <code class="text-pink-400">/giveaway</code> di chat Discord, lalu tekan Enter atau klik command bot yang muncul. Informasi giveaway akan langsung tampil ke publik.
+            </div>
+          </div>
+
+          <!-- Tutorial 2: Gacha Roll -->
+          <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl space-y-2">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono font-bold text-pink-400 text-sm">/gacha roll</span>
+              <span class="px-2 py-0.5 bg-pink-500/10 text-pink-300 border border-pink-500/20 rounded text-[10px]">Waifu Hub</span>
+            </div>
+            <p class="text-xs text-slate-300">Melakukan gacha summon waifu langsung dari Discord menggunakan 50 Poin akun Anda.</p>
+            <div class="bg-slate-900 p-2.5 rounded-lg border border-slate-800 text-[11px] font-mono text-slate-400">
+              💡 <strong class="text-white">Cara Pakai:</strong> Ketik <code class="text-pink-400">/gacha roll</code>. Jika poin cukup, bot akan menampilkan kartu waifu (R, SR, SSR) yang Anda dapatkan secara acak!
+            </div>
+          </div>
+
+          <!-- Tutorial 3: Gacha Profile -->
+          <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl space-y-2">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono font-bold text-pink-400 text-sm">/gacha profile</span>
+              <span class="px-2 py-0.5 bg-pink-500/10 text-pink-300 border border-pink-500/20 rounded text-[10px]">Waifu Hub</span>
+            </div>
+            <p class="text-xs text-slate-300">Melihat statistik poin, jumlah koleksi waifu, login streak, serta total kemenangan PvP Anda.</p>
+            <div class="bg-slate-900 p-2.5 rounded-lg border border-slate-800 text-[11px] font-mono text-slate-400">
+              💡 <strong class="text-white">Cara Pakai:</strong> Ketik <code class="text-pink-400">/gacha profile</code> untuk melihat ringkasan status akun waifu Anda yang tersinkronisasi langsung dengan <a href="https://demo-profile-dun.vercel.app/gachaw" target="_blank" class="text-indigo-400 underline">Website Waifu Hub</a>.
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
   </main>
@@ -150,7 +200,7 @@
         
         loadUserGuilds();
       } else {
-        document.getElementById('login-alert').classList.remove('hidden');
+        document.getElementById('login-alert').classList.add('hidden');
         document.getElementById('config-panel').classList.add('hidden');
       }
     }
@@ -160,11 +210,10 @@
       window.location.href = '/marin';
     }
 
-  // Mengambil daftar server Discord user
+    // Mengambil daftar server Discord user
     async function loadUserGuilds() {
       const selectElem = document.getElementById('guild-select');
       try {
-        // DIUBAH MENGIKUTI ENDPOINT /api/marin?action=guilds
         const res = await fetch(`/api/marin?action=guilds&userId=${currentUser.id}`);
         const data = await res.json();
 
@@ -185,7 +234,7 @@
       }
     }
 
-   // Ketika server dipilih di dropdown
+    // Ketika server dipilih di dropdown
     async function onGuildChange(guildId) {
       currentGuildId = guildId;
       const container = document.getElementById('commands-container');
@@ -202,14 +251,13 @@
       listElem.innerHTML = '<p class="text-xs text-slate-500 text-center py-4">Memuat commands...</p>';
 
       try {
-        // DIUBAH MENGIKUTI ENDPOINT /api/marin?action=config
         const res = await fetch(`/api/marin?action=config&guildId=${guildId}`);
         const data = await res.json();
         
         serverCommands = data.commands || [
-          { name: 'giveaway start', description: 'Memulai sesi event giveaway baru di channel.', enabled: true },
-          { name: 'gacha roll', description: 'Melakukan gacha karakter waifu interaktif.', enabled: true },
-          { name: 'gacha profile', description: 'Melihat statistik dan koleksi waifu.', enabled: true }
+          { name: 'giveaway', description: 'Melihat daftar giveaway aktif yang terhubung ke website.', enabled: true },
+          { name: 'gacha roll', description: 'Lakukan gacha summon waifu impian langsung dari Discord.', enabled: true },
+          { name: 'gacha profile', description: 'Melihat statistik poin, koleksi waifu, dan PvP.', enabled: true }
         ];
 
         renderCommandsList();
@@ -250,7 +298,6 @@
       if (!currentGuildId) return alert('Silakan pilih server terlebih dahulu!');
 
       try {
-        // POST tetap menggunakan /api/marin
         const res = await fetch('/api/marin', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
