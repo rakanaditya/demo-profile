@@ -97,19 +97,23 @@
             <span class="text-[11px] bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-xl text-pink-400 font-mono">💡 Shortcut: Tekan <kbd class="bg-slate-800 px-1.5 py-0.5 rounded text-white font-bold">R</kbd> untuk Gacha</span>
           </div>
           
-          <!-- Kotak Informasi Peluang Rarity (Drop Rate) -->
-          <div class="max-w-md mx-auto grid grid-cols-3 gap-3 bg-slate-950/80 p-4 rounded-2xl border border-slate-800 text-center">
+         <!-- Kotak Informasi Peluang Rarity (Drop Rate & Pity) -->
+          <div class="max-w-md mx-auto grid grid-cols-4 gap-2 bg-slate-950/80 p-3 rounded-2xl border border-slate-800 text-center items-center">
             <div class="space-y-1">
-              <span class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded font-bold">SSR</span>
+              <span class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded font-bold">SSR</span>
               <p class="text-xs font-mono font-bold text-amber-400">5%</p>
             </div>
             <div class="space-y-1">
-              <span class="text-[10px] bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2 py-0.5 rounded font-bold">SR</span>
+              <span class="text-[10px] bg-purple-500/20 text-purple-300 border border-purple-500/30 px-1.5 py-0.5 rounded font-bold">SR</span>
               <p class="text-xs font-mono font-bold text-purple-400">25%</p>
             </div>
             <div class="space-y-1">
-              <span class="text-[10px] bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2 py-0.5 rounded font-bold">R</span>
+              <span class="text-[10px] bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded font-bold">R</span>
               <p class="text-xs font-mono font-bold text-blue-400">70%</p>
+            </div>
+            <div class="space-y-1 bg-pink-950/30 border border-pink-500/30 p-1.5 rounded-xl">
+              <span class="text-[9px] text-pink-300 font-bold block">PITY SSR</span>
+              <p id="pity-counter-val" class="text-xs font-mono font-bold text-pink-400">0/21</p>
             </div>
           </div>
 
@@ -574,6 +578,12 @@
       document.getElementById('user-points-val').innerText = `${userData.points} Poin`;
       document.getElementById('inv-count').innerText = userData.inventory ? userData.inventory.length : 0;
       document.getElementById('inventory-sub-count').innerText = userData.inventory ? userData.inventory.length : 0;
+      
+      // Update Pity Counter Badge (Max 21)
+      const pityVal = userData.pityCounter || 0;
+      const pityEl = document.getElementById('pity-counter-val');
+      if (pityEl) pityEl.innerText = `${pityVal}/21`;
+
       renderInventory();
       renderBattleSelection();
       renderDailyStreakGrid();
@@ -731,6 +741,14 @@
         if (data.success) {
           playAudio('audio-chime');
           userData.points = data.points;
+          
+          // Simpan pembaruan pity counter dari backend
+          if (data.waifu && userData) {
+            // Pity counter dikembalikan atau di-update lewat profil / respons backend
+            // Jika backend Anda menyertakan update pity di objek user/respons, sinkronkan di sini:
+            userData.pityCounter = data.pityCounter !== undefined ? data.pityCounter : (userData.pityCounter + 1 >= 21 ? 0 : userData.pityCounter + 1);
+          }
+
           const idx = userData.inventory.findIndex(i => i.waifuId === data.waifu.waifuId);
           if (idx !== -1) userData.inventory[idx] = data.waifu; else userData.inventory.push(data.waifu);
           updateUIState();
@@ -749,7 +767,7 @@
           `;
         } else { 
           box.innerHTML = `<span class="text-rose-400 text-sm font-bold">${data.error}</span>`;
-          if (autoGachaActive) toggleAutoGacha(); // Stop auto jika error (poin habis)
+          if (autoGachaActive) toggleAutoGacha();
         }
       } catch(e) { 
         box.innerHTML = `<span class="text-rose-400 text-sm">Gagal summon. Terjadi kesalahan koneksi.</span>`;
