@@ -2,12 +2,23 @@ import { connectToDatabase } from './db.js';
 import { ObjectId } from 'mongodb';
 
 const DEFAULT_WAIFUS = [
-  { id: 'lufas', name: 'LufasMapha', title: 'Black-Winged Sovereign', element: 'Dark', rarity: 'SSR', attack: 950, defense: 820, hp: 3200, image: '/Assets/Waifu/lufas.gif', description: 'Penguasa kegelapan bersayap hitam yang legendaris.' },
-  { id: 'asuna', name: 'AsunaYuuki', title: 'The Lightning Flash', element: 'Light', rarity: 'SSR', attack: 910, defense: 700, hp: 2900, image: '/Assets/Waifu/asuna.gif', description: 'Pendekar pedang super cepat dari dunia Aincrad.' },
-  { id: 'zero_two', name: 'ZeroTwo', title: 'Partner Killer', element: 'Fire', rarity: 'SSR', attack: 930, defense: 680, hp: 3100, image: '/Assets/Waifu/zerotwo.gif', description: 'Gadis bertanduk dengan darah klakosaur di nadinya.' },
-  { id: 'rem', name: 'Rem', title: 'The Maid of Oni', element: 'Water', rarity: 'SR', attack: 780, defense: 750, hp: 2800, image: '/Assets/Waifu/rem.gif', description: 'Pelayan setia dengan kekuatan oni yang luar biasa.' },
-  { id: 'kasane', name: 'KasaneTeto', title: 'Virtual Diva', element: 'Fire', rarity: 'SR', attack: 750, defense: 700, hp: 3400, image: '/Assets/Waifu/kasane.gif', description: 'Idola virtual bersuara merdu yang menginspirasi dunia.' },
-  { id: 'miku', name: 'HatsuneMiku', title: 'Virtual Diva', element: 'Wind', rarity: 'R', attack: 650, defense: 600, hp: 2400, image: '/Assets/Waifu/miku.gif', description: 'Idola virtual bersuara merdu yang menginspirasi dunia.' }
+  // --- SSR (Super Super Rare) ---
+  { id: 'lufas', name: 'LufasMapha', title: 'Black-Winged Sovereign', element: 'Dark', rarity: 'SSR', attack: 950, defense: 820, hp: 3200, image: '/Assets/Waifu/lufas.gif', description: 'Penguasa kegelapan bersayap hitam yang legendaris dengan kekuatan mutlak.' },
+  { id: 'asuna', name: 'AsunaYuuki', title: 'The Lightning Flash', element: 'Light', rarity: 'SSR', attack: 910, defense: 700, hp: 2900, image: '/Assets/Waifu/asuna.gif', description: 'Pendekar pedang super cepat dari dunia Aincrad yang terkenal dengan tusukan kilatnya.' },
+  { id: 'zerotwo', name: 'ZeroTwo', title: 'Partner Killer', element: 'Fire', rarity: 'SSR', attack: 930, defense: 680, hp: 3100, image: '/Assets/Waifu/zerotwo.gif', description: 'Gadis bertanduk dengan darah klakosaur di nadinya, petarung Franxx yang buas.' },
+  { id: 'mikhail', name: 'Mikhail', title: 'The Case Study Of Vanitas', element: 'Shadow', rarity: 'SSR', attack: 960, defense: 750, hp: 3300, image: '/Assets/Waifu/vanitasmikhail.gif', description: 'Seorang manusia biasa yang mengaku sebagai dokter spesialis vampir. Ia mewarisi nama dan sebuah grimoire (buku sihir) terkutuk bernama Kitab Vanitas dari vampir legendaris (Vampir Bulan Biru). Ia menggunakan kekuatan buku tersebut untuk "menyembuhkan" para vampir yang kehilangan kendali' },
+
+  // --- SR (Super Rare) ---
+  { id: 'rem', name: 'Rem', title: 'The Maid of Oni', element: 'Water', rarity: 'SR', attack: 780, defense: 750, hp: 2800, image: '/Assets/Waifu/rem.gif', description: 'Pelayan setia dari Roswaal Mansion dengan kekuatan oni yang luar biasa saat mengamuk.' },
+  { id: 'kasane', name: 'KasaneTeto', title: 'Virtual Diva', element: 'Fire', rarity: 'SR', attack: 750, defense: 700, hp: 3400, image: '/Assets/Waifu/kasane.gif', description: 'Chimera chimera berambut drill merah ikonik yang siap menyanyikan lagu terbaik.' },
+  { id: 'senko', name: 'Senkosan', title: 'The Helpful Fox', element: 'Wind', rarity: 'SR', attack: 720, defense: 730, hp: 2900, image: '/Assets/Waifu/senko.gif', description: 'Rubah dewa berusia 800 tahun yang siap memanjakan dan merawatmu setelah lelah bekerja.' },
+  { id: 'nanahiragi', name: 'NanaHiiragi', title: 'Talentless Strategist', element: 'Dark', rarity: 'SR', attack: 760, defense: 690, hp: 2700, image: '/Assets/Waifu/nanahiragi.gif', description: 'Gadis cerdas berwajah polos dengan kemampuan manipulasi psikologis tingkat tinggi.' },
+  { id: 'emilia', name: 'Emilia', title: 'Half-Elf Candidate', element: 'Ice', rarity: 'SR', attack: 770, defense: 760, hp: 3000, image: '/Assets/Waifu/emilia.gif', description: 'Salah satu kandidat calon penguasa (Ratu ke-42) dalam pemilihan kerajaan Lugnica.' },
+
+  // --- R (Rare) ---
+  { id: 'miku', name: 'HatsuneMiku', title: 'Virtual Diva', element: 'Wind', rarity: 'R', attack: 650, defense: 600, hp: 2400, image: '/Assets/Waifu/miku.gif', description: 'Idola virtual bersuara kian merdu yang menginspirasi jutaan penggemar di seluruh dunia.' },
+  { id: 'aqua', name: 'Aqua', title: 'Useless Goddess', element: 'Water', rarity: 'R', attack: 620, defense: 650, hp: 2600, image: '/Assets/Waifu/aqua.gif', description: 'Dewi air yang sering bikin rewel namun punya kekuatan penyembuh suci.' },
+  { id: 'megumin', name: 'Megumin', title: 'Explosion Archwizard', element: 'Fire', rarity: 'R', attack: 700, defense: 500, hp: 2100, image: '/Assets/Waifu/megumin.gif', description: 'Penyihir jenius yang hanya mendedikasikan seluruh hidupnya untuk sihir Ledakan (Explosion).' }
 ];
 
 export default async function handler(req, res) {
@@ -41,6 +52,7 @@ export default async function handler(req, res) {
           inventory: [],
           lastDailyClaim: null,
           loginStreak: 0,
+          pityCounter: 0, // Inisialisasi pity counter
           createdAt: new Date()
         };
         await usersCollection.insertOne(dbUser);
@@ -86,7 +98,6 @@ export default async function handler(req, res) {
         pvpLosses: u.pvpLosses || 0
       })).sort((a, b) => b.pvpWins - a.pvpWins).slice(0, 10);
 
-      // --- TAMBAHAN: TOP GACHA SUMMON (Dihitung dari total gachaCount + total dupes) ---
       const topGacha = allUsers.map(u => {
         const totalDupes = (u.inventory || []).reduce((sum, item) => sum + (item.dupes || 1), 0);
         const totalSummons = (u.gachaCount || 0) + totalDupes;
@@ -106,7 +117,7 @@ export default async function handler(req, res) {
           streak: topStreak,
           inventory: topInventory,
           pvp: topPvP,
-          gacha: topGacha // <-- Kirim data top gacha ke frontend
+          gacha: topGacha
         }
       });
     }
@@ -129,6 +140,7 @@ export default async function handler(req, res) {
           inventory: [],
           lastDailyClaim: null,
           loginStreak: 0,
+          pityCounter: 0,
           createdAt: new Date()
         };
         await usersCollection.insertOne(dbUser);
@@ -172,7 +184,7 @@ export default async function handler(req, res) {
         });
       }
 
-      // 2. GACHA PULL & AUTO DUPLICATE MERGE
+      // 2. GACHA PULL & SISTEM PITY (JAMINAN SSR)
       if (action === 'gacha') {
         const gachaCost = 50;
         if (dbUser.points < gachaCost) {
@@ -184,10 +196,27 @@ export default async function handler(req, res) {
           return res.status(400).json({ success: false, error: 'Belum ada data waifu.' });
         }
 
+        let pityCounter = dbUser.pityCounter || 0;
+        pityCounter++;
+
         const rand = Math.random() * 100;
         let targetRarity = 'R';
-        if (rand < 10) targetRarity = 'SSR';
-        else if (rand < 40) targetRarity = 'SR';
+
+        // Cek Pity (Jika sudah 20 kali tarik tanpa SSR, tarikan ke-21 dijamin SSR 100%)
+        if (pityCounter >= 21) {
+          targetRarity = 'SSR';
+          pityCounter = 0; // Reset pity setelah jaminan keluar
+        } else {
+          // Drop rate sesuai UI: SSR 5%, SR 25% (5 hingga 30), R 70% (30 hingga 100)
+          if (rand < 5) {
+            targetRarity = 'SSR';
+            pityCounter = 0; // Reset pity jika hoki dapat SSR lebih awal
+          } else if (rand < 30) {
+            targetRarity = 'SR';
+          } else {
+            targetRarity = 'R';
+          }
+        }
 
         let pool = allWaifus.filter(w => w.rarity === targetRarity);
         if (pool.length === 0) pool = allWaifus;
@@ -227,16 +256,18 @@ export default async function handler(req, res) {
 
         await usersCollection.updateOne(
           { id: userId },
-          { $set: { points: newPoints, inventory: inventory } }
+          { $set: { points: newPoints, inventory: inventory, pityCounter: pityCounter }, $inc: { gachaCount: 1 } }
         );
 
         const isDuplicate = existingIndex !== -1;
+        const pityInfo = pityCounter > 0 ? ` (Pity SSR: ${pityCounter}/21)` : ` (Pity Direset!)`;
+        
         return res.status(200).json({
           success: true,
           isDuplicate: isDuplicate,
           message: isDuplicate 
-            ? `Duplikat! ${pulledWaifu.name} digabungkan (Dupes: x${updatedItem.dupes}, Stats Meningkat!).`
-            : `Selamat! Anda mendapatkan ${pulledWaifu.name} (${pulledWaifu.rarity}) baru!`,
+            ? `Duplikat! ${pulledWaifu.name} digabungkan (Dupes: x${updatedItem.dupes}, Stats Meningkat!).${pityInfo}`
+            : `Selamat! Anda mendapatkan ${pulledWaifu.name} (${pulledWaifu.rarity}) baru!${pityInfo}`,
           waifu: updatedItem,
           points: newPoints
         });
@@ -287,7 +318,7 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, inventory: newInventory, message: 'Semua duplikat berhasil digabungkan dan statistik meningkat!' });
       }
 
-      // 5. PVP ROOM: CREATE ROOM (Validasi HP > 0)
+      // 5. PVP ROOM: CREATE ROOM
       if (action === 'create_pvp_room') {
         const { instanceId, isBot } = req.body;
         const waifu = (dbUser.inventory || []).find(i => i.instanceId === instanceId);
@@ -346,7 +377,7 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, roomId: result.insertedId.toString(), room: newRoom });
       }
 
-      // 6. PVP ROOM: JOIN ROOM (Validasi HP > 0)
+      // 6. PVP ROOM: JOIN ROOM
       if (action === 'join_pvp_room') {
         const { roomId, instanceId } = req.body;
         const waifu = (dbUser.inventory || []).find(i => i.instanceId === instanceId);
