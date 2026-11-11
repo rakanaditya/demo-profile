@@ -18,10 +18,10 @@ export default async function handler(req, res) {
     const userData = await usersCollection.findOne({ id: userId });
 
     if (!userData || !userData.access_token) {
-      return res.status(401).json({ success: false, error: 'Sesi user tidak valid atau token kedaluwarsa. Silakan login ulang.' });
+      return res.status(401).json({ success: false, error: 'Sesi user tidak valid. Silakan login ulang.' });
     }
 
-    // Ambil daftar server (guilds) langsung dari Discord API menggunakan access_token user
+    // Ambil daftar server langsung dari Discord API menggunakan access_token user
     const discordRes = await fetch('https://discord.com/api/v10/users/@me/guilds', {
       headers: {
         Authorization: `Bearer ${userData.access_token}`,
