@@ -83,7 +83,7 @@
         </div>
       </div>
       
-      <!-- Kanan: Tombol Aksi (Sound, Live Display, User Badge) -->
+      <!-- Kanan: Tombol Aksi -->
       <div class="flex items-center space-x-2 sm:space-x-3">
         <button onclick="toggleAudioMute()" id="btn-audio-toggle" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold border border-slate-700 transition flex items-center space-x-1">
           <span id="audio-icon">🔊</span> <span id="audio-text" class="hidden sm:inline">Sound ON</span>
@@ -100,7 +100,7 @@
         </div>
       </div>
 
-      <!-- Baris Navbar Menu Lengkap (Responsive Desktop & Mobile Horizontal Scroll) -->
+      <!-- Baris Navbar Menu Lengkap -->
       <nav id="main-nav-links" class="w-full flex items-center space-x-1 overflow-x-auto py-1.5 border-t border-slate-800/60 mt-1 scrollbar-none">
         <a href="/" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-house mr-1"></i>Home</a>
         <a href="/giveaway" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-indigo-400 bg-indigo-600/10 border border-indigo-500/20 whitespace-nowrap"><i class="fa-solid fa-gift mr-1"></i>Giveaway</a>
@@ -188,6 +188,42 @@
     </div>
 
   </main>
+
+  <!-- MODAL FORM KLAIM HADIAH -->
+  <div id="claim-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-emerald-500/50 w-full max-w-md rounded-2xl p-6 space-y-4 shadow-2xl relative">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div class="flex items-center space-x-2">
+          <span class="text-xl">🎁</span>
+          <h4 class="font-bold text-white text-base">Klaim Hadiah Giveaway</h4>
+        </div>
+        <button onclick="closeClaimModal()" class="text-slate-400 hover:text-white text-sm">✕</button>
+      </div>
+
+      <form id="claim-form" class="space-y-4">
+        <input type="hidden" id="claim-giveaway-id">
+        
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Username Discord Anda</label>
+          <input type="text" id="claim-username" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500">
+        </div>
+
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">ID Discord Anda</label>
+          <input type="text" id="claim-discord-id" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-emerald-500">
+        </div>
+
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Upload Bukti / Screenshot (Opsional)</label>
+          <input type="file" id="claim-proof-file" accept="image/*,.pdf" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-300 file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-600 file:text-white hover:file:bg-emerald-500 cursor-pointer">
+        </div>
+
+        <div class="pt-2">
+          <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition shadow-lg shadow-emerald-600/30">Kirim Bukti Klaim</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- OVERLAY COUNTDOWN DRAMATIS -->
   <div id="countdown-overlay" class="hidden fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-xl flex flex-col items-center justify-center p-4 transition-all">
@@ -607,7 +643,7 @@
               ` : ''}
 
               ${isEnded && isUserWinner ? `
-                <button onclick="claimGiveaway('${gw._id}')" class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition shadow-lg shadow-emerald-600/30 animate-pulse">
+                <button onclick="openClaimModal('${gw._id}')" class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition shadow-lg shadow-emerald-600/30 animate-pulse">
                   🎁 KLAIM HADIAH SEKARANG (CLAIM)
                 </button>
               ` : ''}
@@ -695,6 +731,83 @@
       }
     }
 
+    // Modal Form Klaim Hadiah
+    function openClaimModal(giveawayId) {
+      if (!currentUser) return showToast('Silakan login terlebih dahulu!', true);
+      document.getElementById('claim-giveaway-id').value = giveawayId;
+      document.getElementById('claim-username').value = currentUser.username || '';
+      document.getElementById('claim-discord-id').value = currentUser.id || '';
+      document.getElementById('claim-modal').classList.remove('hidden');
+    }
+
+    function closeClaimModal() {
+      document.getElementById('claim-modal').classList.add('hidden');
+      document.getElementById('claim-form').reset();
+    }
+
+    document.getElementById('claim-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const giveawayId = document.getElementById('claim-giveaway-id').value;
+      const discordUsername = document.getElementById('claim-username').value;
+      const discordId = document.getElementById('claim-discord-id').value;
+      const fileInput = document.getElementById('claim-proof-file');
+
+      let fileData = null;
+      let fileName = null;
+      let fileType = null;
+
+      if (fileInput.files && fileInput.files[0]) {
+        const file = fileInput.files[0];
+        fileName = file.name;
+        fileType = file.type;
+        
+        // Konversi file ke base64 agar dapat dikirim melalui JSON / Webhook
+        fileData = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.readAsDataURL(file);
+        });
+      }
+
+      // 1. Kirim notifikasi klaim via WEBHOOKS_NOTIF
+      try {
+        await fetch('/api/webhooksnotif', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            giveawayId,
+            discordUsername,
+            discordId,
+            fileData,
+            fileName,
+            fileType,
+            user: currentUser
+          })
+        });
+      } catch (err) {}
+
+      // 2. Update status klaim di database giveaway
+      const data = await safeFetchJson('/api/giveaway', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          action: 'claim', 
+          giveawayId, 
+          user: currentUser,
+          claimDetails: { discordUsername, discordId } 
+        })
+      });
+
+      if (data.success) {
+        playAudio('audio-win');
+        closeClaimModal();
+        showToast('🎉 Berhasil melakukan klaim! Data & bukti telah dikirim ke panitia.');
+        loadGiveaways();
+      } else {
+        showToast(data.error || 'Gagal melakukan klaim.', true);
+      }
+    });
+
     async function completeGiveaway(id) {
       if (!confirm('Yakin ingin menandai giveaway ini sebagai selesai (Successfully Claimed)?')) return;
 
@@ -742,24 +855,6 @@
         });
       } else {
         showToast(data.error || 'Gagal mengocok pemenang.', true);
-      }
-    }
-
-    async function claimGiveaway(id) {
-      if (!currentUser) return showToast('Silakan login terlebih dahulu!', true);
-
-      const data = await safeFetchJson('/api/giveaway', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'claim', giveawayId: id, user: currentUser })
-      });
-
-      if (data.success) {
-        playAudio('audio-win');
-        showToast('🎉 Successfully Claimed! Giveaway dianggap Completed.');
-        loadGiveaways();
-      } else {
-        showToast(data.error || 'Gagal melakukan klaim.', true);
       }
     }
 
