@@ -78,55 +78,37 @@
 
     <!-- Panel Konfigurasi Commands (Hanya tampil jika sudah login) -->
     <div id="config-panel" class="hidden space-y-6">
-      <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-2">
-        <h2 class="text-xl font-bold text-white flex items-center space-x-2">
-          <span>⚙️</span>
-          <span>Discord Slash Commands Settings</span>
-        </h2>
-        <p class="text-xs text-slate-400">Atur status aktif/nonaktif serta izin akses untuk setiap slash command bot di server Anda.</p>
+      
+      <!-- Selector Server (Guild) -->
+      <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4 shadow-xl">
+        <div class="flex items-center space-x-2 text-indigo-400">
+          <span class="text-lg">🌐</span>
+          <h2 class="font-bold text-lg text-white">Pilih Server Discord</h2>
+        </div>
+        <p class="text-xs text-slate-400">Pilih server tempat Anda memiliki hak akses Administrator untuk mengatur konfigurasi bot.</p>
+        
+        <select id="guild-select" onchange="onGuildChange(this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500">
+          <option value="">-- Memuat daftar server Anda --</option>
+        </select>
       </div>
 
-      <!-- Daftar Commands (Contoh interaktif) -->
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
-        <h3 class="font-bold text-sm text-white uppercase tracking-wider text-slate-400">Daftar Registered Commands</h3>
+      <!-- Daftar Commands Berdasarkan Server yang Dipilih -->
+      <div id="commands-container" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-xl">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+          <div>
+            <h3 class="font-bold text-base text-white">Kelola Slash Commands</h3>
+            <p class="text-xs text-slate-400" id="selected-guild-name">Server: -</p>
+          </div>
+          <span class="px-3 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full text-xs font-semibold">Live Sync</span>
+        </div>
         
         <div id="commands-list" class="space-y-3">
-          <!-- Item Command contoh -->
-          <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl flex items-center justify-between flex-wrap gap-3">
-            <div>
-              <div class="flex items-center space-x-2">
-                <span class="font-mono font-bold text-indigo-400 text-sm">/giveaway start</span>
-                <span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-[10px]">Active</span>
-              </div>
-              <p class="text-xs text-slate-400 mt-1">Memulai sesi event giveaway baru di channel.</p>
-            </div>
-            <div class="flex items-center space-x-2">
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" checked class="sr-only peer" onchange="toggleCommand(this, 'giveaway-start')">
-                <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
-              </label>
-            </div>
-          </div>
-
-          <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl flex items-center justify-between flex-wrap gap-3">
-            <div>
-              <div class="flex items-center space-x-2">
-                <span class="font-mono font-bold text-indigo-400 text-sm">/gacha roll</span>
-                <span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-[10px]">Active</span>
-              </div>
-              <p class="text-xs text-slate-400 mt-1">Melakukan gacha karakter waifu interaktif.</p>
-            </div>
-            <div class="flex items-center space-x-2">
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" checked class="sr-only peer" onchange="toggleCommand(this, 'gacha-roll')">
-                <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
-              </label>
-            </div>
-          </div>
+          <!-- Item command akan dirender secara dinamis lewat JavaScript -->
+          <p class="text-xs text-slate-500 text-center py-4">Memuat daftar commands...</p>
         </div>
 
-        <button onclick="saveConfigurations()" class="w-full mt-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition shadow-lg shadow-indigo-600/30">
-          Simpan Perubahan Konfigurasi
+        <button onclick="saveConfigurations()" class="w-full mt-4 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition shadow-lg shadow-indigo-600/30">
+          Simpan Konfigurasi Server Ini
         </button>
       </div>
     </div>
@@ -139,6 +121,9 @@
 
   <script>
     let currentUser = null;
+    let userGuilds = [];
+    let currentGuildId = null;
+    let serverCommands = [];
 
     function initAuth() {
       const urlParams = new URLSearchParams(window.location.search);
@@ -162,6 +147,8 @@
         document.getElementById('nav-avatar').src = currentUser.avatar 
           ? `https://cdn.discordapp.com/avatars/${currentUser.id}/${currentUser.avatar}.png`
           : 'https://cdn.discordapp.com/embed/avatars/0.png';
+        
+        loadUserGuilds();
       } else {
         document.getElementById('login-alert').classList.remove('hidden');
         document.getElementById('config-panel').classList.add('hidden');
@@ -173,18 +160,115 @@
       window.location.href = '/marin';
     }
 
+    // Mengambil daftar server Discord user yang memiliki akses Administrator (permissions & 0x8)
+    async function loadUserGuilds() {
+      const selectElem = document.getElementById('guild-select');
+      
+      // Jika token akses tersimpan atau diambil dari session/DB
+      try {
+        const res = await fetch(`/api/marin/guilds?userId=${currentUser.id}`);
+        const data = await res.json();
+
+        if (data.success && data.guilds) {
+          // Filter hanya server di mana user adalah Administrator (Permission bitwise check: (permissions & 0x8) === 8 atau owner)
+          userGuilds = data.guilds.filter(g => (g.permissions & 0x8) === 8 || g.owner);
+          
+          if (userGuilds.length > 0) {
+            selectElem.innerHTML = '<option value="">-- Pilih salah satu server --</option>' + 
+              userGuilds.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+          } else {
+            selectElem.innerHTML = '<option value="">Tidak ada server dengan hak akses Admin ditemukan</option>';
+          }
+        } else {
+          selectElem.innerHTML = '<option value="">Gagal memuat server. Silakan login ulang.</option>';
+        }
+      } catch (err) {
+        selectElem.innerHTML = '<option value="">Gagal terhubung ke server API</option>';
+      }
+    }
+
+    // Ketika server dipilih di dropdown
+    async function onGuildChange(guildId) {
+      currentGuildId = guildId;
+      const container = document.getElementById('commands-container');
+      const listElem = document.getElementById('commands-list');
+      
+      if (!guildId) {
+        container.classList.add('hidden');
+        return;
+      }
+
+      const selectedGuild = userGuilds.find(g => g.id === guildId);
+      document.getElementById('selected-guild-name').innerText = `Server: ${selectedGuild ? selectedGuild.name : guildId}`;
+      container.classList.remove('hidden');
+      listElem.innerHTML = '<p class="text-xs text-slate-500 text-center py-4">Memuat commands...</p>';
+
+      // Ambil konfigurasi command untuk server ini dari backend / database
+      try {
+        const res = await fetch(`/api/marin/config?guildId=${guildId}`);
+        const data = await res.json();
+        
+        serverCommands = data.commands || [
+          { name: 'giveaway start', description: 'Memulai sesi event giveaway baru di channel.', enabled: true },
+          { name: 'gacha roll', description: 'Melakukan gacha karakter waifu interaktif.', enabled: true },
+          { name: 'gacha profile', description: 'Melihat statistik dan koleksi waifu.', enabled: true }
+        ];
+
+        renderCommandsList();
+      } catch (e) {
+        listElem.innerHTML = '<p class="text-xs text-rose-400 text-center py-4">Gagal memuat konfigurasi command.</p>';
+      }
+    }
+
+    function renderCommandsList() {
+      const listElem = document.getElementById('commands-list');
+      listElem.innerHTML = serverCommands.map((cmd, idx) => `
+        <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="font-mono font-bold text-indigo-400 text-sm">/${cmd.name}</span>
+              <span class="px-2 py-0.5 ${cmd.enabled ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'} rounded text-[10px]">
+                ${cmd.enabled ? 'Active' : 'Disabled'}
+              </span>
+            </div>
+            <p class="text-xs text-slate-400 mt-1">${cmd.description}</p>
+          </div>
+          <div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" ${cmd.enabled ? 'checked' : ''} class="sr-only peer" onchange="toggleCommandState(${idx}, this.checked)">
+              <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+            </label>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function toggleCommandState(index, isChecked) {
+      serverCommands[index].enabled = isChecked;
+      renderCommandsList();
+    }
+
     async function saveConfigurations() {
-      // Contoh mengirim data konfigurasi ke API backend baru (/api/marin/config)
-      const res = await fetch('/api/marin/config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: currentUser.id, status: 'updated' })
-      });
-      const data = await res.json();
-      if (data.success) {
-        alert('Konfigurasi slash commands berhasil disimpan!');
-      } else {
-        alert('Gagal menyimpan konfigurasi.');
+      if (!currentGuildId) return alert('Silakan pilih server terlebih dahulu!');
+
+      try {
+        const res = await fetch('/api/marin/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: currentUser.id,
+            guildId: currentGuildId,
+            commands: serverCommands
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('Berhasil! Konfigurasi commands untuk server ini telah disimpan.');
+        } else {
+          alert('Gagal menyimpan konfigurasi: ' + (data.error || 'Kesalahan server'));
+        }
+      } catch (err) {
+        alert('Terjadi kesalahan jaringan.');
       }
     }
 
