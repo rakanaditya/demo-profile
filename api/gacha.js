@@ -3,11 +3,11 @@ import { ObjectId } from 'mongodb';
 
 const DEFAULT_WAIFUS = [
   { id: 'lufas', name: 'LufasMapha', title: 'Black-Winged Sovereign', element: 'Dark', rarity: 'SSR', attack: 950, defense: 820, hp: 3200, image: '/Assets/Waifu/lufas.gif', description: 'Penguasa kegelapan bersayap hitam yang legendaris.' },
-  { id: 'rem', name: 'Rem', title: 'The Maid of Oni', element: 'Water', rarity: 'SR', attack: 780, defense: 750, hp: 2800, image: '/Assets/Waifu/rem.gif', description: 'Pelayan setia dengan kekuatan oni yang luar biasa.' },
   { id: 'asuna', name: 'AsunaYuuki', title: 'The Lightning Flash', element: 'Light', rarity: 'SSR', attack: 910, defense: 700, hp: 2900, image: '/Assets/Waifu/asuna.gif', description: 'Pendekar pedang super cepat dari dunia Aincrad.' },
   { id: 'zero_two', name: 'ZeroTwo', title: 'Partner Killer', element: 'Fire', rarity: 'SSR', attack: 930, defense: 680, hp: 3100, image: '/Assets/Waifu/zerotwo.gif', description: 'Gadis bertanduk dengan darah klakosaur di nadinya.' },
-  { id: 'miku', name: 'HatsuneMiku', title: 'Virtual Diva', element: 'Wind', rarity: 'R', attack: 650, defense: 600, hp: 2400, image: '/Assets/Waifu/miku.gif', description: 'Idola virtual bersuara merdu yang menginspirasi dunia.' },
-  { id: 'kasane', name: 'KasaneTeto', title: 'Virtual Diva', element: 'Fire', rarity: 'SR', attack: 750, defense: 700, hp: 3400, image: '/Assets/Waifu/kasane.gif', description: 'Idola virtual bersuara merdu yang menginspirasi dunia.' }
+  { id: 'rem', name: 'Rem', title: 'The Maid of Oni', element: 'Water', rarity: 'SR', attack: 780, defense: 750, hp: 2800, image: '/Assets/Waifu/rem.gif', description: 'Pelayan setia dengan kekuatan oni yang luar biasa.' },
+  { id: 'kasane', name: 'KasaneTeto', title: 'Virtual Diva', element: 'Fire', rarity: 'SR', attack: 750, defense: 700, hp: 3400, image: '/Assets/Waifu/kasane.gif', description: 'Idola virtual bersuara merdu yang menginspirasi dunia.' },
+  { id: 'miku', name: 'HatsuneMiku', title: 'Virtual Diva', element: 'Wind', rarity: 'R', attack: 650, defense: 600, hp: 2400, image: '/Assets/Waifu/miku.gif', description: 'Idola virtual bersuara merdu yang menginspirasi dunia.' }
 ];
 
 export default async function handler(req, res) {
