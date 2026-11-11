@@ -33,21 +33,23 @@
     body { font-family: 'gg Sans', sans-serif; }
     .scrollbar-none::-webkit-scrollbar { display: none; }
     .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+    @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 15px rgba(236, 72, 153, 0.2); } 50% { box-shadow: 0 0 25px rgba(236, 72, 153, 0.5); } }
+    .update-glow { animation: pulseGlow 3s infinite; }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-pink-500 selection:text-white">
 
   <!-- Header & Navbar Lengkap -->
   <header id="main-header" class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-40 transition-all">
     <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2">
       <!-- Kiri: Logo & Title -->
       <div class="flex items-center space-x-3">
-        <a href="/" class="w-10 h-10 rounded-2xl overflow-hidden flex items-center justify-center shadow-lg shadow-indigo-600/30 hover:scale-105 transition border border-slate-700">
+        <a href="/" class="w-10 h-10 rounded-2xl overflow-hidden flex items-center justify-center shadow-lg shadow-pink-600/30 hover:scale-105 transition border border-slate-700">
           <img src="/Assets/server.png" alt="Server Icon" class="w-full h-full object-cover">
         </a>
         <div>
           <h1 class="font-bold text-lg text-white leading-none">Rakan Aditya Community</h1>
-          <span class="text-xs text-slate-400">Community Announcements & News</span>
+          <span class="text-xs text-pink-400">Community Announcements & News</span>
         </div>
       </div>
       
@@ -58,14 +60,14 @@
         </a>
       </div>
 
-      <!-- Baris Navbar Menu Lengkap (Responsive Desktop & Mobile Horizontal Scroll) -->
+      <!-- Baris Navbar Menu Lengkap -->
       <nav id="main-nav-links" class="w-full flex items-center space-x-1 overflow-x-auto py-1.5 border-t border-slate-800/60 mt-1 scrollbar-none">
         <a href="/" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-house mr-1"></i>Home</a>
         <a href="/giveaway" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-gift mr-1"></i>Giveaway</a>
         <a href="/giveawayleaderboard" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-trophy mr-1 text-amber-400"></i>Top Leaderboard</a>
         <a href="/rating" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-star mr-1 text-amber-400"></i>Rating</a>
         <a href="/gachaw" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-dice mr-1 text-pink-400"></i>Gacha Waifu</a>
-        <a href="/announcements" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-indigo-400 bg-indigo-600/10 border border-indigo-500/20 whitespace-nowrap"><i class="fa-solid fa-bullhorn mr-1"></i>News</a>
+        <a href="/announcements" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-pink-400 bg-pink-600/10 border border-pink-500/20 whitespace-nowrap"><i class="fa-solid fa-bullhorn mr-1"></i>News</a>
         <!-- Menu Khusus Owner -->
         <a href="/activitylog" id="nav-activity-log" class="nav-item hidden px-3 py-1.5 rounded-lg text-xs font-medium text-amber-400 bg-amber-500/10 border border-amber-500/30 whitespace-nowrap"><i class="fa-solid fa-chart-line mr-1"></i>Activity Log</a>
       </nav>
@@ -76,11 +78,44 @@
     
     <div class="text-center space-y-2">
       <h2 class="text-3xl font-extrabold text-white">📢 Pengumuman & Jadwal Event</h2>
-      <p class="text-sm text-slate-400">Informasi terbaru mengenai pembaruan fitur, turnamen game, dan event komunitas.</p>
+      <p class="text-sm text-slate-400">Informasi terbaru mengenai pembaruan fitur, optimasi sistem gacha, dan event komunitas.</p>
     </div>
 
     <!-- POST LIST -->
-    <div class="space-y-4">
+    <div class="space-y-6">
+
+      <!-- UPDATE HARI INI: FITUR GACHA & PITY SYSTEM -->
+      <article class="bg-slate-900 border border-pink-500/40 p-6 rounded-3xl space-y-4 shadow-xl update-glow relative overflow-hidden">
+        <div class="absolute top-0 right-0 bg-gradient-to-l from-pink-600 to-rose-600 text-white text-[10px] font-black uppercase tracking-widest px-4 py-1 rounded-bl-xl">
+          🔥 HOT UPDATE HARI INI
+        </div>
+        <div class="flex justify-between items-center text-xs text-slate-400 flex-wrap gap-2 pt-2">
+          <span class="px-2.5 py-1 bg-pink-500/10 text-pink-400 border border-pink-500/30 rounded-full font-bold">✨ Major Gacha Upgrade</span>
+          <span class="font-mono">Pembaruan Sistem v3.4</span>
+        </div>
+        <h3 class="text-xl font-black text-white">🎁 Fitur Pity Counter, Auto-Sync Database, & Animasi "New Unlocked!"</h3>
+        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+          Hari ini kami meluncurkan pembaruan besar untuk fitur <strong>Gacha Waifu</strong> agar pengalaman summon semakin seru dan adil bagi seluruh member komunitas:
+        </p>
+        <ul class="text-xs text-slate-400 space-y-2 pl-4 list-disc font-medium">
+          <li><strong>Sistem Pity Counter (0/21):</strong> Dijamin mendapatkan karakter SSR 100% otomatis pada tarikan ke-21 jika belum beruntung sebelumnya.</li>
+          <li><strong>Auto-Sync Master Database:</strong> Karakter baru (seperti <em>Mikhail</em> dan waifu lainnya) kini otomatis tersinkronisasi ke database MongoDB lama tanpa perlu menghapus data member.</li>
+          <li><strong>Animasi "✨ NEW UNLOCKED!":</strong> Banner spesial berwarna emas/amber serta efek animasi khusus saat pemain berhasil mendapatkan waifu baru untuk pertama kalinya, mirip bot Discord gacha profesional.</li>
+          <li><strong>Badge Pity & UI Indicator:</strong> Indikator penghitung pity transparan yang langsung terpampang di sebelah panel drop rate portal gacha.</li>
+        </ul>
+      </article>
+
+      <article class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-3 shadow-lg">
+        <div class="flex justify-between items-center text-xs text-slate-400 flex-wrap gap-2">
+          <span class="px-2.5 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full font-semibold">🚀 System Update</span>
+          <span>Website Update v3.3</span>
+        </div>
+        <h3 class="text-lg font-bold text-white">✨ Halaman myprofile & Animasi Rolling Giveaways</h3>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Sistem baru telah resmi diimplementasikan! Ketuk nama profil Anda setelah login untuk melihat menu halaman <em>myprofile</em> lengkap dengan tombol <em>logout</em>, serta animasi <em>Rolling giveaways</em> interaktif saat notifikasi giveaway dimulai hingga berakhir.
+        </p>
+      </article>
+
       <article class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-3 shadow-lg">
         <div class="flex justify-between items-center text-xs text-slate-400 flex-wrap gap-2">
           <span class="px-2.5 py-0.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full font-semibold">🎉 Event Komunitas</span>
@@ -103,16 +138,6 @@
         </p>
       </article>
 
-      <article class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-3 shadow-lg">
-        <div class="flex justify-between items-center text-xs text-slate-400 flex-wrap gap-2">
-          <span class="px-2.5 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full font-semibold">🚀 System Update</span>
-          <span>Website Update v3.3</span>
-        </div>
-        <h3 class="text-lg font-bold text-white">Halaman myprofile & Animasi Rolling giveaways</h3>
-        <p class="text-xs text-slate-400 leading-relaxed">
-          Sistem baru telah resmi diimplementasikan! Ketuk nama setelah login ada halaman myprofile & logout button dan animasi Rolling giveaways notifikasi giveaway dimulai berakhir.
-        </p>
-      </article>
     </div>
 
   </main>
