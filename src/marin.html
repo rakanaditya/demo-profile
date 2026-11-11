@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bot Command Configuration - Rakan Aditya Community</title>
+  
+  <script>
+    const origConsoleWarn = console.warn;
+    console.warn = function(...args) {
+      if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) return;
+      origConsoleWarn.apply(console, args);
+    };
+    tailwind = {
+      config: {
+        theme: {
+          extend: {
+            colors: {
+              discord: { bg: '#313338', card: '#2b2d31', inner: '#1e1f22', accent: '#5865f2' }
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=gg+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style> 
+    body { font-family: 'gg Sans', sans-serif; } 
+    .scrollbar-none::-webkit-scrollbar { display: none; }
+    .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+  <!-- Header & Navbar -->
+  <header id="main-header" class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-40 transition-all">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2">
+      <div class="flex items-center space-x-3">
+        <a href="/" class="w-10 h-10 rounded-2xl overflow-hidden flex items-center justify-center shadow-lg shadow-indigo-600/30 hover:scale-105 transition border border-slate-700 bg-slate-900">
+          <img src="/Assets/server.png" alt="Server Icon" class="w-full h-full object-cover">
+        </a>
+        <div>
+          <h1 class="font-bold text-base sm:text-lg text-white leading-none">Rakan Aditya Community</h1>
+          <span class="text-xs text-slate-400">Command Configuration Panel</span>
+        </div>
+      </div>
+      
+      <div class="flex items-center space-x-2">
+        <div id="user-badge" class="hidden flex items-center space-x-2 bg-slate-900 border border-slate-800 px-2.5 py-1.5 rounded-full">
+          <img id="nav-avatar" class="w-5 h-5 rounded-full object-cover" src="" alt="Avatar">
+          <span id="nav-name" class="text-xs font-semibold text-white truncate">User</span>
+          <button onclick="logoutSession()" class="text-slate-500 hover:text-rose-400 text-xs ml-1" title="Logout">✕</button>
+        </div>
+      </div>
+
+      <nav class="w-full flex items-center space-x-1 overflow-x-auto py-1.5 border-t border-slate-800/60 mt-1 scrollbar-none">
+        <a href="/" class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-house mr-1"></i>Home</a>
+        <a href="/giveaway" class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-gift mr-1"></i>Giveaway</a>
+        <a href="/marin" class="px-3 py-1.5 rounded-lg text-xs font-medium text-indigo-400 bg-indigo-600/10 border border-indigo-500/20 whitespace-nowrap"><i class="fa-solid fa-terminal mr-1"></i>Command Config</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-4xl mx-auto px-4 py-10 w-full flex-grow space-y-6">
+    
+    <!-- Login Warning jika belum login -->
+    <div id="login-alert" class="hidden bg-indigo-950/60 border border-indigo-800 p-6 rounded-2xl text-center space-y-4">
+      <p class="text-sm text-indigo-200">Anda harus masuk dengan akun Discord terlebih dahulu untuk mengakses konfigurasi bot.</p>
+      <a href="https://discord.com/api/oauth2/authorize?client_id=1380868700688613416&redirect_uri=https%3A%2F%2Fdemo-profile-dun.vercel.app%2Fapi%2Fcallback&response_type=code&scope=identify%20guilds&state=marin" 
+         class="inline-flex items-center space-x-2 py-2.5 px-6 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition text-sm">
+        <span>Login dengan Discord</span>
+      </a>
+    </div>
+
+    <!-- Panel Konfigurasi Commands (Hanya tampil jika sudah login) -->
+    <div id="config-panel" class="hidden space-y-6">
+      <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-2">
+        <h2 class="text-xl font-bold text-white flex items-center space-x-2">
+          <span>⚙️</span>
+          <span>Discord Slash Commands Settings</span>
+        </h2>
+        <p class="text-xs text-slate-400">Atur status aktif/nonaktif serta izin akses untuk setiap slash command bot di server Anda.</p>
+      </div>
+
+      <!-- Daftar Commands (Contoh interaktif) -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+        <h3 class="font-bold text-sm text-white uppercase tracking-wider text-slate-400">Daftar Registered Commands</h3>
+        
+        <div id="commands-list" class="space-y-3">
+          <!-- Item Command contoh -->
+          <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <div class="flex items-center space-x-2">
+                <span class="font-mono font-bold text-indigo-400 text-sm">/giveaway start</span>
+                <span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-[10px]">Active</span>
+              </div>
+              <p class="text-xs text-slate-400 mt-1">Memulai sesi event giveaway baru di channel.</p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" checked class="sr-only peer" onchange="toggleCommand(this, 'giveaway-start')">
+                <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+              </label>
+            </div>
+          </div>
+
+          <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <div class="flex items-center space-x-2">
+                <span class="font-mono font-bold text-indigo-400 text-sm">/gacha roll</span>
+                <span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-[10px]">Active</span>
+              </div>
+              <p class="text-xs text-slate-400 mt-1">Melakukan gacha karakter waifu interaktif.</p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" checked class="sr-only peer" onchange="toggleCommand(this, 'gacha-roll')">
+                <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <button onclick="saveConfigurations()" class="w-full mt-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition shadow-lg shadow-indigo-600/30">
+          Simpan Perubahan Konfigurasi
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="border-t border-slate-800 py-6 bg-slate-900/40 text-center text-xs text-slate-500">
+    <p>Rakan Aditya Community &bull; Hosted on Vercel</p>
+  </footer>
+
+  <script>
+    let currentUser = null;
+
+    function initAuth() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const userParam = urlParams.get('user');
+
+      if (userParam) {
+        try {
+          currentUser = JSON.parse(decodeURIComponent(userParam));
+          localStorage.setItem('discord_user', JSON.stringify(currentUser));
+        } catch (e) {}
+      } else {
+        const saved = localStorage.getItem('discord_user');
+        if (saved) currentUser = JSON.parse(saved);
+      }
+
+      if (currentUser && currentUser.id) {
+        document.getElementById('login-alert').classList.add('hidden');
+        document.getElementById('config-panel').classList.remove('hidden');
+        document.getElementById('user-badge').classList.remove('hidden');
+        document.getElementById('nav-name').innerText = currentUser.global_name || currentUser.username;
+        document.getElementById('nav-avatar').src = currentUser.avatar 
+          ? `https://cdn.discordapp.com/avatars/${currentUser.id}/${currentUser.avatar}.png`
+          : 'https://cdn.discordapp.com/embed/avatars/0.png';
+      } else {
+        document.getElementById('login-alert').classList.remove('hidden');
+        document.getElementById('config-panel').classList.add('hidden');
+      }
+    }
+
+    function logoutSession() {
+      localStorage.removeItem('discord_user');
+      window.location.href = '/marin';
+    }
+
+    async function saveConfigurations() {
+      // Contoh mengirim data konfigurasi ke API backend baru (/api/marin/config)
+      const res = await fetch('/api/marin/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: currentUser.id, status: 'updated' })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('Konfigurasi slash commands berhasil disimpan!');
+      } else {
+        alert('Gagal menyimpan konfigurasi.');
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initAuth();
+    });
+  </script>
+</body>
+</html>
