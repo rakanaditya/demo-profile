@@ -1,39 +1,52 @@
+import { IncomingForm } from 'formidable';
+import fs from 'fs';
+import FormData from 'form-data';
+import fetch from 'node-fetch';
+
+// Nonaktifkan body parser bawaan Next.js/Vercel untuk menangani multipart/form-data
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 
-  try {
-    const { giveawayId, discordUsername, discordId, fileData, fileName, fileType, user } = req.body;
-    const webhookUrl = process.env.WEBHOOKS_NOTIF;
+  const webhookUrl = process.env.WEBHOOKS_NOTIF;
+  if (!webhookUrl) {
+    return res.status(500).json({ success: false, error: 'Webhook URL not configured' });
+  }
 
-    if (!webhookUrl) {
-      return res.status(500).json({ success: false, error: 'Webhook URL not configured' });
+  const form = new IncomingForm({ multiples: false });
+
+  form.parse(req, async (err, fields, files) => {
+    if (err) {
+      return res.status(500).json({ success: false, error: 'Gagal memproses form data' });
     }
 
-    // Validasi keberadaan file bukti
-    let proofStatusText = '❌ User ini tidak mengirim gambar';
-    let imageEmbedField = null;
+    // Ambil nilai field (karena formidable mengembalikan array untuk setiap field)
+    const giveawayId = Array.isArray(fields.giveawayId) ? fields.giveawayId[0] : fields.giveawayId;
+    const discordUsername = Array.isArray(fields.discordUsername) ? fields.discordUsername[0] : fields.discordUsername;
+    const discordId = Array.isArray(fields.discordId) ? fields.discordId[0] : fields.discordId;
+    let user = null;
+    try {
+      const userStr = Array.isArray(fields.user) ? fields.user[0] : fields.user;
+      user = JSON.parse(userStr);
+    } catch (e) {}
 
-    if (fileData && fileType && fileType.startsWith('image/')) {
-      proofStatusText = `✅ Mengirim gambar bukti: \`${fileName || 'bukti_klaim.png'}\``;
-      
-      // Jika Anda ingin menampilkan gambar secara langsung di Discord Embed (menggunakan base64 data URL secara langsung di batasan tertentu, atau menyertakannya di field)
-      // Catatan: Discord Webhook JSON mentah tidak bisa langsung merender base64 string yang besar sebagai image URL utama tanpa di-upload ke CDN eksternal terlebih dahulu. 
-      // Oleh karena itu, kita masukkan info detail file ke dalam embed field atau menyertakannya sebagai lampiran jika didukung.
-    } else if (fileData) {
-      proofStatusText = `📎 Mengirim file lampiran: \`${fileName || 'file'}\``;
-    }
+    const uploadedFile = files.proofFile ? (Array.isArray(files.proofFile) ? files.proofFile[0] : files.proofFile) : null;
 
-    // Format pesan embed Discord untuk notifikasi klaim
+    // Siapkan embed Discord
     const embed = {
       title: '🎁 Klaim Hadiah Giveaway Diterima!',
-      color: 5763719, // Warna Hijau Emerald
+      color: 5763719, // Hijau Emerald
       fields: [
         { name: '🆔 ID Giveaway', value: `\`${giveawayId}\``, inline: false },
         { name: '👤 Username Discord', value: `\`${discordUsername}\``, inline: true },
-        { name: '🔑 Discord ID', value: `\`${discordId}\``, inline: true },
-        { name: '📷 Status Bukti / Gambar', value: proofStatusText, inline: false }
+        { name: '🔑 Discord ID', value: `\`${discordId}\``, inline: true }
       ],
       timestamp: new Date().toISOString()
     };
@@ -42,30 +55,40 @@ export default async function handler(req, res) {
       embed.footer = { text: `Diajukan oleh: ${user.global_name || user.username} (${user.id})` };
     }
 
-    // Jika fileData berupa URL gambar publik (bukan base64 mentah yang terlalu panjang), bisa dimasukkan ke embed.image
-    if (fileData && typeof fileData === 'string' && fileData.startsWith('http')) {
-      embed.image = { url: fileData };
+    const discordFormData = new FormData();
+    
+    if (uploadedFile) {
+      // Jika user mengirim gambar/file bukti
+      embed.fields.push({ name: '📷 Status Bukti / Gambar', value: `✅ Mengirim gambar bukti: \`${uploadedFile.originalFilename || 'bukti.png'}\``, inline: false });
+      
+      // Lampirkan gambar agar Discord otomatis membuat preview/thumbnail di dalam embed
+      embed.image = { url: `attachment://${uploadedFile.originalFilename || 'bukti.png'}` };
+      
+      discordFormData.append('file0', fs.createReadStream(uploadedFile.filepath), uploadedFile.originalFilename || 'bukti.png');
+    } else {
+      // Jika user TIDAK mengirim gambar
+      embed.fields.push({ name: '📷 Status Bukti / Gambar', value: '❌ User ini tidak mengirim gambar', inline: false });
     }
 
-    // Kirim payload ke webhook Discord
-    const discordPayload = {
+    discordFormData.append('payload_json', JSON.stringify({
       content: `📢 **Notifikasi Klaim Baru** dari <@${discordId}>!`,
       embeds: [embed]
-    };
+    }));
 
-    const discordResponse = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(discordPayload)
-    });
+    try {
+      const discordResponse = await fetch(webhookUrl, {
+        method: 'POST',
+        body: discordFormData
+      });
 
-    if (!discordResponse.ok) {
-      console.error('Gagal mengirim ke webhook Discord:', await discordResponse.text());
+      if (!discordResponse.ok) {
+        console.error('Gagal mengirim ke webhook Discord:', await discordResponse.text());
+      }
+
+      return res.status(200).json({ success: true, message: 'Notifikasi klaim berhasil dikirim' });
+    } catch (err) {
+      console.error('Error webhooksnotif:', err);
+      return res.status(500).json({ success: false, error: err.message });
     }
-
-    return res.status(200).json({ success: true, message: 'Notifikasi klaim berhasil dikirim' });
-  } catch (err) {
-    console.error('Error webhooksnotif:', err);
-    return res.status(500).json({ success: false, error: err.message });
-  }
+  });
 }
