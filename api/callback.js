@@ -64,9 +64,16 @@ export default async function handler(req, res) {
       console.error("Gagal menyimpan ke MongoDB:", dbError.message);
     }
 
-    // 4. Redirect kembali ke halaman tujuan (Index atau Giveaway)
+   // 4. Redirect kembali ke halaman tujuan (Index, Giveaway, atau Marin Command Config)
     const encodedUserData = encodeURIComponent(JSON.stringify(userData));
-    const targetPath = state === 'giveaway' ? '/giveaway' : '/';
+    
+    let targetPath = '/';
+    if (state === 'giveaway') {
+      targetPath = '/giveaway';
+    } else if (state === 'marin') {
+      targetPath = '/marin';
+    }
+
     return res.redirect(`${targetPath}?user=${encodedUserData}`);
 
   } catch (error) {
