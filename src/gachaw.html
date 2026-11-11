@@ -741,28 +741,26 @@
         if (data.success) {
           playAudio('audio-chime');
           userData.points = data.points;
+          userData.pityCounter = data.pityCounter;
           
-          // Simpan pembaruan pity counter dari backend
-          if (data.waifu && userData) {
-            // Pity counter dikembalikan atau di-update lewat profil / respons backend
-            // Jika backend Anda menyertakan update pity di objek user/respons, sinkronkan di sini:
-            userData.pityCounter = data.pityCounter !== undefined ? data.pityCounter : (userData.pityCounter + 1 >= 21 ? 0 : userData.pityCounter + 1);
-          }
-
           const idx = userData.inventory.findIndex(i => i.waifuId === data.waifu.waifuId);
           if (idx !== -1) userData.inventory[idx] = data.waifu; else userData.inventory.push(data.waifu);
           updateUIState();
 
+          // Cek apakah karakter baru atau duplikat untuk efek animasi banner
+          const isNew = data.isNewUnlocked;
+
           box.innerHTML = `
-            <div class="summon-anim bg-slate-950 p-6 rounded-2xl border-2 border-pink-500 text-center space-y-3 shadow-2xl">
-              <span class="text-xs bg-pink-500/20 text-pink-300 px-3 py-1 rounded-full font-bold">${data.waifu.rarity} &bull; ${data.waifu.element}</span>
+            <div class="summon-anim bg-slate-950 p-6 rounded-2xl border-2 ${isNew ? 'border-amber-400 shadow-amber-500/50' : 'border-pink-500'} text-center space-y-3 shadow-2xl relative overflow-hidden">
+              ${isNew ? '<div class="absolute top-0 inset-x-0 bg-gradient-to-r from-amber-500 to-pink-500 text-black text-[10px] font-black uppercase tracking-widest py-0.5 animate-pulse">✨ NEW CHARACTER UNLOCKED! ✨</div>' : ''}
+              <span class="text-xs bg-pink-500/20 text-pink-300 px-3 py-1 rounded-full font-bold mt-2 inline-block">${data.waifu.rarity} &bull; ${data.waifu.element}</span>
               <img src="${data.waifu.image}" onclick="openWaifuDetailModal('${data.waifu.instanceId}')" class="w-32 h-32 mx-auto rounded-xl object-cover border border-slate-700 shadow-md cursor-pointer hover:scale-105 transition">
               <div>
                 <h4 class="font-black text-lg text-white">${data.waifu.name}</h4>
                 <p class="text-xs text-pink-400 italic">${data.waifu.title}</p>
                 <p class="text-[10px] text-slate-400 font-mono mt-1">ATK: ${data.waifu.attack} | DEF: ${data.waifu.defense} | HP: ${data.waifu.hp}</p>
               </div>
-              <p class="text-xs font-bold ${data.isDuplicate ? 'text-amber-400' : 'text-emerald-400'}">${data.message}</p>
+              <p class="text-xs font-bold ${isNew ? 'text-amber-300 animate-bounce' : 'text-emerald-400'}">${data.message}</p>
             </div>
           `;
         } else { 
