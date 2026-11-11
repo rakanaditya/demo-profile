@@ -745,15 +745,24 @@
       document.getElementById('claim-form').reset();
     }
 
-     //claim for submit
     document.getElementById('claim-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      // Jika tombol sedang dalam status loading/disabled, hentikan proses (cegah duplicate)
+      if (submitBtn.dataset.submitting === 'true') return;
+      submitBtn.dataset.submitting = 'true';
+      
+      const originalText = submitBtn.innerText;
+      submitBtn.innerText = 'Mengirim Klaim...';
+      submitBtn.disabled = true;
+      submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
       const giveawayId = document.getElementById('claim-giveaway-id').value;
       const discordUsername = document.getElementById('claim-username').value;
       const discordId = document.getElementById('claim-discord-id').value;
       const fileInput = document.getElementById('claim-proof-file');
 
-      // Gunakan FormData agar file bisa dikirim sebagai lampiran asli (multipart/form-data)
       const formData = new FormData();
       formData.append('giveawayId', giveawayId);
       formData.append('discordUsername', discordUsername);
@@ -764,33 +773,44 @@
         formData.append('proofFile', fileInput.files[0]);
       }
 
-      // 1. Kirim notifikasi klaim & file via WEBHOOKS_NOTIF
       try {
+        // 1. Kirim notifikasi klaim & file via WEBHOOKS_NOTIF
         await fetch('/api/webhooksnotif', {
           method: 'POST',
-          body: formData // Jangan set Content-Type header secara manual saat pakai FormData!
+          body: formData
         });
-      } catch (err) {}
 
-      // 2. Update status klaim di database giveaway
-      const data = await safeFetchJson('/api/giveaway', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          action: 'claim', 
-          giveawayId, 
-          user: currentUser,
-          claimDetails: { discordUsername, discordId } 
-        })
-      });
+        // 2. Update status klaim di database giveaway
+        const data = await safeFetchJson('/api/giveaway', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            action: 'claim', 
+            giveawayId, 
+            user: currentUser,
+            claimDetails: { discordUsername, discordId } 
+          })
+        });
 
-      if (data.success) {
-        playAudio('audio-win');
-        closeClaimModal();
-        showToast('🎉 Berhasil melakukan klaim! Data & bukti telah dikirim ke panitia.');
-        loadGiveaways();
-      } else {
-        showToast(data.error || 'Gagal melakukan klaim.', true);
+        if (data.success) {
+          playAudio('audio-win');
+          closeClaimModal();
+          showToast('🎉 Berhasil melakukan klaim! Data & bukti telah dikirim ke panitia.');
+          loadGiveaways();
+        } else {
+          showToast(data.error || 'Gagal melakukan klaim.', true);
+          // Kembalikan tombol jika gagal agar bisa dicoba lagi
+          submitBtn.dataset.submitting = 'false';
+          submitBtn.innerText = originalText;
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+      } catch (err) {
+        showToast('Terjadi kesalahan jaringan.', true);
+        submitBtn.dataset.submitting = 'false';
+        submitBtn.innerText = originalText;
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
       }
     });
 
