@@ -328,7 +328,11 @@
               } else if (fullSearch.includes('otakudesu')) {
                 iconSrc = '/Assets/otakudesu.jpg';
                 headerTitle = '🍿 WATCHING ANIME';
+              } else if (fullSearch.includes('sidniwcity')) {
+                iconSrc = '/Assets/server.png'; // Menggunakan ikon server/web tersinkron otomatis
+                headerTitle = '🌐 PLAYING GAME WEBSITE';
               }
+              
 
               let elapsedStr = '';
               if (act.timestamps && act.timestamps.start) {
