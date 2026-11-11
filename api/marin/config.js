@@ -1,7 +1,6 @@
 import { connectToDatabase } from '../db.js';
 
 export default async function handler(req, res) {
-  // Hanya izinkan method POST atau GET
   if (req.method !== 'POST' && req.method !== 'GET') {
     return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
@@ -10,28 +9,50 @@ export default async function handler(req, res) {
     const { db } = await connectToDatabase();
     const configCollection = db.collection('bot_configs');
 
+    // --- METHOD POST: Menyimpan Konfigurasi Commands per Server ---
     if (req.method === 'POST') {
-      const { userId, status } = req.body;
+      const { userId, guildId, commands } = req.body;
 
-      // Simpan atau perbarui konfigurasi command berdasarkan admin yang mengubah
+      if (!guildId) {
+        return res.status(400).json({ success: false, error: 'guildId diperlukan' });
+      }
+
       await configCollection.updateOne(
-        { type: 'slash_commands' },
+        { type: 'slash_commands', guildId: guildId },
         { 
           $set: { 
             lastUpdatedBy: userId, 
-            status: status,
+            commands: commands,
             updatedAt: new Date() 
           } 
         },
         { upsert: true }
       );
 
-      return res.status(200).json({ success: true, message: 'Konfigurasi berhasil disimpan' });
+      return res.status(200).json({ success: true, message: 'Konfigurasi server berhasil disimpan' });
     }
 
+    // --- METHOD GET: Mengambil Konfigurasi Commands Berdasarkan Server ---
     if (req.method === 'GET') {
-      const config = await configCollection.findOne({ type: 'slash_commands' });
-      return res.status(200).json({ success: true, data: config || {} });
+      const { guildId } = req.query;
+
+      if (!guildId) {
+        return res.status(400).json({ success: false, error: 'guildId diperlukan' });
+      }
+
+      const config = await configCollection.findOne({ type: 'slash_commands', guildId: guildId });
+      
+      // Jika belum ada konfigurasi tersimpan, berikan default commands
+      const defaultCommands = [
+        { name: 'giveaway start', description: 'Memulai sesi event giveaway baru di channel.', enabled: true },
+        { name: 'gacha roll', description: 'Melakukan gacha karakter waifu interaktif.', enabled: true },
+        { name: 'gacha profile', description: 'Melihat statistik dan koleksi waifu.', enabled: true }
+      ];
+
+      return res.status(200).json({ 
+        success: true, 
+        commands: config ? config.commands : defaultCommands 
+      });
     }
 
   } catch (error) {
