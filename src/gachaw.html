@@ -92,11 +92,38 @@
       <!-- SECTION 1: GACHA -->
       <div id="tab-gacha" class="space-y-6">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center space-y-6 relative overflow-hidden gacha-glow">
-          <h3 class="text-3xl font-black text-white">✨ Waifu Gacha Portal</h3>
-          <div id="gacha-result-box" class="min-h-[260px] flex items-center justify-center">
-            <span class="text-slate-500 text-sm">Tekan tombol untuk summon waifu!</span>
+          <div class="flex justify-between items-center flex-wrap gap-2">
+            <h3 class="text-3xl font-black text-white">✨ Waifu Gacha Portal</h3>
+            <span class="text-[11px] bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-xl text-pink-400 font-mono">💡 Shortcut: Tekan <kbd class="bg-slate-800 px-1.5 py-0.5 rounded text-white font-bold">R</kbd> untuk Gacha</span>
           </div>
-          <button onclick="doGachaPull()" class="px-8 py-3.5 bg-gradient-to-r from-pink-600 to-rose-600 text-white font-bold text-sm rounded-2xl shadow-xl transition hover:opacity-90">🔮 Summon 1x (50 Poin)</button>
+          
+          <!-- Kotak Informasi Peluang Rarity (Drop Rate) -->
+          <div class="max-w-md mx-auto grid grid-cols-3 gap-3 bg-slate-950/80 p-4 rounded-2xl border border-slate-800 text-center">
+            <div class="space-y-1">
+              <span class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded font-bold">SSR</span>
+              <p class="text-xs font-mono font-bold text-amber-400">5%</p>
+            </div>
+            <div class="space-y-1">
+              <span class="text-[10px] bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2 py-0.5 rounded font-bold">SR</span>
+              <p class="text-xs font-mono font-bold text-purple-400">25%</p>
+            </div>
+            <div class="space-y-1">
+              <span class="text-[10px] bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2 py-0.5 rounded font-bold">R</span>
+              <p class="text-xs font-mono font-bold text-blue-400">70%</p>
+            </div>
+          </div>
+
+          <div id="gacha-result-box" class="min-h-[260px] flex items-center justify-center">
+            <span class="text-slate-500 text-sm">Tekan tombol atau huruf <kbd class="text-pink-400 font-bold">R</kbd> untuk summon waifu!</span>
+          </div>
+
+          <div class="flex justify-center items-center gap-3 flex-wrap">
+            <button onclick="doGachaPull()" class="px-8 py-3.5 bg-gradient-to-r from-pink-600 to-rose-600 text-white font-bold text-sm rounded-2xl shadow-xl transition hover:opacity-95">🔮 Summon 1x (50 Poin)</button>
+            <button onclick="toggleAutoGacha()" id="auto-gacha-btn" class="px-6 py-3.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-bold text-sm rounded-2xl shadow-xl transition flex items-center space-x-2">
+              <i class="fa-solid fa-bolt text-amber-400"></i>
+              <span id="auto-gacha-text">Auto Gacha: OFF</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -321,12 +348,15 @@
     let activeRoomId = null;
     let pollInterval = null;
     let dailyCountdownInterval = null;
+    let autoGachaActive = false;
+    let autoGachaTimer = null;
 
     function playAudio(s) { try { const a = document.getElementById(s); if(a){a.currentTime=0;a.play().catch(e=>{});} }catch(e){} }
     function getAvatarUrl(u) { return u && u.avatar ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png'; }
 
     function switchTab(t) {
       playAudio('audio-pop');
+      if (autoGachaActive) toggleAutoGacha(); // Matikan auto gacha jika pindah tab
       ['gacha','daily','inventory','battle','shop'].forEach(tab => {
         document.getElementById(`tab-${tab}`).classList.add('hidden');
         document.getElementById(`tab-btn-${tab}`).className = 'px-5 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800';
@@ -650,6 +680,47 @@
       }
     }
 
+    // --- FITUR GACHA & AUTO GACHA ---
+    function toggleAutoGacha() {
+      playAudio('audio-pop');
+      const btn = document.getElementById('auto-gacha-btn');
+      const text = document.getElementById('auto-gacha-text');
+
+      if (!autoGachaActive) {
+        if (userData && userData.points < 50) {
+          alert('Poin Anda tidak cukup untuk memulai Auto Gacha!');
+          return;
+        }
+        autoGachaActive = true;
+        text.innerText = 'Auto Gacha: ON';
+        btn.className = 'px-6 py-3.5 bg-pink-600 hover:bg-pink-500 border border-pink-500 text-white font-bold text-sm rounded-2xl shadow-xl transition flex items-center space-x-2 animate-pulse';
+        
+        autoGachaTimer = setInterval(() => {
+          if (!userData || userData.points < 50) {
+            toggleAutoGacha();
+            alert('Auto Gacha berhenti otomatis karena Poin habis!');
+            return;
+          }
+          doGachaPull();
+        }, 1600); // Jeda tiap 1.6 detik
+      } else {
+        autoGachaActive = false;
+        text.innerText = 'Auto Gacha: OFF';
+        btn.className = 'px-6 py-3.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-bold text-sm rounded-2xl shadow-xl transition flex items-center space-x-2';
+        if (autoGachaTimer) clearInterval(autoGachaTimer);
+      }
+    }
+
+    // Shortcut Tombol R di Keyboard
+    window.addEventListener('keydown', (e) => {
+      if ((e.key === 'r' || e.key === 'R') && document.getElementById('tab-gacha') && !document.getElementById('tab-gacha').classList.contains('hidden')) {
+        // Jangan aktifkan jika sedang mengetik di dalam input/textarea
+        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+        e.preventDefault();
+        doGachaPull();
+      }
+    });
+
     async function doGachaPull() {
       playAudio('audio-pop');
       const box = document.getElementById('gacha-result-box');
@@ -677,10 +748,12 @@
             </div>
           `;
         } else { 
-          box.innerHTML = `<span class="text-rose-400 text-sm font-bold">${data.error}</span>`; 
+          box.innerHTML = `<span class="text-rose-400 text-sm font-bold">${data.error}</span>`;
+          if (autoGachaActive) toggleAutoGacha(); // Stop auto jika error (poin habis)
         }
       } catch(e) { 
-        box.innerHTML = `<span class="text-rose-400 text-sm">Gagal summon. Terjadi kesalahan koneksi.</span>`; 
+        box.innerHTML = `<span class="text-rose-400 text-sm">Gagal summon. Terjadi kesalahan koneksi.</span>`;
+        if (autoGachaActive) toggleAutoGacha();
       }
     }
 
