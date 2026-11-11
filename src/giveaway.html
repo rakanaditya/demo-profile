@@ -745,6 +745,7 @@
       document.getElementById('claim-form').reset();
     }
 
+     //claim for submit
     document.getElementById('claim-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const giveawayId = document.getElementById('claim-giveaway-id').value;
@@ -752,37 +753,22 @@
       const discordId = document.getElementById('claim-discord-id').value;
       const fileInput = document.getElementById('claim-proof-file');
 
-      let fileData = null;
-      let fileName = null;
-      let fileType = null;
+      // Gunakan FormData agar file bisa dikirim sebagai lampiran asli (multipart/form-data)
+      const formData = new FormData();
+      formData.append('giveawayId', giveawayId);
+      formData.append('discordUsername', discordUsername);
+      formData.append('discordId', discordId);
+      formData.append('user', JSON.stringify(currentUser));
 
       if (fileInput.files && fileInput.files[0]) {
-        const file = fileInput.files[0];
-        fileName = file.name;
-        fileType = file.type;
-        
-        // Konversi file ke base64 agar dapat dikirim melalui JSON / Webhook
-        fileData = await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result);
-          reader.readAsDataURL(file);
-        });
+        formData.append('proofFile', fileInput.files[0]);
       }
 
-      // 1. Kirim notifikasi klaim via WEBHOOKS_NOTIF
+      // 1. Kirim notifikasi klaim & file via WEBHOOKS_NOTIF
       try {
         await fetch('/api/webhooksnotif', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            giveawayId,
-            discordUsername,
-            discordId,
-            fileData,
-            fileName,
-            fileType,
-            user: currentUser
-          })
+          body: formData // Jangan set Content-Type header secara manual saat pakai FormData!
         });
       } catch (err) {}
 
