@@ -27,9 +27,13 @@ export default async function handler(req, res) {
   const waifusCollection = db.collection('waifus');
   const pvpRoomsCollection = db.collection('pvp_rooms');
 
-  const existingWaifusCount = await waifusCollection.countDocuments();
-  if (existingWaifusCount === 0) {
-    await waifusCollection.insertMany(DEFAULT_WAIFUS);
+  // AUTO-SYNC: Memperbarui database master waifu secara otomatis jika ada data baru/perubahan
+  for (const defaultWaifu of DEFAULT_WAIFUS) {
+    await waifusCollection.updateOne(
+      { id: defaultWaifu.id },
+      { $set: defaultWaifu },
+      { upsert: true }
+    );
   }
 
   const { action, userId, user } = req.method === 'POST' ? req.body : req.query;
@@ -52,7 +56,7 @@ export default async function handler(req, res) {
           inventory: [],
           lastDailyClaim: null,
           loginStreak: 0,
-          pityCounter: 0, // Inisialisasi pity counter
+          pityCounter: 0,
           createdAt: new Date()
         };
         await usersCollection.insertOne(dbUser);
@@ -202,15 +206,13 @@ export default async function handler(req, res) {
         const rand = Math.random() * 100;
         let targetRarity = 'R';
 
-        // Cek Pity (Jika sudah 20 kali tarik tanpa SSR, tarikan ke-21 dijamin SSR 100%)
         if (pityCounter >= 21) {
           targetRarity = 'SSR';
-          pityCounter = 0; // Reset pity setelah jaminan keluar
+          pityCounter = 0;
         } else {
-          // Drop rate sesuai UI: SSR 5%, SR 25% (5 hingga 30), R 70% (30 hingga 100)
           if (rand < 5) {
             targetRarity = 'SSR';
-            pityCounter = 0; // Reset pity jika hoki dapat SSR lebih awal
+            pityCounter = 0;
           } else if (rand < 30) {
             targetRarity = 'SR';
           } else {
@@ -227,7 +229,9 @@ export default async function handler(req, res) {
         let inventory = dbUser.inventory || [];
         let existingIndex = inventory.findIndex(item => item.waifuId === pulledWaifu.id);
 
+        let isNewCharacter = false;
         let updatedItem;
+
         if (existingIndex !== -1) {
           let item = inventory[existingIndex];
           item.dupes = (item.dupes || 1) + 1;
@@ -237,6 +241,7 @@ export default async function handler(req, res) {
           updatedItem = item;
           inventory[existingIndex] = item;
         } else {
+          isNewCharacter = true; // Menandakan karakter baru pertama kali didapatkan!
           updatedItem = {
             instanceId: new ObjectId().toString(),
             waifuId: pulledWaifu.id,
@@ -259,15 +264,16 @@ export default async function handler(req, res) {
           { $set: { points: newPoints, inventory: inventory, pityCounter: pityCounter }, $inc: { gachaCount: 1 } }
         );
 
-        const isDuplicate = existingIndex !== -1;
         const pityInfo = pityCounter > 0 ? ` (Pity SSR: ${pityCounter}/21)` : ` (Pity Direset!)`;
         
         return res.status(200).json({
           success: true,
-          isDuplicate: isDuplicate,
-          message: isDuplicate 
-            ? `Duplikat! ${pulledWaifu.name} digabungkan (Dupes: x${updatedItem.dupes}, Stats Meningkat!).${pityInfo}`
-            : `Selamat! Anda mendapatkan ${pulledWaifu.name} (${pulledWaifu.rarity}) baru!${pityInfo}`,
+          isDuplicate: !isNewCharacter,
+          isNewUnlocked: isNewCharacter, // Indikator khusus untuk frontend menampilkan animasi "✨ NEW UNLOCKED!"
+          pityCounter: pityCounter,
+          message: isNewCharacter
+            ? `✨ NEW UNLOCKED! Selamat! Anda berhasil mendapatkan ${pulledWaifu.name} (${pulledWaifu.rarity}) untuk pertama kalinya!${pityInfo}`
+            : `Duplikat! ${pulledWaifu.name} digabungkan (Dupes: x${updatedItem.dupes}, Stats Meningkat!).${pityInfo}`,
           waifu: updatedItem,
           points: newPoints
         });
