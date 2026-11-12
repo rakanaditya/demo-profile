@@ -289,13 +289,13 @@
         const data = await res.json();
         
         serverCommands = data.commands || [
-          { name: 'giveaway list', description: 'Melihat daftar giveaway aktif.', enabled: true },
-          { name: 'giveaway start', description: 'Membuat event giveaway baru.', enabled: true },
-          { name: 'gacha roll', description: 'Lakukan gacha summon waifu impian.', enabled: true },
-          { name: 'gacha profile', description: 'Melihat statistik poin dan koleksi.', enabled: true },
-          { name: 'givepoint', description: 'Lakukan gacha summon waifu impian.', enabled: true },
-          { name: 'removepoint', description: 'Lakukan gacha summon waifu impian.', enabled: true }
-        ];
+  { name: 'giveaway list', description: 'Melihat daftar giveaway aktif.', enabled: true },
+  { name: 'giveaway start', description: 'Membuat event giveaway baru.', enabled: true },
+  { name: 'gacha roll', description: 'Lakukan gacha summon waifu impian.', enabled: true },
+  { name: 'gacha profile', description: 'Melihat statistik poin dan koleksi.', enabled: true },
+  { name: 'givepoint', description: 'Memberikan poin gacha waifu kepada user.', enabled: true },
+  { name: 'removepoint', description: 'Mengurangi poin gacha waifu user.', enabled: true }
+];
 
         renderCommandsList();
       } catch (e) {
