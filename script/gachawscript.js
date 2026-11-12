@@ -693,4 +693,23 @@ async function leaveRoom() {
   fetchUserData();
 }
 
+// 10. HEARTBEAT / UPDATE LAST ACTIVE
+      if (action === 'heartbeat') {
+        await usersCollection.updateOne(
+          { id: userId },
+          { $set: { lastActive: new Date() } }
+        );
+        return res.status(200).json({ success: true });
+      }
+
+      // 11. GET ONLINE USERS (Aktif dalam 5 menit terakhir)
+      if (getAction === 'online_users') {
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+        const onlineUsers = await usersCollection.find(
+          { lastActive: { $gte: fiveMinutesAgo } }
+        ).project({ id: 1, username: 1, global_name: 1, avatar: 1 }).toArray();
+
+        return res.status(200).json({ success: true, onlineUsers });
+      }
+
 window.addEventListener('DOMContentLoaded', () => { initAuthAndData(); });
