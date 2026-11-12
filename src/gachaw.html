@@ -89,6 +89,21 @@
         <button onclick="switchTab('battle')" id="tab-btn-battle" class="px-5 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800">⚔️ PvP Arena Real-Time</button>
       </div>
 
+
+<!-- Widget Live Online Users -->
+<div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3 shadow-lg">
+  <div class="flex items-center justify-between">
+    <div class="flex items-center space-x-2">
+      <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+      <h4 class="font-bold text-xs text-white uppercase tracking-wider">User Sedang Online (<span id="online-count">0</span>)</h4>
+    </div>
+    <span class="text-[10px] text-slate-500 font-mono">Real-time</span>
+  </div>
+  <div id="online-users-list" class="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+    <p class="text-[11px] text-slate-500">Memuat user online...</p>
+  </div>
+</div>
+      
       <!-- SECTION 1: GACHA -->
       <div id="tab-gacha" class="space-y-6">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center space-y-6 relative overflow-hidden gacha-glow">
