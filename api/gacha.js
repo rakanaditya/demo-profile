@@ -203,10 +203,10 @@ export default async function handler(req, res) {
         let pityCounter = dbUser.pityCounter || 0;
         pityCounter++;
 
-        const rand = Math.random() * 100;
+        const rand = Math.random() * 300;
         let targetRarity = 'R';
 
-        if (pityCounter >= 21) {
+        if (pityCounter >= 200) {
           targetRarity = 'SSR';
           pityCounter = 0;
         } else {
@@ -324,7 +324,7 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, inventory: newInventory, message: 'Semua duplikat berhasil digabungkan dan statistik meningkat!' });
       }
 
-      // 5. PVP ROOM: CREATE ROOM
+    // 5. PVP ROOM: CREATE ROOM (Perbaikan Auto-Clear Room Gantung)
       if (action === 'create_pvp_room') {
         const { instanceId, isBot } = req.body;
         const waifu = (dbUser.inventory || []).find(i => i.instanceId === instanceId);
@@ -334,14 +334,24 @@ export default async function handler(req, res) {
           return res.status(400).json({ success: false, error: 'Waifu ini memiliki HP 0 dan tidak bisa bertarung lagi! Pilih waifu lain.' });
         }
 
-        const existingRoom = await pvpRoomsCollection.findOne({
+        // Hapus otomatis room lama milik user yang statusnya masih 'waiting' agar tidak nyangkut
+        await pvpRoomsCollection.deleteMany({
           $or: [
-            { 'player1.id': userId, status: { $in: ['waiting', 'battling'] } },
-            { 'player2.id': userId, status: { $in: ['waiting', 'battling'] } }
+            { 'player1.id': userId, status: 'waiting' },
+            { 'player2.id': userId, status: 'waiting' }
           ]
         });
-        if (existingRoom) {
-          return res.status(400).json({ success: false, error: 'Anda masih memiliki room aktif yang belum selesai.' });
+
+        // Cek jika masih ada yang statusnya 'battling' (sedang berlangsung)
+        const activeBattleRoom = await pvpRoomsCollection.findOne({
+          $or: [
+            { 'player1.id': userId, status: 'battling' },
+            { 'player2.id': userId, status: 'battling' }
+          ]
+        });
+
+        if (activeBattleRoom) {
+          return res.status(400).json({ success: false, error: 'Anda sedang dalam pertarungan aktif yang belum selesai.' });
         }
 
         let player2Data = null;
@@ -359,7 +369,6 @@ export default async function handler(req, res) {
             maxHp: randBotWaifu.hp,
             ready: true
           };
-          initialStatus = 'waiting';
         }
 
         const newRoom = {
