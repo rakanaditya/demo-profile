@@ -241,11 +241,40 @@ async function fetchUserData() {
   } catch(e) {}
 }
 
+
+function formatNumber(num) {
+  if (num === undefined || num === null) return '0';
+  
+  // Skala dari yang terbesar ke terkecil
+  const suffixes = [
+    { value: 1e33, symbol: 'Dc' }, // Decillion
+    { value: 1e30, symbol: 'No' }, // Nonillion
+    { value: 1e27, symbol: 'Oc' }, // Octillion
+    { value: 1e24, symbol: 'Sp' }, // Septillion
+    { value: 1e21, symbol: 'Sx' }, // Sextillion
+    { value: 1e18, symbol: 'Qi' }, // Quintillion
+    { value: 1e15, symbol: 'Qa' }, // Quadrillion
+    { value: 1e12, symbol: 'T'  }, // Trillion / Triliun
+    { value: 1e9,  symbol: 'B'  }, // Billion / Miliar
+    { value: 1e6,  symbol: 'M'  }, // Million / Juta
+    { value: 1e3,  symbol: 'k'  }  // Thousand / Ribu
+  ];
+
+  for (let i = 0; i < suffixes.length; i++) {
+    if (num >= suffixes[i].value) {
+      return (num / suffixes[i].value).toFixed(1).replace(/\.0$/, '') + suffixes[i].symbol;
+    }
+  }
+
+  return num.toString();
+}
+
+
 function updateUIState() {
   if (!userData) return;
   
-  // Format poin dengan pemisah ribuan agar rapi dan mudah dibaca
-  const formattedPoints = (userData.points || 0).toLocaleString('id-ID');
+  // Mengubah angka poin menjadi format 1k, 1m, 1b, 1t, dst.
+  const formattedPoints = formatNumber(userData.points || 0);
   const pointsEl = document.getElementById('user-points-val');
   if (pointsEl) {
     pointsEl.innerText = `${formattedPoints} Poin`;
