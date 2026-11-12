@@ -2,23 +2,18 @@ import { connectToDatabase } from './db.js';
 import { ObjectId } from 'mongodb';
 
 const DEFAULT_WAIFUS = [
-  // --- SSR (Super Super Rare) ---
   { id: 'lufas', name: 'LufasMapha', title: 'Black-Winged Sovereign', element: 'Dark', rarity: 'SSR', attack: 950, defense: 820, hp: 3200, image: '/Assets/Waifu/lufas.gif', description: 'Penguasa kegelapan bersayap hitam yang legendaris dengan kekuatan mutlak.' },
   { id: 'asuna', name: 'AsunaYuuki', title: 'The Lightning Flash', element: 'Light', rarity: 'SSR', attack: 910, defense: 700, hp: 2900, image: '/Assets/Waifu/asuna.gif', description: 'Pendekar pedang super cepat dari dunia Aincrad yang terkenal dengan tusukan kilatnya.' },
   { id: 'zero_two', name: 'Zero Two', title: 'Partner Killer', element: 'Fire', rarity: 'SSR', attack: 930, defense: 680, hp: 3100, image: '/Assets/Waifu/zerotwo.gif', description: 'Gadis bertanduk dengan darah klakosaur di nadinya, petarung Franxx yang buas.' },
-  { id: 'mikhail', name: 'Mikhail', title: 'The Case Study Of Vanitas', element: 'Shadow', rarity: 'SSR', attack: 960, defense: 750, hp: 3300, image: '/Assets/Waifu/vanitasmikhail.gif', description: 'Seorang manusia biasa yang mengaku sebagai dokter spesialis vampir. Ia mewarisi nama dan sebuah grimoire (buku sihir) terkutuk bernama Kitab Vanitas dari vampir legendaris (Vampir Bulan Biru). Ia menggunakan kekuatan buku tersebut untuk "menyembuhkan" para vampir yang kehilangan kendali' },
-
-  // --- SR (Super Rare) ---
-  { id: 'rem', name: 'Rem', title: 'The Maid of Oni', element: 'Water', rarity: 'SR', attack: 780, defense: 750, hp: 2800, image: '/Assets/Waifu/rem.gif', description: 'Pelayan setia dari Roswaal Mansion dengan kekuatan oni yang luar biasa saat mengamuk.' },
-  { id: 'kasane', name: 'KasaneTeto', title: 'Virtual Diva', element: 'Fire', rarity: 'SR', attack: 750, defense: 700, hp: 3400, image: '/Assets/Waifu/kasane.gif', description: 'Chimera chimera berambut drill merah ikonik yang siap menyanyikan lagu terbaik.' },
-  { id: 'senko', name: 'Senkosan', title: 'The Helpful Fox', element: 'Wind', rarity: 'SR', attack: 720, defense: 730, hp: 2900, image: '/Assets/Waifu/senko.gif', description: 'Rubah dewa berusia 800 tahun yang siap memanjakan dan merawatmu setelah lelah bekerja.' },
-  { id: 'nanahiragi', name: 'NanaHiiragi', title: 'Talentless Strategist', element: 'Dark', rarity: 'SR', attack: 760, defense: 690, hp: 2700, image: '/Assets/Waifu/nanahiragi.gif', description: 'Gadis cerdas berwajah polos dengan kemampuan manipulasi psikologis tingkat tinggi.' },
-  { id: 'emilia', name: 'Emilia', title: 'Half-Elf Candidate', element: 'Ice', rarity: 'SR', attack: 770, defense: 760, hp: 3000, image: '/Assets/Waifu/emilia.gif', description: 'Salah satu kandidat calon penguasa (Ratu ke-42) dalam pemilihan kerajaan Lugnica.' },
-
-  // --- R (Rare) ---
-  { id: 'miku', name: 'HatsuneMiku', title: 'Virtual Diva', element: 'Wind', rarity: 'R', attack: 650, defense: 600, hp: 2400, image: '/Assets/Waifu/miku.gif', description: 'Idola virtual bersuara kian merdu yang menginspirasi jutaan penggemar di seluruh dunia.' },
-  { id: 'aqua', name: 'Aqua', title: 'Useless Goddess', element: 'Water', rarity: 'R', attack: 620, defense: 650, hp: 2600, image: '/Assets/Waifu/aqua.gif', description: 'Dewi air yang sering bikin rewel namun punya kekuatan penyembuh suci.' },
-  { id: 'megumin', name: 'Megumin', title: 'Explosion Archwizard', element: 'Fire', rarity: 'R', attack: 700, defense: 500, hp: 2100, image: '/Assets/Waifu/megumin.gif', description: 'Penyihir jenius yang hanya mendedikasikan seluruh hidupnya untuk sihir Ledakan (Explosion).' }
+  { id: 'mikhail', name: 'Mikhail', title: 'The Case Study Of Vanitas', element: 'Shadow', rarity: 'SSR', attack: 960, defense: 750, hp: 3300, image: '/Assets/Waifu/vanitasmikhail.gif', description: 'Seorang manusia biasa yang mengaku sebagai dokter spesialis vampir.' },
+  { id: 'rem', name: 'Rem', title: 'The Maid of Oni', element: 'Water', rarity: 'SR', attack: 780, defense: 750, hp: 2800, image: '/Assets/Waifu/rem.gif', description: 'Pelayan setia dari Roswaal Mansion.' },
+  { id: 'kasane', name: 'KasaneTeto', title: 'Virtual Diva', element: 'Fire', rarity: 'SR', attack: 750, defense: 700, hp: 3400, image: '/Assets/Waifu/kasane.gif', description: 'Chimera chimera berambut drill merah.' },
+  { id: 'senko', name: 'Senkosan', title: 'The Helpful Fox', element: 'Wind', rarity: 'SR', attack: 720, defense: 730, hp: 2900, image: '/Assets/Waifu/senko.gif', description: 'Rubah dewa berusia 800 tahun.' },
+  { id: 'nanahiragi', name: 'NanaHiiragi', title: 'Talentless Strategist', element: 'Dark', rarity: 'SR', attack: 760, defense: 690, hp: 2700, image: '/Assets/Waifu/nanahiragi.gif', description: 'Gadis cerdas berwajah polos.' },
+  { id: 'emilia', name: 'Emilia', title: 'Half-Elf Candidate', element: 'Ice', rarity: 'SR', attack: 770, defense: 760, hp: 3000, image: '/Assets/Waifu/emilia.gif', description: 'Kandidat calon penguasa kerajaan Lugnica.' },
+  { id: 'miku', name: 'HatsuneMiku', title: 'Virtual Diva', element: 'Wind', rarity: 'R', attack: 650, defense: 600, hp: 2400, image: '/Assets/Waifu/miku.gif', description: 'Idola virtual bersuara kian merdu.' },
+  { id: 'aqua', name: 'Aqua', title: 'Useless Goddess', element: 'Water', rarity: 'R', attack: 620, defense: 650, hp: 2600, image: '/Assets/Waifu/aqua.gif', description: 'Dewi air yang sering bikin rewel.' },
+  { id: 'megumin', name: 'Megumin', title: 'Explosion Archwizard', element: 'Fire', rarity: 'R', attack: 700, defense: 500, hp: 2100, image: '/Assets/Waifu/megumin.gif', description: 'Penyihir jenius sihir Ledakan.' }
 ];
 
 export default async function handler(req, res) {
@@ -27,7 +22,6 @@ export default async function handler(req, res) {
   const waifusCollection = db.collection('waifus');
   const pvpRoomsCollection = db.collection('pvp_rooms');
 
-  // AUTO-SYNC: Memperbarui database master waifu secara otomatis jika ada data baru/perubahan
   for (const defaultWaifu of DEFAULT_WAIFUS) {
     await waifusCollection.updateOne(
       { id: defaultWaifu.id },
@@ -35,8 +29,6 @@ export default async function handler(req, res) {
       { upsert: true }
     );
   }
-
-  const { action, userId, user } = req.method === 'POST' ? req.body : req.query;
 
   // PENANGANAN METHOD GET
   if (req.method === 'GET') {
@@ -77,6 +69,16 @@ export default async function handler(req, res) {
     if (getAction === 'get_open_rooms') {
       const openRooms = await pvpRoomsCollection.find({ status: 'waiting', 'player1.id': { $ne: id } }).toArray();
       return res.status(200).json({ success: true, openRooms });
+    }
+
+    // Pindahkan online_users ke dalam method GET agar bisa diakses via fetch query
+    if (getAction === 'online_users') {
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+      const onlineUsers = await usersCollection.find(
+        { lastActive: { $gte: fiveMinutesAgo } }
+      ).project({ id: 1, username: 1, global_name: 1, avatar: 1 }).toArray();
+
+      return res.status(200).json({ success: true, onlineUsers });
     }
 
     if (getAction === 'leaderboard') {
@@ -133,6 +135,18 @@ export default async function handler(req, res) {
   // PENANGANAN METHOD POST
   if (req.method === 'POST') {
     try {
+      const { action, userId, user } = req.body;
+
+      // 10. HEARTBEAT / UPDATE LAST ACTIVE
+      if (action === 'heartbeat') {
+        if (!userId) return res.status(400).json({ success: false, error: 'User ID diperlukan.' });
+        await usersCollection.updateOne(
+          { id: userId },
+          { $set: { lastActive: new Date() } }
+        );
+        return res.status(200).json({ success: true });
+      }
+
       let dbUser = await usersCollection.findOne({ id: userId });
       if (!dbUser && user) {
         dbUser = {
@@ -188,18 +202,14 @@ export default async function handler(req, res) {
         });
       }
 
-      // 2. GACHA PULL & SISTEM PITY (JAMINAN SSR)
+      // 2. GACHA PULL & SISTEM PITY
       if (action === 'gacha') {
         const gachaCost = 50;
         if (dbUser.points < gachaCost) {
-          return res.status(400).json({ success: false, error: 'Poin Anda tidak cukup! Lakukan Daily Login atau Battle.' });
+          return res.status(400).json({ success: false, error: 'Poin Anda tidak cukup!' });
         }
 
         const allWaifus = await waifusCollection.find({}).toArray();
-        if (allWaifus.length === 0) {
-          return res.status(400).json({ success: false, error: 'Belum ada data waifu.' });
-        }
-
         let pityCounter = dbUser.pityCounter || 0;
         pityCounter++;
 
@@ -241,7 +251,7 @@ export default async function handler(req, res) {
           updatedItem = item;
           inventory[existingIndex] = item;
         } else {
-          isNewCharacter = true; // Menandakan karakter baru pertama kali didapatkan!
+          isNewCharacter = true;
           updatedItem = {
             instanceId: new ObjectId().toString(),
             waifuId: pulledWaifu.id,
@@ -264,45 +274,30 @@ export default async function handler(req, res) {
           { $set: { points: newPoints, inventory: inventory, pityCounter: pityCounter }, $inc: { gachaCount: 1 } }
         );
 
-        const pityInfo = pityCounter > 0 ? ` (Pity SSR: ${pityCounter}/21)` : ` (Pity Direset!)`;
-        
         return res.status(200).json({
           success: true,
           isDuplicate: !isNewCharacter,
-          isNewUnlocked: isNewCharacter, // Indikator khusus untuk frontend menampilkan animasi "✨ NEW UNLOCKED!"
+          isNewUnlocked: isNewCharacter,
           pityCounter: pityCounter,
-          message: isNewCharacter
-            ? `✨ NEW UNLOCKED! Selamat! Anda berhasil mendapatkan ${pulledWaifu.name} (${pulledWaifu.rarity}) untuk pertama kalinya!${pityInfo}`
-            : `Duplikat! ${pulledWaifu.name} digabungkan (Dupes: x${updatedItem.dupes}, Stats Meningkat!).${pityInfo}`,
+          message: isNewCharacter ? `✨ NEW UNLOCKED! Mendapatkan ${pulledWaifu.name}!` : `Duplikat! ${pulledWaifu.name} digabungkan.`,
           waifu: updatedItem,
           points: newPoints
         });
       }
 
-      // 3. DELETE WAIFU FROM INVENTORY
+      // 3. DELETE WAIFU
       if (action === 'delete_waifu') {
         const { instanceId } = req.body;
         let inventory = dbUser.inventory || [];
-        const initialLen = inventory.length;
         inventory = inventory.filter(item => item.instanceId !== instanceId);
-
-        if (inventory.length === initialLen) {
-          return res.status(400).json({ success: false, error: 'Waifu tidak ditemukan di inventory.' });
-        }
-
-        await usersCollection.updateOne(
-          { id: userId },
-          { $set: { inventory: inventory } }
-        );
-
-        return res.status(200).json({ success: true, inventory: inventory, message: 'Waifu berhasil dihapus dari inventory.' });
+        await usersCollection.updateOne({ id: userId }, { $set: { inventory } });
+        return res.status(200).json({ success: true, inventory });
       }
 
-      // 4. MANUAL MERGE DUPES
+      // 4. MERGE DUPES
       if (action === 'merge_dupes') {
         let inventory = dbUser.inventory || [];
         const mergedMap = {};
-
         inventory.forEach(item => {
           const key = item.waifuId || item.name;
           if (!mergedMap[key]) {
@@ -314,27 +309,17 @@ export default async function handler(req, res) {
             mergedMap[key].hp = Math.round(mergedMap[key].hp * 1.08);
           }
         });
-
         const newInventory = Object.values(mergedMap);
-        await usersCollection.updateOne(
-          { id: userId },
-          { $set: { inventory: newInventory } }
-        );
-
-        return res.status(200).json({ success: true, inventory: newInventory, message: 'Semua duplikat berhasil digabungkan dan statistik meningkat!' });
+        await usersCollection.updateOne({ id: userId }, { $set: { inventory: newInventory } });
+        return res.status(200).json({ success: true, inventory: newInventory, message: 'Berhasil merge duplikat!' });
       }
 
-    // 5. PVP ROOM: CREATE ROOM (Perbaikan Auto-Clear Room Gantung)
+      // 5. CREATE PVP ROOM
       if (action === 'create_pvp_room') {
         const { instanceId, isBot } = req.body;
         const waifu = (dbUser.inventory || []).find(i => i.instanceId === instanceId);
         if (!waifu) return res.status(400).json({ success: false, error: 'Waifu tidak ditemukan.' });
-        
-        if (waifu.currentHp !== undefined && waifu.currentHp <= 0) {
-          return res.status(400).json({ success: false, error: 'Waifu ini memiliki HP 0 dan tidak bisa bertarung lagi! Pilih waifu lain.' });
-        }
 
-        // Hapus otomatis room lama milik user yang statusnya masih 'waiting' agar tidak nyangkut
         await pvpRoomsCollection.deleteMany({
           $or: [
             { 'player1.id': userId, status: 'waiting' },
@@ -342,21 +327,7 @@ export default async function handler(req, res) {
           ]
         });
 
-        // Cek jika masih ada yang statusnya 'battling' (sedang berlangsung)
-        const activeBattleRoom = await pvpRoomsCollection.findOne({
-          $or: [
-            { 'player1.id': userId, status: 'battling' },
-            { 'player2.id': userId, status: 'battling' }
-          ]
-        });
-
-        if (activeBattleRoom) {
-          return res.status(400).json({ success: false, error: 'Anda sedang dalam pertarungan aktif yang belum selesai.' });
-        }
-
         let player2Data = null;
-        let initialStatus = 'waiting';
-
         if (isBot) {
           const allWaifus = await waifusCollection.find({}).toArray();
           const randBotWaifu = allWaifus[Math.floor(Math.random() * allWaifus.length)];
@@ -372,7 +343,7 @@ export default async function handler(req, res) {
         }
 
         const newRoom = {
-          status: initialStatus,
+          status: 'waiting',
           player1: {
             id: dbUser.id,
             name: dbUser.global_name || dbUser.username,
@@ -392,19 +363,11 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, roomId: result.insertedId.toString(), room: newRoom });
       }
 
-      // 6. PVP ROOM: JOIN ROOM
+      // 6. JOIN PVP ROOM
       if (action === 'join_pvp_room') {
         const { roomId, instanceId } = req.body;
         const waifu = (dbUser.inventory || []).find(i => i.instanceId === instanceId);
         if (!waifu) return res.status(400).json({ success: false, error: 'Waifu tidak ditemukan.' });
-        
-        if (waifu.currentHp !== undefined && waifu.currentHp <= 0) {
-          return res.status(400).json({ success: false, error: 'Waifu ini memiliki HP 0 dan tidak bisa bertarung lagi! Pilih waifu lain.' });
-        }
-
-        const room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
-        if (!room || room.status !== 'waiting') return res.status(400).json({ success: false, error: 'Room tidak valid atau sudah dimulai.' });
-        if (room.player1.id === userId) return res.status(400).json({ success: false, error: 'Tidak bisa bergabung ke room sendiri.' });
 
         const player2Data = {
           id: dbUser.id,
@@ -420,49 +383,29 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, roomId });
       }
 
-      // 7. PLAYER READY ACTION
+      // 7. PLAYER READY
       if (action === 'player_ready') {
         const { roomId } = req.body;
         let room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
         if (!room) return res.status(400).json({ success: false, error: 'Room tidak ditemukan.' });
 
-        if (room.status === 'finished') {
-          await pvpRoomsCollection.updateOne(
-            { _id: new ObjectId(roomId) },
-            { 
-              $set: { 
-                status: 'waiting', 
-                logs: [], 
-                winner: null, 
-                'player1.currentHp': room.player1.maxHp, 
-                'player1.ready': false,
-                'player2.currentHp': room.player2.maxHp, 
-                'player2.ready': room.player2.id === 'bot_ai' ? true : false 
-              } 
-            }
-          );
-          room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
-        }
-
         let updateField = {};
         if (room.player1 && room.player1.id === userId) updateField['player1.ready'] = true;
         else if (room.player2 && room.player2.id === userId) updateField['player2.ready'] = true;
 
-        if (room.player2 && room.player2.id === 'bot_ai') {
-          updateField['player2.ready'] = true;
-        }
+        if (room.player2 && room.player2.id === 'bot_ai') updateField['player2.ready'] = true;
 
         await pvpRoomsCollection.updateOne({ _id: new ObjectId(roomId) }, { $set: updateField });
 
         const updatedRoom = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
-        if (updatedRoom.player1 && updatedRoom.player1.ready && updatedRoom.player2 && updatedRoom.player2.ready && updatedRoom.status === 'waiting') {
+        if (updatedRoom.player1?.ready && updatedRoom.player2?.ready && updatedRoom.status === 'waiting') {
           await pvpRoomsCollection.updateOne({ _id: new ObjectId(roomId) }, { $set: { status: 'battling' } });
         }
 
         return res.status(200).json({ success: true });
       }
 
-      // 8. PROCESS PVP TURN SIMULATION & LOGS
+      // 8. GET PVP STATUS & LOGS
       if (action === 'get_pvp_status') {
         const { roomId } = req.body;
         let room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
@@ -489,67 +432,24 @@ export default async function handler(req, res) {
           }
 
           let winner = p1Hp > p2Hp ? room.player1.name : (p2Hp > p1Hp ? room.player2.name : 'Draw');
-
-          await pvpRoomsCollection.updateOne(
-            { _id: new ObjectId(roomId) },
-            { $set: { status: 'finished', logs, winner, 'player1.currentHp': p1Hp, 'player2.currentHp': p2Hp } }
-          );
-
-          if (room.player1.id !== 'bot_ai') {
-            await usersCollection.updateOne(
-              { id: room.player1.id, "inventory.instanceId": room.player1.waifu.instanceId },
-              { $set: { "inventory.$.currentHp": p1Hp } }
-            );
-          }
-          if (room.player2 && room.player2.id !== 'bot_ai') {
-            await usersCollection.updateOne(
-              { id: room.player2.id, "inventory.instanceId": room.player2.waifu.instanceId },
-              { $set: { "inventory.$.currentHp": p2Hp } }
-            );
-          }
-
-          room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
-          if (winner === room.player1.name && room.player1.id !== 'bot_ai') {
-            await usersCollection.updateOne({ id: room.player1.id }, { $inc: { points: 200, pvpWins: 1 } });
-          } else if (winner === room.player2.name && room.player2.id !== 'bot_ai') {
-            await usersCollection.updateOne({ id: room.player2.id }, { $inc: { points: 200, pvpWins: 1 } });
-          }
+          await pvpRoomsCollection.updateOne({ _id: new ObjectId(roomId) }, { $set: { status: 'finished', logs, winner, 'player1.currentHp': p1Hp, 'player2.currentHp': p2Hp } });
         }
 
+        room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
         return res.status(200).json({ success: true, room });
       }
 
-      // 9. LEAVE / CANCEL ROOM
+      // 9. LEAVE ROOM
       if (action === 'leave_room') {
         const { roomId } = req.body;
         await pvpRoomsCollection.deleteOne({ _id: new ObjectId(roomId) });
         return res.status(200).json({ success: true });
       }
 
-      return res.status(400).json({ success: false, error: 'Aksi tidak valid.' });
+      return res.status(400).json({ success: false, error: 'Aksi POST tidak valid.' });
     } catch (e) {
       console.error(e);
       return res.status(500).json({ success: false, error: 'Terjadi kesalahan pada server.' });
     }
-
-    // 10. HEARTBEAT / UPDATE LAST ACTIVE
-      if (action === 'heartbeat') {
-        await usersCollection.updateOne(
-          { id: userId },
-          { $set: { lastActive: new Date() } }
-        );
-        return res.status(200).json({ success: true });
-      }
-
-      // 11. GET ONLINE USERS (Aktif dalam 5 menit terakhir)
-      if (getAction === 'online_users') {
-        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-        const onlineUsers = await usersCollection.find(
-          { lastActive: { $gte: fiveMinutesAgo } }
-        ).project({ id: 1, username: 1, global_name: 1, avatar: 1 }).toArray();
-
-        return res.status(200).json({ success: true, onlineUsers });
-      }
-    
   }
 }
