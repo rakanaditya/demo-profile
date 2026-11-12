@@ -6,7 +6,7 @@ const REDEEM_CODES = {
   'RAKANADITYA': { points: 1000, description: 'Kode Spesial Komunitas Rakan Aditya (+1000 Poin)' },
   'MARIN': { points: 1500, description: 'Kode Spesial Dari Marin Kitagawa Bot (+1500 Poin)' },
   'WAIFU': { points: 2000, description: 'Kode Choose youw waifu (+2000 Poin)' },
-  'DENDRA': { points: 80000, description: 'DENDRA WAIFU (+80000 Poin)' },
+  'DENDRA': { points: 5000, description: 'DENDRA WAIFU (+5000 Poin)' },
   'GACHA': { points: 3000, description: 'GACHA WAIFU (+3000 Poin)' }
 };
 
