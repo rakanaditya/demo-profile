@@ -626,6 +626,71 @@ function startPollingRoom() {
   }, 2000);
 }
 
+// Kirim sinyal aktif setiap 30 detik & ambil daftar online
+function startOnlineTracker() {
+  if (!currentUser || !currentUser.id) return;
+
+  // Kirim heartbeat pertama kali
+  sendHeartbeat();
+  fetchOnlineUsers();
+
+  // Interval berkala
+  setInterval(() => {
+    sendHeartbeat();
+    fetchOnlineUsers();
+  }, 30000);
+}
+
+async function sendHeartbeat() {
+  try {
+    await fetch('/api/gacha', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'heartbeat', userId: currentUser.id })
+    });
+  } catch (e) {}
+}
+
+async function fetchOnlineUsers() {
+  try {
+    const res = await fetch(`/api/gacha?action=online_users`);
+    const data = await res.json();
+    if (data.success) {
+      renderOnlineUsers(data.onlineUsers || []);
+    }
+  } catch (e) {}
+}
+
+function renderOnlineUsers(users) {
+  const container = document.getElementById('online-users-list');
+  const countEl = document.getElementById('online-count');
+  if (!container || !countEl) return;
+
+  countEl.innerText = users.length;
+  if (users.length === 0) {
+    container.innerHTML = '<p class="text-[11px] text-slate-500">Tidak ada user lain yang online.</p>';
+    return;
+  }
+
+  container.innerHTML = '';
+  users.forEach(u => {
+    const avatarUrl = u.avatar ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png';
+    const name = u.global_name || u.username;
+    container.innerHTML += `
+      <div class="flex items-center space-x-1.5 bg-slate-950 border border-slate-800 px-2.5 py-1.5 rounded-xl shadow-sm" title="${name}">
+        <div class="relative">
+          <img src="${avatarUrl}" class="w-5 h-5 rounded-full object-cover">
+          <span class="w-2 h-2 bg-emerald-500 border border-slate-950 rounded-full absolute bottom-0 right-0"></span>
+        </div>
+        <span class="text-[11px] font-medium text-slate-200 max-w-[100px] truncate">${name}</span>
+      </div>
+    `;
+  });
+}
+
+// Panggil startOnlineTracker di dalam initAuthAndData setelah user berhasil login:
+// startOnlineTracker();
+
 async function renderBattleAnimationAndLogs(logs, winner, room) {
   const logBox = document.getElementById('battle-combat-logs');
   logBox.innerHTML = '<p class="text-pink-400 animate-pulse">⚔️ Pertarungan Real-Time Dimulai...</p>';
