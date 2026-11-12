@@ -217,7 +217,11 @@ async function initAuthAndData() {
     document.getElementById('nav-user-badge').classList.remove('hidden');
     document.getElementById('nav-user-name').innerText = currentUser.global_name || currentUser.username;
     document.getElementById('nav-user-avatar').src = getAvatarUrl(currentUser);
+    
     await fetchUserData();
+    
+    // Aktifkan tracker online secara real-time
+    startOnlineTracker();
   } else {
     document.getElementById('login-prompt').classList.remove('hidden');
   }
@@ -626,15 +630,12 @@ function startPollingRoom() {
   }, 2000);
 }
 
-// Kirim sinyal aktif setiap 30 detik & ambil daftar online
+// Live Online Users Tracker
 function startOnlineTracker() {
   if (!currentUser || !currentUser.id) return;
-
-  // Kirim heartbeat pertama kali
   sendHeartbeat();
   fetchOnlineUsers();
 
-  // Interval berkala
   setInterval(() => {
     sendHeartbeat();
     fetchOnlineUsers();
@@ -687,9 +688,6 @@ function renderOnlineUsers(users) {
     `;
   });
 }
-
-// Panggil startOnlineTracker di dalam initAuthAndData setelah user berhasil login:
-// startOnlineTracker();
 
 async function renderBattleAnimationAndLogs(logs, winner, room) {
   const logBox = document.getElementById('battle-combat-logs');
@@ -757,7 +755,5 @@ async function leaveRoom() {
   document.getElementById('ready-btn').className = 'px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg transition';
   fetchUserData();
 }
-
-
 
 window.addEventListener('DOMContentLoaded', () => { initAuthAndData(); });
