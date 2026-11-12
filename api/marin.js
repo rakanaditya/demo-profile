@@ -24,21 +24,36 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, guilds: guildsData });
     }
 
-    // 2. Endpoint GET Konfigurasi Commands per Server
+    // 2. Endpoint GET Konfigurasi Commands per Server dengan Auto-Merge Command Baru
     if (req.method === 'GET' && action === 'config') {
       if (!guildId) return res.status(400).json({ success: false, error: 'guildId diperlukan' });
 
       const config = await db.collection('bot_configs').findOne({ type: 'slash_commands', guildId: guildId });
+      
       const defaultCommands = [
           { name: 'giveaway list', description: 'Melihat daftar giveaway aktif.', enabled: true },
           { name: 'giveaway start', description: 'Membuat event giveaway baru.', enabled: true },
           { name: 'gacha roll', description: 'Lakukan gacha summon waifu impian.', enabled: true },
           { name: 'gacha profile', description: 'Melihat statistik poin dan koleksi.', enabled: true },
-          { name: 'givepoint', description: 'Lakukan gacha summon waifu impian.', enabled: true },
-          { name: 'removepoint', description: 'Lakukan gacha summon waifu impian.', enabled: true }
+          { name: 'givepoint', description: 'Memberikan poin gacha waifu kepada user.', enabled: true },
+          { name: 'removepoint', description: 'Mengurangi poin gacha waifu user.', enabled: true }
       ];
 
-      return res.status(200).json({ success: true, commands: config ? config.commands : defaultCommands });
+      if (!config || !config.commands) {
+        return res.status(200).json({ success: true, commands: defaultCommands });
+      }
+
+      // Sinkronisasi otomatis: Pastikan command baru tetap muncul meski database lama belum menyimpannya
+      const existingCommandNames = config.commands.map(c => c.name);
+      const mergedCommands = [...config.commands];
+
+      for (const defCmd of defaultCommands) {
+        if (!existingCommandNames.includes(defCmd.name)) {
+          mergedCommands.push(defCmd); // Otomatis masukkan command baru
+        }
+      }
+
+      return res.status(200).json({ success: true, commands: mergedCommands });
     }
 
     // 3. Endpoint POST Simpan Konfigurasi Commands per Server
