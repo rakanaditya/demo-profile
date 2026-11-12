@@ -243,7 +243,9 @@ async function fetchUserData() {
 
 function updateUIState() {
   if (!userData) return;
-  document.getElementById('user-points-val').innerText = `${userData.points} Poin`;
+  // Contoh saat mengupdate elemen poin
+  document.getElementById('user-points-val').innerText = user.points.toLocaleString('id-ID');
+  
   document.getElementById('inv-count').innerText = userData.inventory ? userData.inventory.length : 0;
   document.getElementById('inventory-sub-count').innerText = userData.inventory ? userData.inventory.length : 0;
   
