@@ -243,13 +243,22 @@ async function fetchUserData() {
 
 function updateUIState() {
   if (!userData) return;
-  // Contoh saat mengupdate elemen poin
-  document.getElementById('user-points-val').innerText = `${userData.points} Poin`;
-  // Contoh saat mengupdate elemen poin
-  document.getElementById('user-points-val').innerText = user.points.toLocaleString('id-ID');
-  document.getElementById('inv-count').innerText = userData.inventory ? userData.inventory.length : 0;
-  document.getElementById('inventory-sub-count').innerText = userData.inventory ? userData.inventory.length : 0;
   
+  // Format poin dengan pemisah ribuan agar rapi dan mudah dibaca
+  const formattedPoints = (userData.points || 0).toLocaleString('id-ID');
+  const pointsEl = document.getElementById('user-points-val');
+  if (pointsEl) {
+    pointsEl.innerText = `${formattedPoints} Poin`;
+  }
+
+  // Update jumlah inventory
+  const invCount = userData.inventory ? userData.inventory.length : 0;
+  const invCountEl = document.getElementById('inv-count');
+  const subInvCountEl = document.getElementById('inventory-sub-count');
+  if (invCountEl) invCountEl.innerText = invCount;
+  if (subInvCountEl) subInvCountEl.innerText = invCount;
+  
+  // Update Pity Counter
   const pityVal = userData.pityCounter || 0;
   const pityEl = document.getElementById('pity-counter-val');
   if (pityEl) pityEl.innerText = `${pityVal}/200`;
