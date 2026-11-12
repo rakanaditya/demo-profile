@@ -30,9 +30,12 @@ export default async function handler(req, res) {
 
       const config = await db.collection('bot_configs').findOne({ type: 'slash_commands', guildId: guildId });
       const defaultCommands = [
-        { name: 'giveaway start', description: 'Memulai sesi event giveaway baru di channel.', enabled: true },
-        { name: 'gacha roll', description: 'Melakukan gacha karakter waifu interaktif.', enabled: true },
-        { name: 'gacha profile', description: 'Melihat statistik dan koleksi waifu.', enabled: true }
+          { name: 'giveaway list', description: 'Melihat daftar giveaway aktif.', enabled: true },
+          { name: 'giveaway start', description: 'Membuat event giveaway baru.', enabled: true },
+          { name: 'gacha roll', description: 'Lakukan gacha summon waifu impian.', enabled: true },
+          { name: 'gacha profile', description: 'Melihat statistik poin dan koleksi.', enabled: true },
+          { name: 'givepoint', description: 'Lakukan gacha summon waifu impian.', enabled: true },
+          { name: 'removepoint', description: 'Lakukan gacha summon waifu impian.', enabled: true }
       ];
 
       return res.status(200).json({ success: true, commands: config ? config.commands : defaultCommands });
