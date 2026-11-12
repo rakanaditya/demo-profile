@@ -47,11 +47,19 @@
           <span class="text-xs text-pink-400">Rakan Aditya Community</span>
         </div>
       </div>
-      <div class="flex items-center space-x-3">
-        <div id="user-points-badge" class="hidden items-center space-x-2 bg-pink-950/40 border border-pink-500/40 px-3 py-1.5 rounded-full">
-          <span class="text-xs">💖</span>
-          <span id="user-points-val" class="text-xs font-bold text-pink-300">0 Poin</span>
-        </div>
+      
+    <!-- Badge Poin yang Lebih Rapi & Modern -->
+<div id="user-points-badge" class="hidden items-center space-x-2.5 bg-slate-900 border border-pink-500/30 px-3.5 py-2 rounded-2xl shadow-inner">
+  <div class="w-7 h-7 rounded-xl bg-pink-500/20 flex items-center justify-center text-pink-400 text-sm shadow-sm">
+    💖
+  </div>
+  <div class="flex flex-col text-left">
+    <span class="text-[9px] uppercase tracking-wider text-slate-400 font-bold leading-none">Poin Anda</span>
+    <span id="user-points-val" class="text-xs font-mono font-extrabold text-pink-300 leading-tight mt-0.5">0</span>
+  </div>
+</div>
+
+        
         <a href="/" class="text-xs text-slate-400 hover:text-white">← Beranda</a>
         <button onclick="switchTab('shop')" id="tab-btn-shop" class="px-5 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800">🛒 Waifu Shop</button>
         <button onclick="openRedeemModal()" class="px-4 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800">🎁 Redeem Code</button>
