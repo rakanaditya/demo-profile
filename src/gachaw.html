@@ -1016,6 +1016,24 @@
       readyBtn.className = 'px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg transition';
     }
 
+async function leaveActiveRoom(roomId) {
+  try {
+    const res = await fetch('/api/gacha', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'leave_room', userId: currentUser.id, roomId: roomId })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert("Room aktif berhasil dibersihkan! Silakan buat room baru.");
+      window.location.reload();
+    }
+  } catch (e) {
+    console.error("Gagal menghapus room", e);
+  }
+}
+
+    
     async function leaveRoom() {
       if (activeRoomId) {
         await fetch('/api/gacha', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'leave_room', userId:currentUser.id, roomId:activeRoomId}) });
