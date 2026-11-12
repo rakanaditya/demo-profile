@@ -304,26 +304,33 @@
     }
 
     function renderCommandsList() {
+      // Daftar command baru yang akan diberi label "NEW"
+      const newCommandNames = ['givepoint', 'removepoint'];
+
       const listElem = document.getElementById('commands-list');
-      listElem.innerHTML = serverCommands.map((cmd, idx) => `
-        <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl flex items-center justify-between flex-wrap gap-3">
-          <div>
-            <div class="flex items-center space-x-2">
-              <span class="font-mono font-bold text-indigo-400 text-sm">/${cmd.name}</span>
-              <span class="px-2 py-0.5 ${cmd.enabled ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'} rounded text-[10px]">
-                ${cmd.enabled ? 'Active' : 'Disabled'}
-              </span>
+      listElem.innerHTML = serverCommands.map((cmd, idx) => {
+        const isNew = newCommandNames.includes(cmd.name);
+        return `
+          <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <div class="flex items-center space-x-2">
+                <span class="font-mono font-bold text-indigo-400 text-sm">/${cmd.name}</span>
+                ${isNew ? '<span class="px-1.5 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded text-[9px] font-bold">NEW</span>' : ''}
+                <span class="px-2 py-0.5 ${cmd.enabled ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'} rounded text-[10px]">
+                  ${cmd.enabled ? 'Active' : 'Disabled'}
+                </span>
+              </div>
+              <p class="text-xs text-slate-400 mt-1">${cmd.description}</p>
             </div>
-            <p class="text-xs text-slate-400 mt-1">${cmd.description}</p>
+            <div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" ${cmd.enabled ? 'checked' : ''} class="sr-only peer" onchange="toggleCommandState(${idx}, this.checked)">
+                <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+              </label>
+            </div>
           </div>
-          <div>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" ${cmd.enabled ? 'checked' : ''} class="sr-only peer" onchange="toggleCommandState(${idx}, this.checked)">
-              <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
-            </label>
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     function toggleCommandState(index, isChecked) {
