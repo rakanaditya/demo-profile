@@ -1,6 +1,6 @@
 let currentUser = null;
 let userData = null;
-let serverWaifusData = []; 
+let serverWaifusData = [];
 let selectedBattleInstanceId = null;
 let activeRoomId = null;
 let pollInterval = null;
@@ -9,22 +9,78 @@ let autoGachaActive = false;
 let autoGachaTimer = null;
 let shopCountdownInterval = null;
 let targetResetTimestamp = null;
+let isRenderingLogs = false;
 
-function playAudio(s) { 
-  try { 
-    const a = document.getElementById(s); 
-    if(a){ a.currentTime = 0; a.play().catch(e => {}); } 
-  } catch(e){} 
+function playAudio(s) {
+  try {
+    const a = document.getElementById(s);
+    if (a) { a.currentTime = 0; a.play().catch(e => {}); }
+  } catch (e) {}
 }
 
-function getAvatarUrl(u) { 
-  return u && u.avatar ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png'; 
+function getAvatarUrl(u) {
+  return u && u.avatar ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png';
+}
+
+function formatNumber(num) {
+  if (num === undefined || num === null || isNaN(num)) return '0';
+  const val = Number(num);
+  if (val < 10000) {
+    return Math.round(val).toLocaleString('id-ID');
+  }
+  const suffixes = [
+    { value: 1e33, symbol: 'Dc' },
+    { value: 1e30, symbol: 'No' },
+    { value: 1e27, symbol: 'Oc' },
+    { value: 1e24, symbol: 'Sp' },
+    { value: 1e21, symbol: 'Sx' },
+    { value: 1e18, symbol: 'Qi' },
+    { value: 1e15, symbol: 'Qa' },
+    { value: 1e12, symbol: 'T'  },
+    { value: 1e9,  symbol: 'B'  },
+    { value: 1e6,  symbol: 'M'  },
+    { value: 1e3,  symbol: 'k'  }
+  ];
+  for (let i = 0; i < suffixes.length; i++) {
+    if (val >= suffixes[i].value) {
+      return (val / suffixes[i].value).toFixed(2).replace(/\.?0+$/, '') + suffixes[i].symbol;
+    }
+  }
+  return Math.round(val).toString();
+}
+
+function animateHpTransition(textEl, barEl, startHp, endHp, maxHp, duration = 650) {
+  if (!textEl || !barEl) return;
+  const startTime = performance.now();
+  const safeMax = Math.max(1, maxHp);
+
+  function step(now) {
+    const progress = Math.min(1, (now - startTime) / duration);
+    const currentVal = Math.round(startHp + (endHp - startHp) * progress);
+    const pct = Math.max(0, Math.min(100, (currentVal / safeMax) * 100));
+
+    textEl.innerText = `HP: ${formatNumber(currentVal)} / ${formatNumber(safeMax)}`;
+    barEl.style.width = `${pct}%`;
+
+    if (pct <= 25) {
+      barEl.className = 'bg-rose-500 h-full transition-all duration-150';
+    } else if (pct <= 50) {
+      barEl.className = 'bg-amber-400 h-full transition-all duration-150';
+    } else {
+      barEl.className = 'bg-emerald-500 h-full transition-all duration-150';
+    }
+
+    if (progress < 1) {
+      requestAnimationFrame(step);
+    }
+  }
+  requestAnimationFrame(step);
 }
 
 function switchTab(t) {
   playAudio('audio-pop');
   if (autoGachaActive) toggleAutoGacha();
-  ['gacha','daily','inventory','battle','shop'].forEach(tab => {
+  ['gacha', 'daily', 'inventory', 'battle', 'shop'].forEach(tab => {
     const el = document.getElementById(`tab-${tab}`);
     const btn = document.getElementById(`tab-btn-${tab}`);
     if (el) el.classList.add('hidden');
@@ -87,14 +143,14 @@ function renderShopGrid(items) {
     const isSoldOut = item.stock !== undefined && item.stock <= 0;
     let waifuOptions = '<option value="">-- Pilih Waifu Target --</option>';
     inv.forEach(w => {
-      waifuOptions += `<option value="${w.instanceId}">${w.name} (${w.rarity}) - HP: ${w.currentHp ?? w.hp}/${w.hp}</option>`;
+      waifuOptions += `<option value="${w.instanceId}">${w.name} (${w.rarity}) - HP: ${formatNumber(w.currentHp ?? w.hp)}/${formatNumber(w.hp)}</option>`;
     });
     grid.innerHTML += `
       <div class="bg-slate-950 border ${isSoldOut ? 'border-rose-900/40 opacity-60' : 'border-slate-800'} p-5 rounded-2xl flex flex-col justify-between space-y-4 shadow-lg">
         <div class="space-y-2">
           <div class="flex justify-between items-start">
             <h4 class="font-bold text-sm text-white">${item.name}</h4>
-            <span class="text-[10px] bg-pink-500/20 text-pink-400 px-2 py-0.5 rounded font-mono font-bold">💖 ${item.price} Poin</span>
+            <span class="text-[10px] bg-pink-500/20 text-pink-400 px-2 py-0.5 rounded font-mono font-bold">💖 ${formatNumber(item.price)} Poin</span>
           </div>
           <p class="text-xs text-slate-400">${item.description}</p>
           <p class="text-[10px] text-slate-500 font-mono">Stok Tersedia: ${item.stock !== undefined ? item.stock : 'Unlimited'}</p>
@@ -129,8 +185,8 @@ async function buyShopItem(itemId) {
       playAudio('audio-chime');
       userData.points = data.points;
       userData.inventory = data.inventory;
-      updateUIState(); 
-      fetchShopItems(); 
+      updateUIState();
+      fetchShopItems();
       alert(data.message);
     } else {
       alert(data.error);
@@ -188,8 +244,8 @@ function openWaifuDetailModal(instanceId) {
   const masterWaifu = serverWaifusData.find(m => m.id === w.waifuId) || {};
   const loreDesc = masterWaifu.description || 'Tidak ada catatan lore untuk waifu ini.';
 
-  const setElText = (id, text) => { const el = document.getElementById(id); if(el) el.innerText = text; };
-  const setElAttr = (id, attr, val) => { const el = document.getElementById(id); if(el) el[attr] = val; };
+  const setElText = (id, text) => { const el = document.getElementById(id); if (el) el.innerText = text; };
+  const setElAttr = (id, attr, val) => { const el = document.getElementById(id); if (el) el[attr] = val; };
 
   setElAttr('detail-modal-img', 'src', w.image);
   setElText('detail-modal-rarity', w.rarity);
@@ -197,10 +253,10 @@ function openWaifuDetailModal(instanceId) {
   setElText('detail-modal-title', w.title || '-');
   setElText('detail-modal-element', `Element: ${w.element || 'Normal'}`);
   setElText('detail-modal-desc', loreDesc);
-  setElText('detail-modal-hp', `${w.currentHp ?? w.hp}/${w.hp}`);
-  setElText('detail-modal-atk', w.attack);
-  setElText('detail-modal-def', w.defense);
-  setElText('detail-modal-dupes', `Duplikat / Level Merge: x${w.dupes || 1}`);
+  setElText('detail-modal-hp', `${formatNumber(w.currentHp ?? w.hp)} / ${formatNumber(w.hp)}`);
+  setElText('detail-modal-atk', formatNumber(w.attack));
+  setElText('detail-modal-def', formatNumber(w.defense));
+  setElText('detail-modal-dupes', `Duplikat / Level Merge: x${formatNumber(w.dupes || 1)}`);
 
   const modal = document.getElementById('waifu-detail-modal');
   if (modal) modal.classList.remove('hidden');
@@ -211,15 +267,20 @@ function closeWaifuDetailModal() {
   if (modal) modal.classList.add('hidden');
 }
 
+function logoutSession() {
+  localStorage.removeItem('discord_user');
+  window.location.reload();
+}
+
 async function initAuthAndData() {
   const urlParams = new URLSearchParams(window.location.search);
   const userParam = urlParams.get('user');
   if (userParam) {
-    try { 
-      currentUser = JSON.parse(decodeURIComponent(userParam)); 
-      localStorage.setItem('discord_user', JSON.stringify(currentUser)); 
-      window.history.replaceState({}, document.title, window.location.pathname); 
-    } catch(e){}
+    try {
+      currentUser = JSON.parse(decodeURIComponent(userParam));
+      localStorage.setItem('discord_user', JSON.stringify(currentUser));
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } catch (e) {}
   } else {
     const saved = localStorage.getItem('discord_user');
     if (saved) currentUser = JSON.parse(saved);
@@ -233,14 +294,17 @@ async function initAuthAndData() {
   if (currentUser && currentUser.id) {
     if (loginPrompt) loginPrompt.classList.add('hidden');
     if (gachaApp) gachaApp.classList.remove('hidden');
-    if (pointsBadge) pointsBadge.classList.remove('hidden');
+    if (pointsBadge) {
+      pointsBadge.classList.remove('hidden');
+      pointsBadge.classList.add('flex');
+    }
     if (navBadge) navBadge.classList.remove('hidden');
-    
+
     const navName = document.getElementById('nav-user-name');
     const navAvatar = document.getElementById('nav-user-avatar');
     if (navName) navName.innerText = currentUser.global_name || currentUser.username;
     if (navAvatar) navAvatar.src = getAvatarUrl(currentUser);
-    
+
     await fetchUserData();
     startOnlineTracker();
   } else {
@@ -260,30 +324,7 @@ async function fetchUserData() {
       renderOpenRooms(data.openRooms || []);
       renderDailyStreakGrid();
     }
-  } catch(e) {}
-}
-
-function formatNumber(num) {
-  if (num === undefined || num === null) return '0';
-  const suffixes = [
-    { value: 1e33, symbol: 'Dc' },
-    { value: 1e30, symbol: 'No' },
-    { value: 1e27, symbol: 'Oc' },
-    { value: 1e24, symbol: 'Sp' },
-    { value: 1e21, symbol: 'Sx' },
-    { value: 1e18, symbol: 'Qi' },
-    { value: 1e15, symbol: 'Qa' },
-    { value: 1e12, symbol: 'T'  },
-    { value: 1e9,  symbol: 'B'  },
-    { value: 1e6,  symbol: 'M'  },
-    { value: 1e3,  symbol: 'k'  }
-  ];
-  for (let i = 0; i < suffixes.length; i++) {
-    if (num >= suffixes[i].value) {
-      return (num / suffixes[i].value).toFixed(1).replace(/\.0$/, '') + suffixes[i].symbol;
-    }
-  }
-  return num.toString();
+  } catch (e) {}
 }
 
 function updateUIState() {
@@ -297,7 +338,7 @@ function updateUIState() {
   const subInvCountEl = document.getElementById('inventory-sub-count');
   if (invCountEl) invCountEl.innerText = invCount;
   if (subInvCountEl) subInvCountEl.innerText = invCount;
-  
+
   const pityVal = userData.pityCounter || 0;
   const pityEl = document.getElementById('pity-counter-val');
   if (pityEl) pityEl.innerText = `${pityVal}/200`;
@@ -316,7 +357,7 @@ async function refreshOpenRooms() {
     if (data.success) {
       renderOpenRooms(data.openRooms || []);
     }
-  } catch(e) {}
+  } catch (e) {}
 }
 
 function renderDailyStreakGrid() {
@@ -324,7 +365,7 @@ function renderDailyStreakGrid() {
   if (!grid || !userData) return;
   const currentStreak = userData.loginStreak || 0;
   grid.innerHTML = '';
-  
+
   for (let i = 1; i <= 7; i++) {
     const isClaimed = i <= currentStreak;
     grid.innerHTML += `
@@ -333,7 +374,7 @@ function renderDailyStreakGrid() {
         <div class="w-10 h-10 rounded-xl bg-pink-500/10 text-pink-400 flex items-center justify-center text-sm font-black border border-pink-500/20 shadow-inner">
           🎁
         </div>
-        <span class="text-xs font-black text-pink-300 font-mono">+${i * 100} Poin</span>
+        <span class="text-xs font-black text-pink-300 font-mono">+${formatNumber(i * 100)} Poin</span>
         <span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${isClaimed ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-slate-900 text-slate-500'}">
           ${isClaimed ? '✓ Diklaim' : 'Terkunci'}
         </span>
@@ -359,7 +400,7 @@ function checkDailyClaimStatus() {
   }
 
   const lastClaimTime = new Date(userData.lastDailyClaim).getTime();
-  const nextClaimTime = lastClaimTime + (24 * 60 * 60 * 1000); 
+  const nextClaimTime = lastClaimTime + (24 * 60 * 60 * 1000);
 
   if (dailyCountdownInterval) clearInterval(dailyCountdownInterval);
 
@@ -398,20 +439,20 @@ function checkDailyClaimStatus() {
 async function claimDailyReward() {
   playAudio('audio-pop');
   try {
-    const res = await fetch('/api/gacha', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'daily', userId: currentUser.id }) });
+    const res = await fetch('/api/gacha', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'daily', userId: currentUser.id }) });
     const data = await res.json();
     const dailyMsg = document.getElementById('daily-msg');
     if (data.success) {
       playAudio('audio-chime');
       userData.points = data.points;
       userData.loginStreak = data.streak;
-      userData.lastDailyClaim = new Date(); 
+      userData.lastDailyClaim = new Date();
       updateUIState();
       if (dailyMsg) dailyMsg.innerText = data.message;
     } else {
       if (dailyMsg) dailyMsg.innerText = data.error;
     }
-  } catch(e) {
+  } catch (e) {
     const dailyMsg = document.getElementById('daily-msg');
     if (dailyMsg) dailyMsg.innerText = 'Gagal melakukan klaim reward.';
   }
@@ -430,7 +471,7 @@ function toggleAutoGacha() {
     autoGachaActive = true;
     if (text) text.innerText = 'Auto Gacha: ON';
     if (btn) btn.className = 'px-6 py-3.5 bg-pink-600 hover:bg-pink-500 border border-pink-500 text-white font-bold text-sm rounded-2xl shadow-xl transition flex items-center space-x-2 animate-pulse';
-    
+
     autoGachaTimer = setInterval(() => {
       if (!userData || userData.points < 50) {
         toggleAutoGacha();
@@ -460,13 +501,13 @@ async function doGachaPull() {
   const box = document.getElementById('gacha-result-box');
   if (box) box.innerHTML = '<span class="text-pink-400 animate-pulse">🔮 Membuka portal gacha...</span>';
   try {
-    const res = await fetch('/api/gacha', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'gacha', userId: currentUser.id }) });
+    const res = await fetch('/api/gacha', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'gacha', userId: currentUser.id }) });
     const data = await res.json();
     if (data.success) {
       playAudio('audio-chime');
       userData.points = data.points;
       userData.pityCounter = data.pityCounter;
-      
+
       const idx = userData.inventory.findIndex(i => i.waifuId === data.waifu.waifuId);
       if (idx !== -1) userData.inventory[idx] = data.waifu; else userData.inventory.push(data.waifu);
       updateUIState();
@@ -482,17 +523,17 @@ async function doGachaPull() {
             <div>
               <h4 class="font-black text-lg text-white">${data.waifu.name}</h4>
               <p class="text-xs text-pink-400 italic">${data.waifu.title}</p>
-              <p class="text-[10px] text-slate-400 font-mono mt-1">ATK: ${data.waifu.attack} | DEF: ${data.waifu.defense} | HP: ${data.waifu.hp}</p>
+              <p class="text-[10px] text-slate-400 font-mono mt-1">ATK: ${formatNumber(data.waifu.attack)} | DEF: ${formatNumber(data.waifu.defense)} | HP: ${formatNumber(data.waifu.hp)}</p>
             </div>
             <p class="text-xs font-bold ${isNew ? 'text-amber-300 animate-bounce' : 'text-emerald-400'}">${data.message}</p>
           </div>
         `;
       }
-    } else { 
+    } else {
       if (box) box.innerHTML = `<span class="text-rose-400 text-sm font-bold">${data.error}</span>`;
       if (autoGachaActive) toggleAutoGacha();
     }
-  } catch(e) { 
+  } catch (e) {
     if (box) box.innerHTML = `<span class="text-rose-400 text-sm">Gagal summon. Terjadi kesalahan koneksi.</span>`;
     if (autoGachaActive) toggleAutoGacha();
   }
@@ -527,8 +568,8 @@ function renderInventory() {
         </div>
         <div class="space-y-2 pt-2 border-t border-slate-800">
           <div class="flex justify-between text-[10px] font-mono ${isDead ? 'text-rose-400' : 'text-slate-300'}">
-            <span>HP: ${curHp}/${w.hp}</span>
-            <span>ATK: ${w.attack} | DEF: ${w.defense}</span>
+            <span>HP: ${formatNumber(curHp)}/${formatNumber(w.hp)}</span>
+            <span>ATK: ${formatNumber(w.attack)} | DEF: ${formatNumber(w.defense)}</span>
           </div>
           <button onclick="deleteWaifu('${w.instanceId}')" class="w-full py-1.5 bg-rose-950/80 hover:bg-rose-900 text-rose-300 text-xs font-bold rounded-xl transition">🗑️ Hapus</button>
         </div>
@@ -538,16 +579,16 @@ function renderInventory() {
 }
 
 async function deleteWaifu(id) {
-  if(!confirm('Hapus waifu dari koleksi?')) return;
-  const res = await fetch('/api/gacha', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'delete_waifu', userId:currentUser.id, instanceId:id})});
+  if (!confirm('Hapus waifu dari koleksi?')) return;
+  const res = await fetch('/api/gacha', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete_waifu', userId: currentUser.id, instanceId: id }) });
   const data = await res.json();
-  if(data.success) { userData.inventory = data.inventory; updateUIState(); }
+  if (data.success) { userData.inventory = data.inventory; updateUIState(); }
 }
 
 async function mergeAllDupes() {
-  const res = await fetch('/api/gacha', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'merge_dupes', userId:currentUser.id})});
+  const res = await fetch('/api/gacha', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'merge_dupes', userId: currentUser.id }) });
   const data = await res.json();
-  if(data.success) { userData.inventory = data.inventory; updateUIState(); alert(data.message); }
+  if (data.success) { userData.inventory = data.inventory; updateUIState(); alert(data.message); }
 }
 
 function renderBattleSelection() {
@@ -561,11 +602,11 @@ function renderBattleSelection() {
     const isDead = curHp <= 0;
     const isSel = selectedBattleInstanceId === w.instanceId;
     c.innerHTML += `
-      <div onclick="${isDead ? '' : `selectBattleWaifu('${w.instanceId}')`}" class="cursor-pointer p-3 rounded-xl border ${isDead ? 'border-rose-900/40 bg-slate-900/50 opacity-50 cursor-not-allowed' : (isSel ? 'border-pink-500 bg-pink-950/30 shadow-lg':'border-slate-800 bg-slate-900')} flex items-center space-x-3 transition">
+      <div onclick="${isDead ? '' : `selectBattleWaifu('${w.instanceId}')`}" class="cursor-pointer p-3 rounded-xl border ${isDead ? 'border-rose-900/40 bg-slate-900/50 opacity-50 cursor-not-allowed' : (isSel ? 'border-pink-500 bg-pink-950/30 shadow-lg' : 'border-slate-800 bg-slate-900')} flex items-center space-x-3 transition">
         <img src="${w.image}" class="w-10 h-10 rounded-lg object-cover">
         <div>
           <h5 class="font-bold text-xs text-white">${w.name} ${isDead ? '(HP Habis)' : ''}</h5>
-          <p class="text-[10px] ${isDead ? 'text-rose-400' : 'text-pink-400'} font-mono">HP: ${curHp}/${w.hp} | ATK: ${w.attack}</p>
+          <p class="text-[10px] ${isDead ? 'text-rose-400' : 'text-pink-400'} font-mono">HP: ${formatNumber(curHp)}/${formatNumber(w.hp)} | ATK: ${formatNumber(w.attack)}</p>
         </div>
       </div>
     `;
@@ -602,9 +643,9 @@ async function renderOpenRooms(rooms) {
 
 async function createPvPRoom(isBot) {
   if (!selectedBattleInstanceId) return alert('Pilih waifu andalan Anda terlebih dahulu di bawah!');
-  const res = await fetch('/api/gacha', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'create_pvp_room', userId:currentUser.id, instanceId:selectedBattleInstanceId, isBot}) });
+  const res = await fetch('/api/gacha', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'create_pvp_room', userId: currentUser.id, instanceId: selectedBattleInstanceId, isBot }) });
   const data = await res.json();
-  if(data.success) {
+  if (data.success) {
     activeRoomId = data.roomId;
     const lobby = document.getElementById('pvp-lobby');
     const battleRoom = document.getElementById('live-battle-room');
@@ -619,9 +660,9 @@ async function createPvPRoom(isBot) {
 
 async function joinPvPRoom(roomId) {
   if (!selectedBattleInstanceId) return alert('Pilih waifu andalan Anda terlebih dahulu di bawah!');
-  const res = await fetch('/api/gacha', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'join_pvp_room', userId:currentUser.id, instanceId:selectedBattleInstanceId, roomId}) });
+  const res = await fetch('/api/gacha', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'join_pvp_room', userId: currentUser.id, instanceId: selectedBattleInstanceId, roomId }) });
   const data = await res.json();
-  if(data.success) {
+  if (data.success) {
     activeRoomId = data.roomId;
     const lobby = document.getElementById('pvp-lobby');
     const battleRoom = document.getElementById('live-battle-room');
@@ -644,13 +685,13 @@ async function setPlayerReady() {
   }
 
   try {
-    const res = await fetch('/api/gacha', { 
-      method: 'POST', 
-      headers: {'Content-Type': 'application/json'}, 
-      body: JSON.stringify({ action: 'player_ready', userId: currentUser.id, roomId: activeRoomId }) 
+    const res = await fetch('/api/gacha', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'player_ready', userId: currentUser.id, roomId: activeRoomId })
     });
     const data = await res.json();
-    
+
     if (data.success) {
       if (readyBtn) {
         readyBtn.innerText = '✓ READY';
@@ -685,49 +726,59 @@ function setupRoomUI(room) {
 
   setElText('p1-name', me ? me.name : 'Anda');
   setElAttr('p1-img', 'src', me && me.waifu ? me.waifu.image : '');
-  setElText('p1-hp-text', me ? `HP: ${me.currentHp}/${me.maxHp}` : '');
-  
-  const p1Bar = document.getElementById('p1-hp-bar');
-  if (p1Bar && me) p1Bar.style.width = `${Math.max(0, (me.currentHp / me.maxHp) * 100)}%`;
+
+  if (!isRenderingLogs && room.status !== 'finished') {
+    setElText('p1-hp-text', me ? `HP: ${formatNumber(me.currentHp)} / ${formatNumber(me.maxHp)}` : '');
+    const p1Bar = document.getElementById('p1-hp-bar');
+    if (p1Bar && me) {
+      p1Bar.style.width = `${Math.max(0, (me.currentHp / me.maxHp) * 100)}%`;
+      p1Bar.className = 'bg-emerald-500 h-full transition-all duration-300';
+    }
+  }
 
   const p1Ready = document.getElementById('p1-status-ready');
   if (p1Ready) {
-    if (room.status === 'finished') {
-      p1Ready.innerText = "SELESAI";
-      p1Ready.className = "text-slate-400 font-bold";
+    if (room.status === 'finished' && !isRenderingLogs) {
+      p1Ready.innerText = 'SELESAI';
+      p1Ready.className = 'text-slate-400 font-bold';
     } else {
-      p1Ready.innerText = me && me.ready ? "READY ✓" : "MENUNGGU READY...";
-      p1Ready.className = me && me.ready ? "text-emerald-400 font-bold" : "text-amber-400 font-bold";
+      p1Ready.innerText = me && me.ready ? 'READY ✓' : 'MENUNGGU READY...';
+      p1Ready.className = me && me.ready ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold';
     }
   }
 
   if (op) {
     setElText('p2-name', op.name);
     setElAttr('p2-img', 'src', op.waifu ? op.waifu.image : '');
-    setElText('p2-hp-text', `HP: ${op.currentHp}/${op.maxHp}`);
-    
-    const p2Bar = document.getElementById('p2-hp-bar');
-    if (p2Bar) p2Bar.style.width = `${Math.max(0, (op.currentHp / op.maxHp) * 100)}%`;
-    
-    const p2Ready = document.getElementById('p2-status-ready');
-    if (p2Ready) {
-      if (room.status === 'finished') {
-        p2Ready.innerText = "SELESAI";
-        p2Ready.className = "text-slate-400 font-bold";
-      } else if (isBotRoom) {
-        p2Ready.innerText = "READY ✓ (BOT)";
-        p2Ready.className = "text-emerald-400 font-bold";
-      } else {
-        p2Ready.innerText = op.ready ? "READY ✓" : "MENUNGGU READY...";
-        p2Ready.className = op.ready ? "text-emerald-400 font-bold" : "text-amber-400 font-bold";
+
+    if (!isRenderingLogs && room.status !== 'finished') {
+      setElText('p2-hp-text', `HP: ${formatNumber(op.currentHp)} / ${formatNumber(op.maxHp)}`);
+      const p2Bar = document.getElementById('p2-hp-bar');
+      if (p2Bar) {
+        p2Bar.style.width = `${Math.max(0, (op.currentHp / op.maxHp) * 100)}%`;
+        p2Bar.className = 'bg-emerald-500 h-full transition-all duration-300';
       }
     }
-    
+
+    const p2Ready = document.getElementById('p2-status-ready');
+    if (p2Ready) {
+      if (room.status === 'finished' && !isRenderingLogs) {
+        p2Ready.innerText = 'SELESAI';
+        p2Ready.className = 'text-slate-400 font-bold';
+      } else if (isBotRoom) {
+        p2Ready.innerText = 'READY ✓ (BOT)';
+        p2Ready.className = 'text-emerald-400 font-bold';
+      } else {
+        p2Ready.innerText = op.ready ? 'READY ✓' : 'MENUNGGU READY...';
+        p2Ready.className = op.ready ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold';
+      }
+    }
+
     const banner = document.getElementById('battle-result-banner');
     const statusBadge = document.getElementById('room-status-badge');
 
-    if (room.status === 'finished') {
-      if (statusBadge) statusBadge.innerText = `Status: SELESAI`;
+    if (room.status === 'finished' && !isRenderingLogs) {
+      if (statusBadge) statusBadge.innerText = 'Status: SELESAI';
       const readyBtn = document.getElementById('ready-btn');
       if (readyBtn) {
         readyBtn.disabled = false;
@@ -735,15 +786,15 @@ function setupRoomUI(room) {
         readyBtn.className = 'px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg transition';
       }
     } else if (room.status === 'battling') {
-      if (statusBadge) statusBadge.innerText = "Status: Pertarungan Sedang Berlangsung!";
+      if (statusBadge) statusBadge.innerText = 'Status: Pertarungan Sedang Berlangsung!';
       if (banner) banner.classList.add('hidden');
     } else {
-      if (statusBadge) statusBadge.innerText = isBotRoom ? "Status: Lawan Bot Siap! Silakan tekan Ready." : "Status: Lawan Bergabung! Silakan tekan Ready.";
+      if (statusBadge) statusBadge.innerText = isBotRoom ? 'Status: Lawan Bot Siap! Silakan tekan Ready.' : 'Status: Lawan Bergabung! Silakan tekan Ready.';
       if (banner) banner.classList.add('hidden');
     }
   } else {
     const statusBadge = document.getElementById('room-status-badge');
-    if (statusBadge) statusBadge.innerText = "Status: Menunggu Lawan Bergabung ke Room...";
+    if (statusBadge) statusBadge.innerText = 'Status: Menunggu Lawan Bergabung ke Room...';
   }
 }
 
@@ -757,10 +808,10 @@ async function checkRoomAndTriggerBattle() {
       setupRoomUI(room);
 
       if (room.status === 'battling' || room.status === 'finished') {
-        const turnRes = await fetch('/api/gacha', { 
-          method: 'POST', 
-          headers: {'Content-Type': 'application/json'}, 
-          body: JSON.stringify({ action: 'get_pvp_status', userId: currentUser.id, roomId: activeRoomId }) 
+        const turnRes = await fetch('/api/gacha', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'get_pvp_status', userId: currentUser.id, roomId: activeRoomId })
         });
         const turnData = await turnRes.json();
         if (turnData.success && turnData.room && turnData.room.logs && turnData.room.logs.length > 0) {
@@ -805,7 +856,7 @@ async function sendHeartbeat() {
 
 async function fetchOnlineUsers() {
   try {
-    const res = await fetch(`/api/gacha?action=online_users`);
+    const res = await fetch('/api/gacha?action=online_users');
     const data = await res.json();
     if (data.success) {
       renderOnlineUsers(data.onlineUsers || []);
@@ -840,9 +891,6 @@ function renderOnlineUsers(users) {
   });
 }
 
-// Variabel pengaman agar animasi log tidak terpanggil dua kali bersamaan
-let isRenderingLogs = false;
-
 async function renderBattleAnimationAndLogs(logs, winner, room) {
   const logBox = document.getElementById('battle-combat-logs');
   if (!logBox || isRenderingLogs) return;
@@ -855,7 +903,37 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
   const p2Card = document.getElementById('p2-card');
   const banner = document.getElementById('battle-result-banner');
 
-  // Sembunyikan banner hasil sebelumnya (jika rematch) dan tampilkan indikator ronde
+  const p1HpText = document.getElementById('p1-hp-text');
+  const p1HpBar = document.getElementById('p1-hp-bar');
+  const p2HpText = document.getElementById('p2-hp-text');
+  const p2HpBar = document.getElementById('p2-hp-bar');
+
+  const isP1 = room.player1.id === currentUser.id;
+  const myMaxHp = isP1 ? room.player1.maxHp : room.player2.maxHp;
+  const opMaxHp = isP1 ? room.player2.maxHp : room.player1.maxHp;
+
+  // Setel Health Bar awal sebelum ronde 1 dimulai
+  const firstLog = logs[0];
+  let curMyHp = isP1
+    ? (firstLog.p1Hp + (firstLog.attacker === room.player2.name ? firstLog.damage : 0))
+    : (firstLog.p2Hp + (firstLog.attacker === room.player1.name ? firstLog.damage : 0));
+  let curOpHp = isP1
+    ? (firstLog.p2Hp + (firstLog.attacker === room.player1.name ? firstLog.damage : 0))
+    : (firstLog.p1Hp + (firstLog.attacker === room.player2.name ? firstLog.damage : 0));
+  curMyHp = Math.min(myMaxHp, curMyHp);
+  curOpHp = Math.min(opMaxHp, curOpHp);
+
+  if (p1HpText) p1HpText.innerText = `HP: ${formatNumber(curMyHp)} / ${formatNumber(myMaxHp)}`;
+  if (p1HpBar) {
+    p1HpBar.style.width = `${Math.max(0, (curMyHp / myMaxHp) * 100)}%`;
+    p1HpBar.className = 'bg-emerald-500 h-full transition-all duration-150';
+  }
+  if (p2HpText) p2HpText.innerText = `HP: ${formatNumber(curOpHp)} / ${formatNumber(opMaxHp)}`;
+  if (p2HpBar) {
+    p2HpBar.style.width = `${Math.max(0, (curOpHp / opMaxHp) * 100)}%`;
+    p2HpBar.className = 'bg-emerald-500 h-full transition-all duration-150';
+  }
+
   if (banner) banner.classList.add('hidden');
   if (statusBadge) statusBadge.innerText = 'Status: Pertarungan Sedang Berlangsung! (BATTLING)';
   if (roundBox) roundBox.classList.remove('hidden');
@@ -866,13 +944,11 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
 
   logBox.innerHTML = '<p class="text-pink-400 animate-pulse">⚔️ Pertarungan Real-Time Dimulai...</p>';
 
-  const isP1 = room.player1.id === currentUser.id;
   let lastTurn = 0;
 
   for (let i = 0; i < logs.length; i++) {
     const l = logs[i];
 
-    // Perbarui tampilan Round 1, Round 2, Round 3... setiap kali ronde berganti
     if (l.turn !== lastTurn) {
       lastTurn = l.turn;
       if (roundText) {
@@ -881,10 +957,9 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
       logBox.innerHTML += `<div class="text-[11px] font-black text-amber-400 border-b border-slate-800 pb-0.5 pt-1.5 tracking-wider uppercase">— ROUND ${l.turn} —</div>`;
     }
 
-    await new Promise(r => setTimeout(r, 1200));
+    await new Promise(r => setTimeout(r, 1100));
     playAudio('audio-pop');
 
-    // Efek sorotan kartu saat giliran menyerang
     const isMeAttacking = (isP1 && l.attacker === room.player1.name) || (!isP1 && l.attacker === room.player2.name);
     if (p1Card && p2Card) {
       if (isMeAttacking) {
@@ -896,28 +971,24 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
       }
     }
 
-    logBox.innerHTML += `<p>[Round ${l.turn}] <span class="text-pink-400 font-bold">${l.attacker}</span> menyerang <span class="text-indigo-400 font-bold">${l.defender}</span> sebesar <span class="text-rose-400 font-bold">-${l.damage} DMG</span></p>`;
+    logBox.innerHTML += `<p>[Round ${l.turn}] <span class="text-pink-400 font-bold">${l.attacker}</span> menyerang <span class="text-indigo-400 font-bold">${l.defender}</span> sebesar <span class="text-rose-400 font-bold">-${formatNumber(l.damage)} DMG</span></p>`;
     logBox.scrollTop = logBox.scrollHeight;
 
-    const p1HpText = document.getElementById('p1-hp-text');
-    const p1HpBar = document.getElementById('p1-hp-bar');
-    const p2HpText = document.getElementById('p2-hp-text');
-    const p2HpBar = document.getElementById('p2-hp-bar');
+    const nextMyHp = isP1 ? l.p1Hp : l.p2Hp;
+    const nextOpHp = isP1 ? l.p2Hp : l.p1Hp;
 
-    if (isP1) {
-      if (p1HpText) p1HpText.innerText = `HP: ${l.p1Hp}/${room.player1.maxHp}`;
-      if (p1HpBar) p1HpBar.style.width = `${Math.max(0, (l.p1Hp / room.player1.maxHp) * 100)}%`;
-      if (p2HpText) p2HpText.innerText = `HP: ${l.p2Hp}/${room.player2.maxHp}`;
-      if (p2HpBar) p2HpBar.style.width = `${Math.max(0, (l.p2Hp / room.player2.maxHp) * 100)}%`;
-    } else {
-      if (p1HpText) p1HpText.innerText = `HP: ${l.p2Hp}/${room.player2.maxHp}`;
-      if (p1HpBar) p1HpBar.style.width = `${Math.max(0, (l.p2Hp / room.player2.maxHp) * 100)}%`;
-      if (p2HpText) p2HpText.innerText = `HP: ${l.p1Hp}/${room.player1.maxHp}`;
-      if (p2HpBar) p2HpBar.style.width = `${Math.max(0, (l.p1Hp / room.player1.maxHp) * 100)}%`;
+    if (nextMyHp !== curMyHp) {
+      animateHpTransition(p1HpText, p1HpBar, curMyHp, nextMyHp, myMaxHp, 650);
+      curMyHp = nextMyHp;
+    }
+    if (nextOpHp !== curOpHp) {
+      animateHpTransition(p2HpText, p2HpBar, curOpHp, nextOpHp, opMaxHp, 650);
+      curOpHp = nextOpHp;
     }
   }
 
-  // Hapus sorotan kartu setelah pertarungan selesai
+  await new Promise(r => setTimeout(r, 700));
+
   if (p1Card) p1Card.classList.remove('ring-2', 'ring-pink-500', 'scale-[1.02]');
   if (p2Card) p2Card.classList.remove('ring-2', 'ring-rose-500', 'scale-[1.02]');
 
@@ -925,7 +996,7 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
   logBox.innerHTML += `<p class="font-bold text-emerald-400 mt-2 text-sm">🎉 PEMENANG: ${winner}!</p>`;
   logBox.scrollTop = logBox.scrollHeight;
 
-  if (statusBadge) statusBadge.innerText = `Status: SELESAI`;
+  if (statusBadge) statusBadge.innerText = 'Status: SELESAI';
   if (roundText) {
     roundText.innerText = `🏁 PERTARUNGAN SELESAI (${lastTurn} ROUND)`;
     roundText.className = 'text-sm sm:text-base font-black tracking-widest uppercase text-emerald-400';
@@ -953,23 +1024,24 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
       outcomeDesc.innerHTML = `Sayang sekali waifu lawan lebih tangguh. Tingkatkan level atau gacha waifu lain untuk balas dendam!`;
     }
   }
-  
+
   const readyBtn = document.getElementById('ready-btn');
   if (readyBtn) {
     readyBtn.disabled = false;
     readyBtn.innerText = '✅ SIAP REMATCH (READY)';
     readyBtn.className = 'px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg transition';
   }
-  
+
   isRenderingLogs = false;
 }
 
 async function leaveRoom() {
   if (activeRoomId && activeRoomId.length === 24) {
-    await fetch('/api/gacha', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'leave_room', userId:currentUser.id, roomId:activeRoomId}) });
+    await fetch('/api/gacha', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'leave_room', userId: currentUser.id, roomId: activeRoomId }) });
   }
   if (pollInterval) clearInterval(pollInterval);
   activeRoomId = null;
+  isRenderingLogs = false;
   const battleRoom = document.getElementById('live-battle-room');
   const lobby = document.getElementById('pvp-lobby');
   const roundBox = document.getElementById('battle-round-indicator');
@@ -981,7 +1053,7 @@ async function leaveRoom() {
   const readyBtn = document.getElementById('ready-btn');
   if (readyBtn) {
     readyBtn.disabled = false;
-    readyBtn.innerText = '✅ SIAP (READY)';
+    readyBtn.innerText = '✅ SIAP (READY / REMATCH)';
     readyBtn.className = 'px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg transition';
   }
   fetchUserData();
