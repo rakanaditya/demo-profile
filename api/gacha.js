@@ -2,18 +2,33 @@ import { connectToDatabase } from './db.js';
 import { ObjectId } from 'mongodb';
 
 const DEFAULT_WAIFUS = [
-  { id: 'lufas', name: 'LufasMapha', title: 'Black-Winged Sovereign', element: 'Dark', rarity: 'SSR', attack: 950, defense: 820, hp: 3200, image: '/Assets/Waifu/lufas.gif', description: 'Penguasa kegelapan bersayap hitam yang legendaris dengan kekuatan mutlak.' },
-  { id: 'asuna', name: 'AsunaYuuki', title: 'The Lightning Flash', element: 'Light', rarity: 'SSR', attack: 910, defense: 700, hp: 2900, image: '/Assets/Waifu/asuna.gif', description: 'Pendekar pedang super cepat dari dunia Aincrad yang terkenal dengan tusukan kilatnya.' },
-  { id: 'zero_two', name: 'ZeroTwo', title: 'Partner Killer', element: 'Fire', rarity: 'SSR', attack: 930, defense: 680, hp: 3100, image: '/Assets/Waifu/zerotwo.gif', description: 'Gadis bertanduk dengan darah klakosaur di nadinya, petarung Franxx yang buas.' },
-  { id: 'mikhail', name: 'Mikhail', title: 'The Case Study Of Vanitas', element: 'Shadow', rarity: 'SSR', attack: 960, defense: 750, hp: 3300, image: '/Assets/Waifu/vanitasmikhail.gif', description: 'Seorang manusia biasa yang mengaku sebagai dokter spesialis vampir.' },
-  { id: 'rem', name: 'Rem', title: 'The Maid of Oni', element: 'Water', rarity: 'SR', attack: 780, defense: 750, hp: 2800, image: '/Assets/Waifu/rem.gif', description: 'Pelayan setia dari Roswaal Mansion.' },
-  { id: 'kasane', name: 'KasaneTeto', title: 'Virtual Diva', element: 'Fire', rarity: 'SR', attack: 750, defense: 700, hp: 3400, image: '/Assets/Waifu/kasane.gif', description: 'Chimera chimera berambut drill merah.' },
-  { id: 'senko', name: 'Senkosan', title: 'The Helpful Fox', element: 'Wind', rarity: 'SR', attack: 720, defense: 730, hp: 2900, image: '/Assets/Waifu/senko.gif', description: 'Rubah dewa berusia 800 tahun.' },
-  { id: 'nanahiragi', name: 'NanaHiiragi', title: 'Talentless Strategist', element: 'Dark', rarity: 'SR', attack: 760, defense: 690, hp: 2700, image: '/Assets/Waifu/nanahiragi.gif', description: 'Gadis cerdas berwajah polos.' },
-  { id: 'emilia', name: 'Emilia', title: 'Half-Elf Candidate', element: 'Ice', rarity: 'SR', attack: 770, defense: 760, hp: 3000, image: '/Assets/Waifu/emilia.gif', description: 'Kandidat calon penguasa kerajaan Lugnica.' },
-  { id: 'miku', name: 'HatsuneMiku', title: 'Virtual Diva', element: 'Wind', rarity: 'R', attack: 650, defense: 600, hp: 2400, image: '/Assets/Waifu/miku.gif', description: 'Idola virtual bersuara kian merdu.' },
-  { id: 'aqua', name: 'Aqua', title: 'Useless Goddess', element: 'Water', rarity: 'R', attack: 620, defense: 650, hp: 2600, image: '/Assets/Waifu/aqua.gif', description: 'Dewi air yang sering bikin rewel.' },
-  { id: 'megumin', name: 'Megumin', title: 'Explosion Archwizard', element: 'Fire', rarity: 'R', attack: 700, defense: 500, hp: 2100, image: '/Assets/Waifu/megumin.gif', description: 'Penyihir jenius sihir Ledakan.' }
+  // ================= SSR TIER (Base Total Power Tinggi: ~5.200 - 5.500) =================
+  // Dark & Shadow: Glass Cannon / Burst DMG tinggi, DEF sedang
+  { id: 'lufas', name: 'LufasMapha', title: 'Black-Winged Sovereign', element: 'Dark', rarity: 'SSR', attack: 1120, defense: 840, hp: 3500, image: '/Assets/Waifu/lufas.gif', description: 'Penguasa kegelapan bersayap hitam yang legendaris dengan kekuatan mutlak.' },
+  { id: 'mikhail', name: 'Mikhail', title: 'The Case Study Of Vanitas', element: 'Shadow', rarity: 'SSR', attack: 1150, defense: 780, hp: 3400, image: '/Assets/Waifu/vanitasmikhail.gif', description: 'Seorang manusia biasa yang mengaku sebagai dokter spesialis vampir.' },
+  // Light: Seimbang (All-Rounder), DEF & kecepatan tinggi
+  { id: 'asuna', name: 'AsunaYuuki', title: 'The Lightning Flash', element: 'Light', rarity: 'SSR', attack: 1050, defense: 880, hp: 3450, image: '/Assets/Waifu/asuna.gif', description: 'Pendekar pedang super cepat dari dunia Aincrad yang terkenal dengan tusukan kilatnya.' },
+  // Fire: Serangan ofensif brutal, HP tebal, DEF rendah
+  { id: 'zero_two', name: 'ZeroTwo', title: 'Partner Killer', element: 'Fire', rarity: 'SSR', attack: 1100, defense: 760, hp: 3600, image: '/Assets/Waifu/zerotwo.gif', description: 'Gadis bertanduk dengan darah klakosaur di nadinya, petarung Franxx yang buas.' },
+
+  // ================= SR TIER (Base Total Power Menengah: ~4.200 - 4.550) =================
+  // Water & Ice: Tanky / Sustain (HP & DEF tinggi, ATK stabil)
+  { id: 'rem', name: 'Rem', title: 'The Maid of Oni', element: 'Water', rarity: 'SR', attack: 840, defense: 760, hp: 2950, image: '/Assets/Waifu/rem.gif', description: 'Pelayan setia dari Roswaal Mansion.' },
+  { id: 'emilia', name: 'Emilia', title: 'Half-Elf Candidate', element: 'Ice', rarity: 'SR', attack: 820, defense: 800, hp: 3000, image: '/Assets/Waifu/emilia.gif', description: 'Kandidat calon penguasa kerajaan Lugnica.' },
+  // Fire: Bruiser (HP & ATK tinggi)
+  { id: 'kasane', name: 'KasaneTeto', title: 'Virtual Diva', element: 'Fire', rarity: 'SR', attack: 860, defense: 680, hp: 3100, image: '/Assets/Waifu/kasane.gif', description: 'Chimera chimera berambut drill merah.' },
+  // Wind: Evasive / Defensive Support (DEF tinggi)
+  { id: 'senko', name: 'Senkosan', title: 'The Helpful Fox', element: 'Wind', rarity: 'SR', attack: 780, defense: 780, hp: 2900, image: '/Assets/Waifu/senko.gif', description: 'Rubah dewa berusia 800 tahun.' },
+  // Dark: Assassin / Strategist (ATK tinggi, HP lebih tipis)
+  { id: 'nanahiragi', name: 'NanaHiiragi', title: 'Talentless Strategist', element: 'Dark', rarity: 'SR', attack: 890, defense: 660, hp: 2750, image: '/Assets/Waifu/nanahiragi.gif', description: 'Gadis cerdas berwajah polos.' },
+
+  // ================= R TIER (Base Total Power Pemula: ~3.300 - 3.600) =================
+  // Fire (Megumin): Pure Glass Cannon (ATK tertinggi di R, tapi HP & DEF paling tipis)
+  { id: 'megumin', name: 'Megumin', title: 'Explosion Archwizard', element: 'Fire', rarity: 'R', attack: 760, defense: 450, hp: 2150, image: '/Assets/Waifu/megumin.gif', description: 'Penyihir jenius sihir Ledakan.' },
+  // Water (Aqua): Dewi Tanky (HP & DEF tebal, ATK paling kecil)
+  { id: 'aqua', name: 'Aqua', title: 'Useless Goddess', element: 'Water', rarity: 'R', attack: 580, defense: 660, hp: 2600, image: '/Assets/Waifu/aqua.gif', description: 'Dewi air yang sering bikin rewel.' },
+  // Wind (Miku): Balanced Starter
+  { id: 'miku', name: 'HatsuneMiku', title: 'Virtual Diva', element: 'Wind', rarity: 'R', attack: 660, defense: 580, hp: 2400, image: '/Assets/Waifu/miku.gif', description: 'Idola virtual bersuara kian merdu.' }
 ];
 
 export default async function handler(req, res) {
