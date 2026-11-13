@@ -847,16 +847,56 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
   const logBox = document.getElementById('battle-combat-logs');
   if (!logBox || isRenderingLogs) return;
   isRenderingLogs = true;
-  
+
+  const roundBox = document.getElementById('battle-round-indicator');
+  const roundText = document.getElementById('round-indicator-text');
+  const statusBadge = document.getElementById('room-status-badge');
+  const p1Card = document.getElementById('p1-card');
+  const p2Card = document.getElementById('p2-card');
+  const banner = document.getElementById('battle-result-banner');
+
+  // Sembunyikan banner hasil sebelumnya (jika rematch) dan tampilkan indikator ronde
+  if (banner) banner.classList.add('hidden');
+  if (statusBadge) statusBadge.innerText = 'Status: Pertarungan Sedang Berlangsung! (BATTLING)';
+  if (roundBox) roundBox.classList.remove('hidden');
+  if (roundText) {
+    roundText.innerText = '⚔️ ROUND 1 — BATTLING...';
+    roundText.className = 'text-sm sm:text-base font-black tracking-widest uppercase text-amber-400 animate-pulse';
+  }
+
   logBox.innerHTML = '<p class="text-pink-400 animate-pulse">⚔️ Pertarungan Real-Time Dimulai...</p>';
-  
+
   const isP1 = room.player1.id === currentUser.id;
+  let lastTurn = 0;
 
   for (let i = 0; i < logs.length; i++) {
+    const l = logs[i];
+
+    // Perbarui tampilan Round 1, Round 2, Round 3... setiap kali ronde berganti
+    if (l.turn !== lastTurn) {
+      lastTurn = l.turn;
+      if (roundText) {
+        roundText.innerText = `🔥 ROUND ${l.turn} — BATTLING 🔥`;
+      }
+      logBox.innerHTML += `<div class="text-[11px] font-black text-amber-400 border-b border-slate-800 pb-0.5 pt-1.5 tracking-wider uppercase">— ROUND ${l.turn} —</div>`;
+    }
+
     await new Promise(r => setTimeout(r, 1200));
     playAudio('audio-pop');
-    const l = logs[i];
-    logBox.innerHTML += `<p>Turn ${l.turn}: <span class="text-pink-400">${l.attacker}</span> menyerang <span class="text-indigo-400">${l.defender}</span> sebesar <span class="text-rose-400">-${l.damage} DMG</span></p>`;
+
+    // Efek sorotan kartu saat giliran menyerang
+    const isMeAttacking = (isP1 && l.attacker === room.player1.name) || (!isP1 && l.attacker === room.player2.name);
+    if (p1Card && p2Card) {
+      if (isMeAttacking) {
+        p1Card.classList.add('ring-2', 'ring-pink-500', 'scale-[1.02]');
+        p2Card.classList.remove('ring-2', 'ring-rose-500', 'scale-[1.02]');
+      } else {
+        p2Card.classList.add('ring-2', 'ring-rose-500', 'scale-[1.02]');
+        p1Card.classList.remove('ring-2', 'ring-pink-500', 'scale-[1.02]');
+      }
+    }
+
+    logBox.innerHTML += `<p>[Round ${l.turn}] <span class="text-pink-400 font-bold">${l.attacker}</span> menyerang <span class="text-indigo-400 font-bold">${l.defender}</span> sebesar <span class="text-rose-400 font-bold">-${l.damage} DMG</span></p>`;
     logBox.scrollTop = logBox.scrollHeight;
 
     const p1HpText = document.getElementById('p1-hp-text');
@@ -877,17 +917,25 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
     }
   }
 
+  // Hapus sorotan kartu setelah pertarungan selesai
+  if (p1Card) p1Card.classList.remove('ring-2', 'ring-pink-500', 'scale-[1.02]');
+  if (p2Card) p2Card.classList.remove('ring-2', 'ring-rose-500', 'scale-[1.02]');
+
   playAudio('audio-chime');
   logBox.innerHTML += `<p class="font-bold text-emerald-400 mt-2 text-sm">🎉 PEMENANG: ${winner}!</p>`;
-  const statusBadge = document.getElementById('room-status-badge');
+  logBox.scrollTop = logBox.scrollHeight;
+
   if (statusBadge) statusBadge.innerText = `Status: SELESAI`;
+  if (roundText) {
+    roundText.innerText = `🏁 PERTARUNGAN SELESAI (${lastTurn} ROUND)`;
+    roundText.className = 'text-sm sm:text-base font-black tracking-widest uppercase text-emerald-400';
+  }
 
   const myName = isP1 ? room.player1.name : room.player2.name;
   const isWinner = winner === myName;
   const isAgainstBot = room.player2?.id === 'bot_ai';
   const rewardText = isAgainstBot ? '+200 Poin (Lawan Bot)' : '+500 Poin (Lawan User)';
 
-  const banner = document.getElementById('battle-result-banner');
   const outcomeTitle = document.getElementById('battle-outcome-title');
   const outcomeDesc = document.getElementById('battle-outcome-desc');
 
@@ -924,8 +972,10 @@ async function leaveRoom() {
   activeRoomId = null;
   const battleRoom = document.getElementById('live-battle-room');
   const lobby = document.getElementById('pvp-lobby');
+  const roundBox = document.getElementById('battle-round-indicator');
   if (battleRoom) battleRoom.classList.add('hidden');
   if (lobby) lobby.classList.remove('hidden');
+  if (roundBox) roundBox.classList.add('hidden');
   const banner = document.getElementById('battle-result-banner');
   if (banner) banner.classList.add('hidden');
   const readyBtn = document.getElementById('ready-btn');
