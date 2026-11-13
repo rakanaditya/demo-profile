@@ -397,10 +397,12 @@ export default async function handler(req, res) {
 
         let updatedRoom = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
         
-        // JIKA KEDUANYA READY, LANGSUNG HITUNG PERTARUNGAN HINGGA SELESAI
+      // JIKA KEDUANYA READY, LANGSUNG HITUNG PERTARUNGAN HINGGA SELESAI
         if (updatedRoom.player1?.ready && updatedRoom.player2?.ready) {
-          let p1Hp = updatedRoom.player1.currentHp ?? updatedRoom.player1.maxHp;
-          let p2Hp = updatedRoom.player2.currentHp ?? updatedRoom.player2.maxHp;
+          // Reset HP penuh jika ini adalah Rematch dari pertandingan yang sudah selesai
+          const isRematch = updatedRoom.status === 'finished';
+          let p1Hp = isRematch ? updatedRoom.player1.maxHp : (updatedRoom.player1.currentHp ?? updatedRoom.player1.maxHp);
+          let p2Hp = isRematch ? updatedRoom.player2.maxHp : (updatedRoom.player2.currentHp ?? updatedRoom.player2.maxHp);
           const p1W = updatedRoom.player1.waifu;
           const p2W = updatedRoom.player2.waifu;
           let logs = [];
