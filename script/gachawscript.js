@@ -341,7 +341,7 @@ function updateUIState() {
 
   const pityVal = userData.pityCounter || 0;
   const pityEl = document.getElementById('pity-counter-val');
-  if (pityEl) pityEl.innerText = `${pityVal}/200`;
+  if (pityEl) pityEl.innerText = `${pityVal}/100`;
 
   renderInventory();
   renderBattleSelection();
