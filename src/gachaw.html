@@ -34,7 +34,7 @@
 
   <!-- Header -->
   <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-40">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between flex-wrap gap-3">
       <div class="flex items-center space-x-3">
         <a href="/" class="w-10 h-10 rounded-2xl overflow-hidden flex items-center justify-center shadow-lg border border-slate-700">
           <img src="/Assets/server.png" alt="Server" class="w-full h-full object-cover">
@@ -48,22 +48,20 @@
         </div>
       </div>
       
-    <!-- Badge Poin yang Lebih Rapi & Modern -->
-<div id="user-points-badge" class="hidden items-center space-x-2.5 bg-slate-900 border border-pink-500/30 px-3.5 py-2 rounded-2xl shadow-inner">
-  <div class="w-7 h-7 rounded-xl bg-pink-500/20 flex items-center justify-center text-pink-400 text-sm shadow-sm">
-    💖
-  </div>
-  <div class="flex flex-col text-left">
-    <span class="text-[9px] uppercase tracking-wider text-slate-400 font-bold leading-none">Poin Anda</span>
-    <span id="user-points-val" class="text-xs font-mono font-extrabold text-pink-300 leading-tight mt-0.5">0</span>
-  </div>
-</div>
+      <div class="flex items-center space-x-3">
+        <!-- Badge Poin -->
+        <div id="user-points-badge" class="hidden items-center space-x-2.5 bg-slate-900 border border-pink-500/30 px-3.5 py-2 rounded-2xl shadow-inner">
+          <div class="w-7 h-7 rounded-xl bg-pink-500/20 flex items-center justify-center text-pink-400 text-sm shadow-sm">💖</div>
+          <div class="flex flex-col text-left">
+            <span class="text-[9px] uppercase tracking-wider text-slate-400 font-bold leading-none">Poin Anda</span>
+            <span id="user-points-val" class="text-xs font-mono font-extrabold text-pink-300 leading-tight mt-0.5">0</span>
+          </div>
+        </div>
 
-        
         <a href="/" class="text-xs text-slate-400 hover:text-white">← Beranda</a>
-        <button onclick="switchTab('shop')" id="tab-btn-shop" class="px-5 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800">🛒 Waifu Shop</button>
-        <button onclick="openRedeemModal()" class="px-4 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800">🎁 Redeem Code</button>
-        <a href="/gachawleaderboard" class="px-5 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800">🏆 Leaderboard</a>
+        <button onclick="switchTab('shop')" id="tab-btn-shop" class="px-4 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800">🛒 Shop</button>
+        <button onclick="openRedeemModal()" class="px-4 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800">🎁 Redeem</button>
+        <a href="/gachawleaderboard" class="px-4 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800">🏆 Leaderboard</a>
         
         <div id="nav-user-badge" class="hidden flex items-center space-x-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full">
           <img id="nav-user-avatar" src="" alt="Avatar" class="w-6 h-6 rounded-full object-cover">
@@ -97,20 +95,19 @@
         <button onclick="switchTab('battle')" id="tab-btn-battle" class="px-5 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800">⚔️ PvP Arena Real-Time</button>
       </div>
 
-
-<!-- Widget Live Online Users -->
-<div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3 shadow-lg">
-  <div class="flex items-center justify-between">
-    <div class="flex items-center space-x-2">
-      <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-      <h4 class="font-bold text-xs text-white uppercase tracking-wider">User Sedang Online (<span id="online-count">0</span>)</h4>
-    </div>
-    <span class="text-[10px] text-slate-500 font-mono">Real-time</span>
-  </div>
-  <div id="online-users-list" class="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
-    <p class="text-[11px] text-slate-500">Memuat user online...</p>
-  </div>
-</div>
+      <!-- Widget Live Online Users -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3 shadow-lg">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <h4 class="font-bold text-xs text-white uppercase tracking-wider">User Sedang Online (<span id="online-count">0</span>)</h4>
+          </div>
+          <span class="text-[10px] text-slate-500 font-mono">Real-time</span>
+        </div>
+        <div id="online-users-list" class="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+          <p class="text-[11px] text-slate-500">Memuat user online...</p>
+        </div>
+      </div>
       
       <!-- SECTION 1: GACHA -->
       <div id="tab-gacha" class="space-y-6">
@@ -120,7 +117,6 @@
             <span class="text-[11px] bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-xl text-pink-400 font-mono">💡 Shortcut: Tekan <kbd class="bg-slate-800 px-1.5 py-0.5 rounded text-white font-bold">R</kbd> untuk Gacha</span>
           </div>
           
-         <!-- Kotak Informasi Peluang Rarity -->
           <div class="max-w-md mx-auto grid grid-cols-4 gap-2 bg-slate-950/80 p-3 rounded-2xl border border-slate-800 text-center items-center">
             <div class="space-y-1">
               <span class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded font-bold">SSR</span>
@@ -157,36 +153,20 @@
       <!-- SECTION 2: DAILY -->
       <div id="tab-daily" class="hidden space-y-6">
         <div class="bg-gradient-to-b from-slate-900 via-slate-900/90 to-slate-950 border border-pink-500/30 rounded-3xl p-6 sm:p-10 space-y-8 shadow-2xl relative overflow-hidden">
-          
-          <div class="absolute -top-24 -right-24 w-72 h-72 bg-pink-600/10 rounded-full blur-3xl pointer-events-none"></div>
-          <div class="absolute -bottom-24 -left-24 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
-
           <div class="text-center space-y-3 relative z-10">
-            <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-pink-600 to-rose-500 text-white shadow-lg shadow-pink-600/30 text-2xl mb-1">
+            <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-pink-600 to-rose-500 text-white shadow-lg text-2xl mb-1">
               <i class="fa-solid fa-calendar-check"></i>
             </div>
             <h3 class="text-3xl font-black text-white tracking-tight">Daily Login Reward</h3>
-            <p class="text-xs sm:text-sm text-slate-400 max-w-lg mx-auto">
-              Klaim poin gratis setiap hari secara beruntun hingga 7 hari untuk menambah modal gacha!
-            </p>
-            
-            <div id="daily-countdown-banner" class="hidden inline-flex items-center space-x-2 bg-slate-950/90 border border-pink-500/40 px-4 py-2 rounded-2xl shadow-inner mt-2">
-              <i class="fa-regular fa-clock text-pink-400 animate-pulse"></i>
-              <span class="text-xs text-slate-300">Reset berikutnya dalam:</span>
-              <span id="daily-timer-val" class="text-xs font-mono font-bold text-pink-400">--:--:--</span>
-            </div>
+            <p class="text-xs sm:text-sm text-slate-400 max-w-lg mx-auto">Klaim poin gratis setiap hari secara beruntun hingga 7 hari!</p>
           </div>
-
           <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-4 relative z-10" id="daily-streak-grid"></div>
-
           <div class="text-center space-y-4 pt-2 relative z-10">
             <div id="daily-msg" class="text-xs font-bold text-pink-400 min-h-[20px]"></div>
-            <button onclick="claimDailyReward()" id="claim-daily-btn" class="px-10 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm rounded-2xl shadow-xl shadow-emerald-900/30 transition transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center space-x-2 mx-auto">
-              <i class="fa-solid fa-gift text-base"></i>
-              <span>Klaim Reward Hari Ini</span>
+            <button onclick="claimDailyReward()" id="claim-daily-btn" class="px-10 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm rounded-2xl shadow-xl transition flex items-center justify-center space-x-2 mx-auto">
+              <i class="fa-solid fa-gift text-base"></i><span>Klaim Reward Hari Ini</span>
             </button>
           </div>
-
         </div>
       </div>
 
@@ -204,7 +184,13 @@
         <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 space-y-6 shadow-xl">
           <div class="text-center space-y-2">
             <h3 class="text-2xl font-black text-white">⚔️ PvP Arena Real-Time</h3>
-            <p class="text-xs text-slate-400">Pilih waifu andalanmu, buat room PvP atau lawan Bot, tekan tombol Ready, dan nikmati animasi pertarungan real-time!</p>
+            <p class="text-xs text-slate-400">Pilih waifu andalanmu, buat room PvP atau lawan Bot, tekan Ready, dan menangkan poin (+200 vs Bot, +500 vs User)!</p>
+          </div>
+
+          <!-- BANNER HASIL PERTANDINGAN (MENANG / KALAH) -->
+          <div id="battle-result-banner" class="hidden p-6 rounded-2xl text-center space-y-2 border shadow-2xl">
+            <h4 id="battle-outcome-title" class="text-2xl font-black uppercase tracking-wider">HASIL PERTANDINGAN</h4>
+            <p id="battle-outcome-desc" class="text-xs sm:text-sm font-semibold"></p>
           </div>
 
           <div id="pvp-lobby" class="space-y-4 bg-slate-950 p-6 rounded-2xl border border-slate-800">
@@ -218,8 +204,8 @@
               <p class="text-xs text-slate-500">Memuat room...</p>
             </div>
             <div class="pt-4 border-t border-slate-800 flex flex-wrap gap-3">
-              <button onclick="createPvPRoom(false)" id="create-room-btn" disabled class="px-6 py-2.5 bg-pink-600 hover:bg-pink-500 disabled:bg-slate-800 text-white font-bold text-xs rounded-xl transition">🎮 Buat Room PvP User</button>
-              <button onclick="createPvPRoom(true)" id="create-bot-room-btn" disabled class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 text-white font-bold text-xs rounded-xl transition">🤖 Lawan Bot Instan</button>
+              <button onclick="createPvPRoom(false)" id="create-room-btn" disabled class="px-6 py-2.5 bg-pink-600 hover:bg-pink-500 disabled:bg-slate-800 text-white font-bold text-xs rounded-xl transition">🎮 Buat Room PvP User (+500 Poin)</button>
+              <button onclick="createPvPRoom(true)" id="create-bot-room-btn" disabled class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 text-white font-bold text-xs rounded-xl transition">🤖 Lawan Bot Instan (+200 Poin)</button>
             </div>
           </div>
 
@@ -254,7 +240,7 @@
             </div>
 
             <div id="ready-action-box" class="text-center pt-2">
-              <button onclick="setPlayerReady()" id="ready-btn" class="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg transition">✅ SIAP (READY)</button>
+              <button onclick="setPlayerReady()" id="ready-btn" class="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg transition">✅ SIAP (READY / REMATCH)</button>
             </div>
 
             <div id="battle-combat-logs" class="bg-slate-900 p-4 rounded-xl border border-slate-800 h-40 overflow-y-auto font-mono text-xs space-y-1 text-slate-300">
@@ -268,7 +254,6 @@
               <p class="text-slate-500 text-xs col-span-4 text-center">Inventory kosong.</p>
             </div>
           </div>
-
         </div>
       </div>
 
@@ -356,7 +341,6 @@
     <p>Rakan Aditya Community &bull; Real-Time PvP Arena</p>
   </footer>
 
-  <!-- Memuat Script Eksternal -->
   <script src="/script/gachawscript.js"></script>
 </body>
 </html>
