@@ -625,50 +625,68 @@ async function setPlayerReady() {
 }
 
 function setupRoomUI(room) {
+  if (!room) return;
   const isP1 = room.player1.id === currentUser.id;
   const me = isP1 ? room.player1 : room.player2;
   const op = isP1 ? room.player2 : room.player1;
   const isBotRoom = room.player2 && room.player2.id === 'bot_ai';
 
-  document.getElementById('p1-name').innerText = me ? me.name : 'Anda';
-  document.getElementById('p1-img').src = me ? me.waifu.image : '';
-  document.getElementById('p1-hp-text').innerText = me ? `HP: ${me.currentHp}/${me.maxHp}` : '';
-  document.getElementById('p1-hp-bar').style.width = `${Math.max(0, (me.currentHp / me.maxHp) * 100)}%`;
-  document.getElementById('p1-status-ready').innerText = me && me.ready ? "READY ✓" : "MENUNGGU READY...";
-  document.getElementById('p1-status-ready').className = me && me.ready ? "text-emerald-400 font-bold" : "text-amber-400 font-bold";
+  const setElText = (id, text) => { const el = document.getElementById(id); if (el) el.innerText = text; };
+  const setElAttr = (id, attr, val) => { const el = document.getElementById(id); if (el) el[attr] = val; };
+
+  setElText('p1-name', me ? me.name : 'Anda');
+  setElAttr('p1-img', 'src', me && me.waifu ? me.waifu.image : '');
+  setElText('p1-hp-text', me ? `HP: ${me.currentHp}/${me.maxHp}` : '');
+  
+  const p1Bar = document.getElementById('p1-hp-bar');
+  if (p1Bar && me) p1Bar.style.width = `${Math.max(0, (me.currentHp / me.maxHp) * 100)}%`;
+
+  const p1Ready = document.getElementById('p1-status-ready');
+  if (p1Ready) {
+    p1Ready.innerText = me && me.ready ? "READY ✓" : "MENUNGGU READY...";
+    p1Ready.className = me && me.ready ? "text-emerald-400 font-bold" : "text-amber-400 font-bold";
+  }
 
   if (op) {
-    document.getElementById('p2-name').innerText = op.name;
-    document.getElementById('p2-img').src = op.waifu.image;
-    document.getElementById('p2-hp-text').innerText = `HP: ${op.currentHp}/${op.maxHp}`;
-    document.getElementById('p2-hp-bar').style.width = `${Math.max(0, (op.currentHp / op.maxHp) * 100)}%`;
+    setElText('p2-name', op.name);
+    setElAttr('p2-img', 'src', op.waifu ? op.waifu.image : '');
+    setElText('p2-hp-text', `HP: ${op.currentHp}/${op.maxHp}`);
     
-    // Bot otomatis ready, sedangkan user lain menunggu konfirmasi ready manual
-    if (isBotRoom) {
-      document.getElementById('p2-status-ready').innerText = "READY ✓ (BOT)";
-      document.getElementById('p2-status-ready').className = "text-emerald-400 font-bold";
-    } else {
-      document.getElementById('p2-status-ready').innerText = op.ready ? "READY ✓" : "MENUNGGU READY...";
-      document.getElementById('p2-status-ready').className = op.ready ? "text-emerald-400 font-bold" : "text-amber-400 font-bold";
+    const p2Bar = document.getElementById('p2-hp-bar');
+    if (p2Bar) p2Bar.style.width = `${Math.max(0, (op.currentHp / op.maxHp) * 100)}%`;
+    
+    const p2Ready = document.getElementById('p2-status-ready');
+    if (p2Ready) {
+      if (isBotRoom) {
+        p2Ready.innerText = "READY ✓ (BOT)";
+        p2Ready.className = "text-emerald-400 font-bold";
+      } else {
+        p2Ready.innerText = op.ready ? "READY ✓" : "MENUNGGU READY...";
+        p2Ready.className = op.ready ? "text-emerald-400 font-bold" : "text-amber-400 font-bold";
+      }
     }
     
     const banner = document.getElementById('battle-result-banner');
+    const statusBadge = document.getElementById('room-status-badge');
 
     if (room.status === 'finished') {
-      document.getElementById('room-status-badge').innerText = `Status: Pertarungan Selesai! Pemenang: ${room.winner}. Tekan Ready untuk Rematch!`;
+      if (statusBadge) statusBadge.innerText = `Status: Pertarungan Selesai! Pemenang: ${room.winner}. Tekan Ready untuk Rematch!`;
       const readyBtn = document.getElementById('ready-btn');
-      readyBtn.disabled = false;
-      readyBtn.innerText = '✅ SIAP REMATCH (READY)';
-      readyBtn.className = 'px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg transition';
+      if (readyBtn) {
+        readyBtn.disabled = false;
+        readyBtn.innerText = '✅ SIAP REMATCH (READY)';
+        readyBtn.className = 'px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg transition';
+      }
     } else if (room.status === 'battling') {
-      document.getElementById('room-status-badge').innerText = "Status: Pertarungan Sedang Berlangsung!";
+      if (statusBadge) statusBadge.innerText = "Status: Pertarungan Sedang Berlangsung!";
       if (banner) banner.classList.add('hidden');
     } else {
-      document.getElementById('room-status-badge').innerText = isBotRoom ? "Status: Lawan Bot Siap! Silakan tekan Ready." : "Status: Lawan Bergabung! Silakan tekan Ready.";
+      if (statusBadge) statusBadge.innerText = isBotRoom ? "Status: Lawan Bot Siap! Silakan tekan Ready." : "Status: Lawan Bergabung! Silakan tekan Ready.";
       if (banner) banner.classList.add('hidden');
     }
   } else {
-    document.getElementById('room-status-badge').innerText = "Status: Menunggu Lawan Bergabung ke Room...";
+    const statusBadge = document.getElementById('room-status-badge');
+    if (statusBadge) statusBadge.innerText = "Status: Menunggu Lawan Bergabung ke Room...";
   }
 }
 
