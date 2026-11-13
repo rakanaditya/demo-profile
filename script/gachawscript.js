@@ -354,7 +354,7 @@ function checkDailyClaimStatus() {
     const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
     const pad = (n) => String(n).padStart(2, '0');
-    document.getElementById('daily-timer-val').innerText = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+    document.getElementById('daily-timer-val').innerText = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
     document.getElementById('daily-countdown-banner').classList.remove('hidden');
     document.getElementById('daily-msg').innerText = 'Reward harian sudah diambil hari ini. Coba lagi besok!';
 
