@@ -215,8 +215,15 @@
               <button onclick="leaveRoom()" class="text-xs text-rose-400 hover:underline">Keluar Room</button>
             </div>
 
+            <!-- INDIKATOR ROUND BATTLING -->
+            <div id="battle-round-indicator" class="hidden text-center py-2.5 px-6 bg-gradient-to-r from-indigo-950/80 via-pink-950/80 to-indigo-950/80 border border-pink-500/40 rounded-xl shadow-lg">
+              <span id="round-indicator-text" class="text-sm sm:text-base font-black tracking-widest uppercase text-amber-400 animate-pulse">
+                ⚔️ ROUND 1 — BATTLING...
+              </span>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-              <div class="bg-slate-900 p-4 rounded-2xl border border-indigo-500/40 space-y-3 text-center">
+              <div id="p1-card" class="bg-slate-900 p-4 rounded-2xl border border-indigo-500/40 space-y-3 text-center transition-all duration-300">
                 <span class="text-xs bg-indigo-500/20 text-indigo-300 px-2.5 py-1 rounded-full font-bold" id="p1-name">Player 1</span>
                 <img id="p1-img" src="" class="w-24 h-24 mx-auto rounded-xl object-cover border border-slate-700">
                 <div class="space-y-1">
@@ -227,7 +234,7 @@
                 </div>
               </div>
 
-              <div class="bg-slate-900 p-4 rounded-2xl border border-rose-500/40 space-y-3 text-center">
+              <div id="p2-card" class="bg-slate-900 p-4 rounded-2xl border border-rose-500/40 space-y-3 text-center transition-all duration-300">
                 <span class="text-xs bg-rose-500/20 text-rose-300 px-2.5 py-1 rounded-full font-bold" id="p2-name">Menunggu Lawan...</span>
                 <img id="p2-img" src="https://cdn.discordapp.com/embed/avatars/0.png" class="w-24 h-24 mx-auto rounded-xl object-cover border border-slate-700">
                 <div class="space-y-1">
