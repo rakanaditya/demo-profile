@@ -621,6 +621,8 @@ function setupRoomUI(room) {
     document.getElementById('p2-status-ready').innerText = op.ready ? "READY ✓" : "MENUNGGU READY...";
     document.getElementById('p2-status-ready').className = op.ready ? "text-emerald-400 font-bold" : "text-amber-400 font-bold";
     
+    const banner = document.getElementById('battle-result-banner');
+
     if (room.status === 'finished') {
       document.getElementById('room-status-badge').innerText = `Status: Pertarungan Selesai! Pemenang: ${room.winner}. Tekan Ready untuk Rematch!`;
       const readyBtn = document.getElementById('ready-btn');
@@ -629,8 +631,11 @@ function setupRoomUI(room) {
       readyBtn.className = 'px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg transition';
     } else if (room.status === 'battling') {
       document.getElementById('room-status-badge').innerText = "Status: Pertarungan Sedang Berlangsung!";
+      // Sembunyikan banner hasil sebelumnya saat rematch dimulai
+      if (banner) banner.classList.add('hidden');
     } else {
       document.getElementById('room-status-badge').innerText = "Status: Lawan Bergabung! Silakan tekan Ready.";
+      if (banner) banner.classList.add('hidden');
     }
   } else {
     document.getElementById('room-status-badge').innerText = "Status: Menunggu Lawan Bergabung ke Room...";
