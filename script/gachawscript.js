@@ -219,8 +219,6 @@ async function initAuthAndData() {
     document.getElementById('nav-user-avatar').src = getAvatarUrl(currentUser);
     
     await fetchUserData();
-    
-    // Aktifkan tracker online secara real-time
     startOnlineTracker();
   } else {
     document.getElementById('login-prompt').classList.remove('hidden');
@@ -241,53 +239,43 @@ async function fetchUserData() {
   } catch(e) {}
 }
 
-
 function formatNumber(num) {
   if (num === undefined || num === null) return '0';
-  
-  // Skala dari yang terbesar ke terkecil
   const suffixes = [
-    { value: 1e33, symbol: 'Dc' }, // Decillion
-    { value: 1e30, symbol: 'No' }, // Nonillion
-    { value: 1e27, symbol: 'Oc' }, // Octillion
-    { value: 1e24, symbol: 'Sp' }, // Septillion
-    { value: 1e21, symbol: 'Sx' }, // Sextillion
-    { value: 1e18, symbol: 'Qi' }, // Quintillion
-    { value: 1e15, symbol: 'Qa' }, // Quadrillion
-    { value: 1e12, symbol: 'T'  }, // Trillion / Triliun
-    { value: 1e9,  symbol: 'B'  }, // Billion / Miliar
-    { value: 1e6,  symbol: 'M'  }, // Million / Juta
-    { value: 1e3,  symbol: 'k'  }  // Thousand / Ribu
+    { value: 1e33, symbol: 'Dc' },
+    { value: 1e30, symbol: 'No' },
+    { value: 1e27, symbol: 'Oc' },
+    { value: 1e24, symbol: 'Sp' },
+    { value: 1e21, symbol: 'Sx' },
+    { value: 1e18, symbol: 'Qi' },
+    { value: 1e15, symbol: 'Qa' },
+    { value: 1e12, symbol: 'T'  },
+    { value: 1e9,  symbol: 'B'  },
+    { value: 1e6,  symbol: 'M'  },
+    { value: 1e3,  symbol: 'k'  }
   ];
-
   for (let i = 0; i < suffixes.length; i++) {
     if (num >= suffixes[i].value) {
       return (num / suffixes[i].value).toFixed(1).replace(/\.0$/, '') + suffixes[i].symbol;
     }
   }
-
   return num.toString();
 }
 
-
 function updateUIState() {
   if (!userData) return;
-  
-  // Mengubah angka poin menjadi format 1k, 1m, 1b, 1t, dst.
   const formattedPoints = formatNumber(userData.points || 0);
   const pointsEl = document.getElementById('user-points-val');
   if (pointsEl) {
     pointsEl.innerText = `${formattedPoints} Poin`;
   }
 
-  // Update jumlah inventory
   const invCount = userData.inventory ? userData.inventory.length : 0;
   const invCountEl = document.getElementById('inv-count');
   const subInvCountEl = document.getElementById('inventory-sub-count');
   if (invCountEl) invCountEl.innerText = invCount;
   if (subInvCountEl) subInvCountEl.innerText = invCount;
   
-  // Update Pity Counter
   const pityVal = userData.pityCounter || 0;
   const pityEl = document.getElementById('pity-counter-val');
   if (pityEl) pityEl.innerText = `${pityVal}/200`;
@@ -671,7 +659,6 @@ function startPollingRoom() {
   }, 2000);
 }
 
-// Live Online Users Tracker
 function startOnlineTracker() {
   if (!currentUser || !currentUser.id) return;
   sendHeartbeat();
@@ -759,6 +746,31 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
   playAudio('audio-chime');
   logBox.innerHTML += `<p class="font-bold text-emerald-400 mt-2 text-sm">🎉 PEMENANG: ${winner}!</p>`;
   document.getElementById('room-status-badge').innerText = `Status: Pertarungan Selesai! Pemenang: ${winner}. Tekan Ready untuk Rematch!`;
+
+  // Tampilkan Banner Hasil Kemenangan/Kekalahan dengan Reward Poin
+  const myName = isP1 ? room.player1.name : room.player2.name;
+  const isWinner = winner === myName;
+  const isAgainstBot = room.player2?.id === 'bot_ai';
+  const rewardText = isAgainstBot ? '+200 Poin (Lawan Bot)' : '+500 Poin (Lawan User)';
+
+  const banner = document.getElementById('battle-result-banner');
+  const outcomeTitle = document.getElementById('battle-outcome-title');
+  const outcomeDesc = document.getElementById('battle-outcome-desc');
+
+  if (banner && outcomeTitle && outcomeDesc) {
+    banner.classList.remove('hidden');
+    if (isWinner) {
+      banner.className = 'p-6 rounded-2xl text-center space-y-2 border bg-emerald-950/40 border-emerald-500/50 shadow-2xl';
+      outcomeTitle.innerText = '🏆 KEMENANGAN BERHASIL DIRAIH!';
+      outcomeTitle.className = 'text-2xl font-black uppercase tracking-wider text-emerald-400';
+      outcomeDesc.innerHTML = `Selamat, waifu andalanmu menang! Kamu mendapatkan reward <span class="font-mono font-bold text-pink-400">${rewardText}</span>.`;
+    } else {
+      banner.className = 'p-6 rounded-2xl text-center space-y-2 border bg-rose-950/40 border-rose-500/50 shadow-2xl';
+      outcomeTitle.innerText = '💀 ANDA KALAH DALAM PERTEMPURAN';
+      outcomeTitle.className = 'text-2xl font-black uppercase tracking-wider text-rose-400';
+      outcomeDesc.innerHTML = `Sayang sekali waifu lawan lebih tangguh. Tingkatkan level atau gacha waifu lain untuk balas dendam!`;
+    }
+  }
   
   const readyBtn = document.getElementById('ready-btn');
   readyBtn.disabled = false;
@@ -791,6 +803,8 @@ async function leaveRoom() {
   activeRoomId = null;
   document.getElementById('live-battle-room').classList.add('hidden');
   document.getElementById('pvp-lobby').classList.remove('hidden');
+  const banner = document.getElementById('battle-result-banner');
+  if (banner) banner.classList.add('hidden');
   document.getElementById('ready-btn').disabled = false;
   document.getElementById('ready-btn').innerText = '✅ SIAP (READY)';
   document.getElementById('ready-btn').className = 'px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg transition';
