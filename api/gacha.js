@@ -146,6 +146,22 @@ export default async function handler(req, res) {
       });
     }
 
+    // WIDGET SPECTATOR LIVE PVP ROOMS
+    if (getAction === 'pvp_spectate') {
+      try {
+        const rooms = await pvpRoomsCollection
+          .find({})
+          .sort({ createdAt: -1 })
+          .limit(20)
+          .toArray();
+
+        return res.status(200).json({ success: true, rooms });
+      } catch (err) {
+        console.error('PVP SPECTATE ERROR:', err);
+        return res.status(500).json({ success: false, error: err.message });
+      }
+    }
+
     const allWaifus = await waifusCollection.find({}).toArray();
     return res.status(200).json({ success: true, waifus: allWaifus });
   }
@@ -412,7 +428,7 @@ export default async function handler(req, res) {
 
         let updatedRoom = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
         
-      // JIKA KEDUANYA READY, LANGSUNG HITUNG PERTARUNGAN HINGGA SELESAI
+        // JIKA KEDUANYA READY, LANGSUNG HITUNG PERTARUNGAN HINGGA SELESAI
         if (updatedRoom.player1?.ready && updatedRoom.player2?.ready) {
           // Reset HP penuh jika ini adalah Rematch dari pertandingan yang sudah selesai
           const isRematch = updatedRoom.status === 'finished';
@@ -442,9 +458,9 @@ export default async function handler(req, res) {
             logs, 
             winner, 
             'player1.currentHp': p1Hp, 
-            'player2.currentHp': p2Hp,
-            'player1.ready': false,
-            'player2.ready': false
+            'player2.currentHp': p2Hp, 
+            'player1.ready': false, 
+            'player2.ready': false 
           };
 
           await pvpRoomsCollection.updateOne({ _id: new ObjectId(roomId) }, { $set: updateData });
