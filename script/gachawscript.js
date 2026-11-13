@@ -692,8 +692,8 @@ function setupRoomUI(room) {
 
   const p1Ready = document.getElementById('p1-status-ready');
   if (p1Ready) {
-    p1Ready.innerText = me && me.ready ? "READY ✓" : "MENUNGGU READY...";
-    p1Ready.className = me && me.ready ? "text-emerald-400 font-bold" : "text-amber-400 font-bold";
+    p1Ready.innerText = me && me.ready ? "READY ✓" : "SELESAI";
+    p1Ready.className = me && me.ready ? "text-emerald-400 font-bold" : "text-slate-400 font-bold";
   }
 
   if (op) {
@@ -710,8 +710,8 @@ function setupRoomUI(room) {
         p2Ready.innerText = "READY ✓ (BOT)";
         p2Ready.className = "text-emerald-400 font-bold";
       } else {
-        p2Ready.innerText = op.ready ? "READY ✓" : "MENUNGGU READY...";
-        p2Ready.className = op.ready ? "text-emerald-400 font-bold" : "text-amber-400 font-bold";
+        p2Ready.innerText = op.ready ? "READY ✓" : "SELESAI";
+        p2Ready.className = op.ready ? "text-emerald-400 font-bold" : "text-slate-400 font-bold";
       }
     }
     
@@ -719,7 +719,8 @@ function setupRoomUI(room) {
     const statusBadge = document.getElementById('room-status-badge');
 
     if (room.status === 'finished') {
-      if (statusBadge) statusBadge.innerText = `Status: Pertarungan Selesai! Pemenang: ${room.winner}. Tekan Ready untuk Rematch!`;
+      // Mengubah tulisan kuning status menjadi "SELESAI" saja sesuai permintaan
+      if (statusBadge) statusBadge.innerText = `Status: SELESAI`;
       const readyBtn = document.getElementById('ready-btn');
       if (readyBtn) {
         readyBtn.disabled = false;
@@ -738,6 +739,8 @@ function setupRoomUI(room) {
     if (statusBadge) statusBadge.innerText = "Status: Menunggu Lawan Bergabung ke Room...";
   }
 }
+
+
 
 async function checkRoomAndTriggerBattle() {
   if (!activeRoomId || typeof activeRoomId !== 'string' || activeRoomId.length !== 24) return;
@@ -832,9 +835,15 @@ function renderOnlineUsers(users) {
   });
 }
 
+
+// Variabel pengaman agar animasi log tidak terpanggil dua kali bersamaan
+let isRenderingLogs = false;
+
 async function renderBattleAnimationAndLogs(logs, winner, room) {
   const logBox = document.getElementById('battle-combat-logs');
-  if (!logBox) return;
+  if (!logBox || isRenderingLogs) return;
+  isRenderingLogs = true;
+  
   logBox.innerHTML = '<p class="text-pink-400 animate-pulse">⚔️ Pertarungan Real-Time Dimulai...</p>';
   
   const isP1 = room.player1.id === currentUser.id;
@@ -867,7 +876,7 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
   playAudio('audio-chime');
   logBox.innerHTML += `<p class="font-bold text-emerald-400 mt-2 text-sm">🎉 PEMENANG: ${winner}!</p>`;
   const statusBadge = document.getElementById('room-status-badge');
-  if (statusBadge) statusBadge.innerText = `Status: Pertarungan Selesai! Pemenang: ${winner}. Tekan Ready untuk Rematch!`;
+  if (statusBadge) statusBadge.innerText = `Status: SELESAI`;
 
   const myName = isP1 ? room.player1.name : room.player2.name;
   const isWinner = winner === myName;
@@ -899,6 +908,8 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
     readyBtn.innerText = '✅ SIAP REMATCH (READY)';
     readyBtn.className = 'px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg transition';
   }
+  
+  isRenderingLogs = false;
 }
 
 async function leaveRoom() {
