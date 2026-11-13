@@ -599,7 +599,7 @@ async function setPlayerReady() {
     document.getElementById('ready-btn').innerText = '✓ READY';
     document.getElementById('ready-btn').className = 'px-8 py-3 bg-slate-800 text-slate-400 font-bold text-sm rounded-xl cursor-not-allowed';
     
-    // Langsung picu pengecekan room dan battle agar tidak stuck
+    // Langsung picu pengecekan agar battle langsung jalan tanpa jeda
     checkRoomAndTriggerBattle();
   } else {
     alert(data.error || 'Gagal mengubah status ready.');
@@ -625,7 +625,7 @@ function setupRoomUI(room) {
     document.getElementById('p2-hp-text').innerText = `HP: ${op.currentHp}/${op.maxHp}`;
     document.getElementById('p2-hp-bar').style.width = `${Math.max(0, (op.currentHp / op.maxHp) * 100)}%`;
     
-    // Status Ready dipisah: Bot otomatis ready, User lain menunggu konfirmasi ready
+    // Bot otomatis ready, sedangkan user lain menunggu konfirmasi ready manual
     if (isBotRoom) {
       document.getElementById('p2-status-ready').innerText = "READY ✓ (BOT)";
       document.getElementById('p2-status-ready').className = "text-emerald-400 font-bold";
@@ -759,7 +759,7 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
 
     if (isP1) {
       document.getElementById('p1-hp-text').innerText = `HP: ${l.p1Hp}/${room.player1.maxHp}`;
-      document.getElementById('p1-hp-bar'].style.width = `${Math.max(0, (l.p1Hp / room.player1.maxHp) * 100)}%`;
+      document.getElementById('p1-hp-bar').style.width = `${Math.max(0, (l.p1Hp / room.player1.maxHp) * 100)}%`;
       document.getElementById('p2-hp-text').innerText = `HP: ${l.p2Hp}/${room.player2.maxHp}`;
       document.getElementById('p2-hp-bar').style.width = `${Math.max(0, (l.p2Hp / room.player2.maxHp) * 100)}%`;
     } else {
