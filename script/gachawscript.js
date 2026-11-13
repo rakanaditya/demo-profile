@@ -598,6 +598,11 @@ async function setPlayerReady() {
     document.getElementById('ready-btn').disabled = true;
     document.getElementById('ready-btn').innerText = '✓ READY';
     document.getElementById('ready-btn').className = 'px-8 py-3 bg-slate-800 text-slate-400 font-bold text-sm rounded-xl cursor-not-allowed';
+    
+    // Langsung picu pengecekan room dan battle agar tidak stuck
+    checkRoomAndTriggerBattle();
+  } else {
+    alert(data.error || 'Gagal mengubah status ready.');
   }
 }
 
@@ -605,6 +610,7 @@ function setupRoomUI(room) {
   const isP1 = room.player1.id === currentUser.id;
   const me = isP1 ? room.player1 : room.player2;
   const op = isP1 ? room.player2 : room.player1;
+  const isBotRoom = room.player2 && room.player2.id === 'bot_ai';
 
   document.getElementById('p1-name').innerText = me ? me.name : 'Anda';
   document.getElementById('p1-img').src = me ? me.waifu.image : '';
@@ -618,8 +624,15 @@ function setupRoomUI(room) {
     document.getElementById('p2-img').src = op.waifu.image;
     document.getElementById('p2-hp-text').innerText = `HP: ${op.currentHp}/${op.maxHp}`;
     document.getElementById('p2-hp-bar').style.width = `${Math.max(0, (op.currentHp / op.maxHp) * 100)}%`;
-    document.getElementById('p2-status-ready').innerText = op.ready ? "READY ✓" : "MENUNGGU READY...";
-    document.getElementById('p2-status-ready').className = op.ready ? "text-emerald-400 font-bold" : "text-amber-400 font-bold";
+    
+    // Status Ready dipisah: Bot otomatis ready, User lain menunggu konfirmasi ready
+    if (isBotRoom) {
+      document.getElementById('p2-status-ready').innerText = "READY ✓ (BOT)";
+      document.getElementById('p2-status-ready').className = "text-emerald-400 font-bold";
+    } else {
+      document.getElementById('p2-status-ready').innerText = op.ready ? "READY ✓" : "MENUNGGU READY...";
+      document.getElementById('p2-status-ready').className = op.ready ? "text-emerald-400 font-bold" : "text-amber-400 font-bold";
+    }
     
     const banner = document.getElementById('battle-result-banner');
 
@@ -631,10 +644,9 @@ function setupRoomUI(room) {
       readyBtn.className = 'px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg transition';
     } else if (room.status === 'battling') {
       document.getElementById('room-status-badge').innerText = "Status: Pertarungan Sedang Berlangsung!";
-      // Sembunyikan banner hasil sebelumnya saat rematch dimulai
       if (banner) banner.classList.add('hidden');
     } else {
-      document.getElementById('room-status-badge').innerText = "Status: Lawan Bergabung! Silakan tekan Ready.";
+      document.getElementById('room-status-badge').innerText = isBotRoom ? "Status: Lawan Bot Siap! Silakan tekan Ready." : "Status: Lawan Bergabung! Silakan tekan Ready.";
       if (banner) banner.classList.add('hidden');
     }
   } else {
@@ -642,25 +654,35 @@ function setupRoomUI(room) {
   }
 }
 
+async function checkRoomAndTriggerBattle() {
+  if (!activeRoomId) return;
+  const res = await fetch(`/api/gacha?action=check_room&roomId=${activeRoomId}`);
+  const data = await res.json();
+  if (data.success && data.room) {
+    const room = data.room;
+    setupRoomUI(room);
+
+    // Jika room berstatus battling dan log masih kosong, langsung eksekusi kalkulasi battle
+    if (room.status === 'battling' && (!room.logs || room.logs.length === 0)) {
+      const turnRes = await fetch('/api/gacha', { 
+        method: 'POST', 
+        headers: {'Content-Type': 'application/json'}, 
+        body: JSON.stringify({ action: 'get_pvp_status', userId: currentUser.id, roomId: activeRoomId }) 
+      });
+      const turnData = await turnRes.json();
+      if (turnData.success && turnData.room.status === 'finished') {
+        renderBattleAnimationAndLogs(turnData.room.logs, turnData.room.winner, turnData.room);
+        fetchUserData();
+      }
+    }
+  }
+}
+
 function startPollingRoom() {
   if (pollInterval) clearInterval(pollInterval);
   pollInterval = setInterval(async () => {
     if (!activeRoomId) return;
-    const res = await fetch(`/api/gacha?action=check_room&roomId=${activeRoomId}`);
-    const data = await res.json();
-    if (data.success && data.room) {
-      const room = data.room;
-      setupRoomUI(room);
-
-      if (room.status === 'battling' && (!room.logs || room.logs.length === 0)) {
-        const turnRes = await fetch('/api/gacha', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'get_pvp_status', userId:currentUser.id, roomId:activeRoomId}) });
-        const turnData = await turnRes.json();
-        if (turnData.success && turnData.room.status === 'finished') {
-          renderBattleAnimationAndLogs(turnData.room.logs, turnData.room.winner, turnData.room);
-          fetchUserData();
-        }
-      }
-    }
+    await checkRoomAndTriggerBattle();
   }, 2000);
 }
 
@@ -737,7 +759,7 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
 
     if (isP1) {
       document.getElementById('p1-hp-text').innerText = `HP: ${l.p1Hp}/${room.player1.maxHp}`;
-      document.getElementById('p1-hp-bar').style.width = `${Math.max(0, (l.p1Hp / room.player1.maxHp) * 100)}%`;
+      document.getElementById('p1-hp-bar'].style.width = `${Math.max(0, (l.p1Hp / room.player1.maxHp) * 100)}%`;
       document.getElementById('p2-hp-text').innerText = `HP: ${l.p2Hp}/${room.player2.maxHp}`;
       document.getElementById('p2-hp-bar').style.width = `${Math.max(0, (l.p2Hp / room.player2.maxHp) * 100)}%`;
     } else {
@@ -752,7 +774,6 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
   logBox.innerHTML += `<p class="font-bold text-emerald-400 mt-2 text-sm">🎉 PEMENANG: ${winner}!</p>`;
   document.getElementById('room-status-badge').innerText = `Status: Pertarungan Selesai! Pemenang: ${winner}. Tekan Ready untuk Rematch!`;
 
-  // Tampilkan Banner Hasil Kemenangan/Kekalahan dengan Reward Poin
   const myName = isP1 ? room.player1.name : room.player2.name;
   const isWinner = winner === myName;
   const isAgainstBot = room.player2?.id === 'bot_ai';
