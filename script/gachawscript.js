@@ -25,11 +25,15 @@ function switchTab(t) {
   playAudio('audio-pop');
   if (autoGachaActive) toggleAutoGacha();
   ['gacha','daily','inventory','battle','shop'].forEach(tab => {
-    document.getElementById(`tab-${tab}`).classList.add('hidden');
-    document.getElementById(`tab-btn-${tab}`).className = 'px-5 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800';
+    const el = document.getElementById(`tab-${tab}`);
+    const btn = document.getElementById(`tab-btn-${tab}`);
+    if (el) el.classList.add('hidden');
+    if (btn) btn.className = 'px-5 py-2.5 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800';
   });
-  document.getElementById(`tab-${t}`).classList.remove('hidden');
-  document.getElementById(`tab-btn-${t}`).className = 'px-5 py-2.5 rounded-xl text-xs font-bold transition bg-pink-600 text-white shadow-lg';
+  const activeEl = document.getElementById(`tab-${t}`);
+  const activeBtn = document.getElementById(`tab-btn-${t}`);
+  if (activeEl) activeEl.classList.remove('hidden');
+  if (activeBtn) activeBtn.className = 'px-5 py-2.5 rounded-xl text-xs font-bold transition bg-pink-600 text-white shadow-lg';
   if (t === 'daily') renderDailyStreakGrid();
   if (t === 'battle' && !activeRoomId) refreshOpenRooms();
   if (t === 'shop') fetchShopItems();
@@ -55,8 +59,10 @@ function startShopCountdown() {
     if (!targetResetTimestamp) return;
     const now = new Date().getTime();
     const distance = targetResetTimestamp - now;
+    const timerEl = document.getElementById('shop-reset-timer');
+    if (!timerEl) return;
     if (distance <= 0) {
-      document.getElementById('shop-reset-timer').innerText = 'Reset dalam: 00:00:00';
+      timerEl.innerText = 'Reset dalam: 00:00:00';
       fetchShopItems();
       return;
     }
@@ -64,12 +70,13 @@ function startShopCountdown() {
     const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((distance % (1000 * 60)) / 1000);
     const pad = (n) => String(n).padStart(2, '0');
-    document.getElementById('shop-reset-timer').innerText = `Reset dalam: ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+    timerEl.innerText = `Reset dalam: ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
   }, 1000);
 }
 
 function renderShopGrid(items) {
   const grid = document.getElementById('shop-items-grid');
+  if (!grid) return;
   if (!items || items.length === 0) {
     grid.innerHTML = '<p class="text-xs text-slate-500 col-span-3 text-center">Tidak ada item di shop.</p>';
     return;
@@ -135,18 +142,21 @@ async function buyShopItem(itemId) {
 
 function openRedeemModal() {
   playAudio('audio-pop');
-  document.getElementById('redeem-modal').classList.remove('hidden');
-  document.getElementById('redeem-code-input').value = '';
+  const modal = document.getElementById('redeem-modal');
+  if (modal) modal.classList.remove('hidden');
+  const input = document.getElementById('redeem-code-input');
+  if (input) input.value = '';
 }
 
 function closeRedeemModal() {
-  document.getElementById('redeem-modal').classList.add('hidden');
+  const modal = document.getElementById('redeem-modal');
+  if (modal) modal.classList.add('hidden');
 }
 
 async function submitRedeemCode() {
   playAudio('audio-pop');
   const codeInput = document.getElementById('redeem-code-input');
-  const code = codeInput.value.trim();
+  const code = codeInput ? codeInput.value.trim() : '';
   if (!code) return alert('Silakan masukkan kode redeem terlebih dahulu!');
   if (!currentUser || !currentUser.id) return alert('Anda harus login terlebih dahulu.');
   try {
@@ -178,22 +188,27 @@ function openWaifuDetailModal(instanceId) {
   const masterWaifu = serverWaifusData.find(m => m.id === w.waifuId) || {};
   const loreDesc = masterWaifu.description || 'Tidak ada catatan lore untuk waifu ini.';
 
-  document.getElementById('detail-modal-img').src = w.image;
-  document.getElementById('detail-modal-rarity').innerText = w.rarity;
-  document.getElementById('detail-modal-name').innerText = w.name;
-  document.getElementById('detail-modal-title').innerText = w.title || '-';
-  document.getElementById('detail-modal-element').innerText = `Element: ${w.element || 'Normal'}`;
-  document.getElementById('detail-modal-desc').innerText = loreDesc;
-  document.getElementById('detail-modal-hp').innerText = `${w.currentHp ?? w.hp}/${w.hp}`;
-  document.getElementById('detail-modal-atk').innerText = w.attack;
-  document.getElementById('detail-modal-def').innerText = w.defense;
-  document.getElementById('detail-modal-dupes').innerText = `Duplikat / Level Merge: x${w.dupes || 1}`;
+  const setElText = (id, text) => { const el = document.getElementById(id); if(el) el.innerText = text; };
+  const setElAttr = (id, attr, val) => { const el = document.getElementById(id); if(el) el[attr] = val; };
 
-  document.getElementById('waifu-detail-modal').classList.remove('hidden');
+  setElAttr('detail-modal-img', 'src', w.image);
+  setElText('detail-modal-rarity', w.rarity);
+  setElText('detail-modal-name', w.name);
+  setElText('detail-modal-title', w.title || '-');
+  setElText('detail-modal-element', `Element: ${w.element || 'Normal'}`);
+  setElText('detail-modal-desc', loreDesc);
+  setElText('detail-modal-hp', `${w.currentHp ?? w.hp}/${w.hp}`);
+  setElText('detail-modal-atk', w.attack);
+  setElText('detail-modal-def', w.defense);
+  setElText('detail-modal-dupes', `Duplikat / Level Merge: x${w.dupes || 1}`);
+
+  const modal = document.getElementById('waifu-detail-modal');
+  if (modal) modal.classList.remove('hidden');
 }
 
 function closeWaifuDetailModal() {
-  document.getElementById('waifu-detail-modal').classList.add('hidden');
+  const modal = document.getElementById('waifu-detail-modal');
+  if (modal) modal.classList.add('hidden');
 }
 
 async function initAuthAndData() {
@@ -210,22 +225,31 @@ async function initAuthAndData() {
     if (saved) currentUser = JSON.parse(saved);
   }
 
+  const loginPrompt = document.getElementById('login-prompt');
+  const gachaApp = document.getElementById('gacha-app');
+  const pointsBadge = document.getElementById('user-points-badge');
+  const navBadge = document.getElementById('nav-user-badge');
+
   if (currentUser && currentUser.id) {
-    document.getElementById('login-prompt').classList.add('hidden');
-    document.getElementById('gacha-app').classList.remove('hidden');
-    document.getElementById('user-points-badge').classList.remove('hidden');
-    document.getElementById('nav-user-badge').classList.remove('hidden');
-    document.getElementById('nav-user-name').innerText = currentUser.global_name || currentUser.username;
-    document.getElementById('nav-user-avatar').src = getAvatarUrl(currentUser);
+    if (loginPrompt) loginPrompt.classList.add('hidden');
+    if (gachaApp) gachaApp.classList.remove('hidden');
+    if (pointsBadge) pointsBadge.classList.remove('hidden');
+    if (navBadge) navBadge.classList.remove('hidden');
+    
+    const navName = document.getElementById('nav-user-name');
+    const navAvatar = document.getElementById('nav-user-avatar');
+    if (navName) navName.innerText = currentUser.global_name || currentUser.username;
+    if (navAvatar) navAvatar.src = getAvatarUrl(currentUser);
     
     await fetchUserData();
     startOnlineTracker();
   } else {
-    document.getElementById('login-prompt').classList.remove('hidden');
+    if (loginPrompt) loginPrompt.classList.remove('hidden');
   }
 }
 
 async function fetchUserData() {
+  if (!currentUser || !currentUser.id) return;
   try {
     const res = await fetch(`/api/gacha?action=profile&id=${currentUser.id}&username=${encodeURIComponent(currentUser.username)}&global_name=${encodeURIComponent(currentUser.global_name || currentUser.username)}&avatar=${currentUser.avatar || ''}`);
     const data = await res.json();
@@ -266,9 +290,7 @@ function updateUIState() {
   if (!userData) return;
   const formattedPoints = formatNumber(userData.points || 0);
   const pointsEl = document.getElementById('user-points-val');
-  if (pointsEl) {
-    pointsEl.innerText = `${formattedPoints} Poin`;
-  }
+  if (pointsEl) pointsEl.innerText = `${formattedPoints} Poin`;
 
   const invCount = userData.inventory ? userData.inventory.length : 0;
   const invCountEl = document.getElementById('inv-count');
@@ -287,6 +309,7 @@ function updateUIState() {
 
 async function refreshOpenRooms() {
   playAudio('audio-pop');
+  if (!currentUser || !currentUser.id) return;
   try {
     const res = await fetch(`/api/gacha?action=get_open_rooms&id=${currentUser.id}`);
     const data = await res.json();
@@ -321,12 +344,17 @@ function renderDailyStreakGrid() {
 }
 
 function checkDailyClaimStatus() {
+  const countdownBanner = document.getElementById('daily-countdown-banner');
+  const dailyMsg = document.getElementById('daily-msg');
+  const claimBtn = document.getElementById('claim-daily-btn');
+
   if (!userData || !userData.lastDailyClaim) {
-    document.getElementById('daily-countdown-banner').classList.add('hidden');
-    document.getElementById('daily-msg').innerText = '';
-    const btn = document.getElementById('claim-daily-btn');
-    btn.disabled = false;
-    btn.className = 'px-10 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm rounded-2xl shadow-xl shadow-emerald-900/30 transition transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center space-x-2 mx-auto cursor-pointer';
+    if (countdownBanner) countdownBanner.classList.add('hidden');
+    if (dailyMsg) dailyMsg.innerText = '';
+    if (claimBtn) {
+      claimBtn.disabled = false;
+      claimBtn.className = 'px-10 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm rounded-2xl shadow-xl shadow-emerald-900/30 transition transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center space-x-2 mx-auto cursor-pointer';
+    }
     return;
   }
 
@@ -341,11 +369,12 @@ function checkDailyClaimStatus() {
 
     if (distance <= 0) {
       clearInterval(dailyCountdownInterval);
-      document.getElementById('daily-countdown-banner').classList.add('hidden');
-      document.getElementById('daily-msg').innerText = '✨ Reward harian siap diklaim sekarang!';
-      const btn = document.getElementById('claim-daily-btn');
-      btn.disabled = false;
-      btn.className = 'px-10 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm rounded-2xl shadow-xl shadow-emerald-900/30 transition transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center space-x-2 mx-auto cursor-pointer';
+      if (countdownBanner) countdownBanner.classList.add('hidden');
+      if (dailyMsg) dailyMsg.innerText = '✨ Reward harian siap diklaim sekarang!';
+      if (claimBtn) {
+        claimBtn.disabled = false;
+        claimBtn.className = 'px-10 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm rounded-2xl shadow-xl shadow-emerald-900/30 transition transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center space-x-2 mx-auto cursor-pointer';
+      }
       return;
     }
 
@@ -354,13 +383,15 @@ function checkDailyClaimStatus() {
     const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
     const pad = (n) => String(n).padStart(2, '0');
-    document.getElementById('daily-timer-val').innerText = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
-    document.getElementById('daily-countdown-banner').classList.remove('hidden');
-    document.getElementById('daily-msg').innerText = 'Reward harian sudah diambil hari ini. Coba lagi besok!';
+    const timerVal = document.getElementById('daily-timer-val');
+    if (timerVal) timerVal.innerText = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+    if (countdownBanner) countdownBanner.classList.remove('hidden');
+    if (dailyMsg) dailyMsg.innerText = 'Reward harian sudah diambil hari ini. Coba lagi besok!';
 
-    const btn = document.getElementById('claim-daily-btn');
-    btn.disabled = true;
-    btn.className = 'px-10 py-4 bg-slate-800 text-slate-500 font-black text-sm rounded-2xl shadow-inner cursor-not-allowed flex items-center justify-center space-x-2 mx-auto';
+    if (claimBtn) {
+      claimBtn.disabled = true;
+      claimBtn.className = 'px-10 py-4 bg-slate-800 text-slate-500 font-black text-sm rounded-2xl shadow-inner cursor-not-allowed flex items-center justify-center space-x-2 mx-auto';
+    }
   }, 1000);
 }
 
@@ -369,18 +400,20 @@ async function claimDailyReward() {
   try {
     const res = await fetch('/api/gacha', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'daily', userId: currentUser.id }) });
     const data = await res.json();
+    const dailyMsg = document.getElementById('daily-msg');
     if (data.success) {
       playAudio('audio-chime');
       userData.points = data.points;
       userData.loginStreak = data.streak;
       userData.lastDailyClaim = new Date(); 
       updateUIState();
-      document.getElementById('daily-msg').innerText = data.message;
+      if (dailyMsg) dailyMsg.innerText = data.message;
     } else {
-      document.getElementById('daily-msg').innerText = data.error;
+      if (dailyMsg) dailyMsg.innerText = data.error;
     }
   } catch(e) {
-    document.getElementById('daily-msg').innerText = 'Gagal melakukan klaim reward.';
+    const dailyMsg = document.getElementById('daily-msg');
+    if (dailyMsg) dailyMsg.innerText = 'Gagal melakukan klaim reward.';
   }
 }
 
@@ -395,8 +428,8 @@ function toggleAutoGacha() {
       return;
     }
     autoGachaActive = true;
-    text.innerText = 'Auto Gacha: ON';
-    btn.className = 'px-6 py-3.5 bg-pink-600 hover:bg-pink-500 border border-pink-500 text-white font-bold text-sm rounded-2xl shadow-xl transition flex items-center space-x-2 animate-pulse';
+    if (text) text.innerText = 'Auto Gacha: ON';
+    if (btn) btn.className = 'px-6 py-3.5 bg-pink-600 hover:bg-pink-500 border border-pink-500 text-white font-bold text-sm rounded-2xl shadow-xl transition flex items-center space-x-2 animate-pulse';
     
     autoGachaTimer = setInterval(() => {
       if (!userData || userData.points < 50) {
@@ -408,8 +441,8 @@ function toggleAutoGacha() {
     }, 1600);
   } else {
     autoGachaActive = false;
-    text.innerText = 'Auto Gacha: OFF';
-    btn.className = 'px-6 py-3.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-bold text-sm rounded-2xl shadow-xl transition flex items-center space-x-2';
+    if (text) text.innerText = 'Auto Gacha: OFF';
+    if (btn) btn.className = 'px-6 py-3.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-bold text-sm rounded-2xl shadow-xl transition flex items-center space-x-2';
     if (autoGachaTimer) clearInterval(autoGachaTimer);
   }
 }
@@ -425,7 +458,7 @@ window.addEventListener('keydown', (e) => {
 async function doGachaPull() {
   playAudio('audio-pop');
   const box = document.getElementById('gacha-result-box');
-  box.innerHTML = '<span class="text-pink-400 animate-pulse">🔮 Membuka portal gacha...</span>';
+  if (box) box.innerHTML = '<span class="text-pink-400 animate-pulse">🔮 Membuka portal gacha...</span>';
   try {
     const res = await fetch('/api/gacha', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'gacha', userId: currentUser.id }) });
     const data = await res.json();
@@ -440,31 +473,34 @@ async function doGachaPull() {
 
       const isNew = data.isNewUnlocked;
 
-      box.innerHTML = `
-        <div class="summon-anim bg-slate-950 p-6 rounded-2xl border-2 ${isNew ? 'border-amber-400 shadow-amber-500/50' : 'border-pink-500'} text-center space-y-3 shadow-2xl relative overflow-hidden">
-          ${isNew ? '<div class="absolute top-0 inset-x-0 bg-gradient-to-r from-amber-500 to-pink-500 text-black text-[10px] font-black uppercase tracking-widest py-0.5 animate-pulse">✨ NEW CHARACTER UNLOCKED! ✨</div>' : ''}
-          <span class="text-xs bg-pink-500/20 text-pink-300 px-3 py-1 rounded-full font-bold mt-2 inline-block">${data.waifu.rarity} &bull; ${data.waifu.element}</span>
-          <img src="${data.waifu.image}" onclick="openWaifuDetailModal('${data.waifu.instanceId}')" class="w-32 h-32 mx-auto rounded-xl object-cover border border-slate-700 shadow-md cursor-pointer hover:scale-105 transition">
-          <div>
-            <h4 class="font-black text-lg text-white">${data.waifu.name}</h4>
-            <p class="text-xs text-pink-400 italic">${data.waifu.title}</p>
-            <p class="text-[10px] text-slate-400 font-mono mt-1">ATK: ${data.waifu.attack} | DEF: ${data.waifu.defense} | HP: ${data.waifu.hp}</p>
+      if (box) {
+        box.innerHTML = `
+          <div class="summon-anim bg-slate-950 p-6 rounded-2xl border-2 ${isNew ? 'border-amber-400 shadow-amber-500/50' : 'border-pink-500'} text-center space-y-3 shadow-2xl relative overflow-hidden">
+            ${isNew ? '<div class="absolute top-0 inset-x-0 bg-gradient-to-r from-amber-500 to-pink-500 text-black text-[10px] font-black uppercase tracking-widest py-0.5 animate-pulse">✨ NEW CHARACTER UNLOCKED! ✨</div>' : ''}
+            <span class="text-xs bg-pink-500/20 text-pink-300 px-3 py-1 rounded-full font-bold mt-2 inline-block">${data.waifu.rarity} &bull; ${data.waifu.element}</span>
+            <img src="${data.waifu.image}" onclick="openWaifuDetailModal('${data.waifu.instanceId}')" class="w-32 h-32 mx-auto rounded-xl object-cover border border-slate-700 shadow-md cursor-pointer hover:scale-105 transition">
+            <div>
+              <h4 class="font-black text-lg text-white">${data.waifu.name}</h4>
+              <p class="text-xs text-pink-400 italic">${data.waifu.title}</p>
+              <p class="text-[10px] text-slate-400 font-mono mt-1">ATK: ${data.waifu.attack} | DEF: ${data.waifu.defense} | HP: ${data.waifu.hp}</p>
+            </div>
+            <p class="text-xs font-bold ${isNew ? 'text-amber-300 animate-bounce' : 'text-emerald-400'}">${data.message}</p>
           </div>
-          <p class="text-xs font-bold ${isNew ? 'text-amber-300 animate-bounce' : 'text-emerald-400'}">${data.message}</p>
-        </div>
-      `;
+        `;
+      }
     } else { 
-      box.innerHTML = `<span class="text-rose-400 text-sm font-bold">${data.error}</span>`;
+      if (box) box.innerHTML = `<span class="text-rose-400 text-sm font-bold">${data.error}</span>`;
       if (autoGachaActive) toggleAutoGacha();
     }
   } catch(e) { 
-    box.innerHTML = `<span class="text-rose-400 text-sm">Gagal summon. Terjadi kesalahan koneksi.</span>`;
+    if (box) box.innerHTML = `<span class="text-rose-400 text-sm">Gagal summon. Terjadi kesalahan koneksi.</span>`;
     if (autoGachaActive) toggleAutoGacha();
   }
 }
 
 function renderInventory() {
   const c = document.getElementById('inventory-grid');
+  if (!c) return;
   const inv = userData.inventory || [];
   if (inv.length === 0) { c.innerHTML = '<p class="text-slate-500 text-sm col-span-4 text-center py-10">Belum ada waifu.</p>'; return; }
   c.innerHTML = '';
@@ -516,6 +552,7 @@ async function mergeAllDupes() {
 
 function renderBattleSelection() {
   const c = document.getElementById('battle-inventory-select');
+  if (!c) return;
   const inv = userData.inventory || [];
   if (inv.length === 0) { c.innerHTML = '<p class="text-slate-500 text-xs col-span-4 text-center">Inventory kosong.</p>'; return; }
   c.innerHTML = '';
@@ -539,12 +576,15 @@ function selectBattleWaifu(id) {
   playAudio('audio-pop');
   selectedBattleInstanceId = id;
   renderBattleSelection();
-  document.getElementById('create-room-btn').disabled = false;
-  document.getElementById('create-bot-room-btn').disabled = false;
+  const createRoomBtn = document.getElementById('create-room-btn');
+  const createBotBtn = document.getElementById('create-bot-room-btn');
+  if (createRoomBtn) createRoomBtn.disabled = false;
+  if (createBotBtn) createBotBtn.disabled = false;
 }
 
 async function renderOpenRooms(rooms) {
   const list = document.getElementById('open-rooms-list');
+  if (!list) return;
   if (!rooms || rooms.length === 0) { list.innerHTML = '<p class="text-xs text-slate-500">Tidak ada room terbuka. Buat room baru atau lawan bot!</p>'; return; }
   list.innerHTML = '';
   rooms.forEach(r => {
@@ -566,8 +606,10 @@ async function createPvPRoom(isBot) {
   const data = await res.json();
   if(data.success) {
     activeRoomId = data.roomId;
-    document.getElementById('pvp-lobby').classList.add('hidden');
-    document.getElementById('live-battle-room').classList.remove('hidden');
+    const lobby = document.getElementById('pvp-lobby');
+    const battleRoom = document.getElementById('live-battle-room');
+    if (lobby) lobby.classList.add('hidden');
+    if (battleRoom) battleRoom.classList.remove('hidden');
     setupRoomUI(data.room);
     startPollingRoom();
   } else {
@@ -581,8 +623,10 @@ async function joinPvPRoom(roomId) {
   const data = await res.json();
   if(data.success) {
     activeRoomId = data.roomId;
-    document.getElementById('pvp-lobby').classList.add('hidden');
-    document.getElementById('live-battle-room').classList.remove('hidden');
+    const lobby = document.getElementById('pvp-lobby');
+    const battleRoom = document.getElementById('live-battle-room');
+    if (lobby) lobby.classList.add('hidden');
+    if (battleRoom) battleRoom.classList.remove('hidden');
     startPollingRoom();
   } else {
     alert(data.error);
@@ -593,10 +637,11 @@ async function setPlayerReady() {
   playAudio('audio-pop');
   if (!activeRoomId) return;
 
-  // Ubah tombol langsung jadi loading/ready agar responsif
   const readyBtn = document.getElementById('ready-btn');
-  readyBtn.disabled = true;
-  readyBtn.innerText = '⏳ MEMPROSES...';
+  if (readyBtn) {
+    readyBtn.disabled = true;
+    readyBtn.innerText = '⏳ MEMPROSES...';
+  }
 
   try {
     const res = await fetch('/api/gacha', { 
@@ -607,20 +652,24 @@ async function setPlayerReady() {
     const data = await res.json();
     
     if (data.success) {
-      readyBtn.innerText = '✓ READY';
-      readyBtn.className = 'px-8 py-3 bg-slate-800 text-slate-400 font-bold text-sm rounded-xl cursor-not-allowed';
-      
-      // Langsung panggil pengecekan room untuk memicu battle dengan bot
+      if (readyBtn) {
+        readyBtn.innerText = '✓ READY';
+        readyBtn.className = 'px-8 py-3 bg-slate-800 text-slate-400 font-bold text-sm rounded-xl cursor-not-allowed';
+      }
       await checkRoomAndTriggerBattle();
     } else {
       alert(data.error || 'Gagal mengubah status ready.');
-      readyBtn.disabled = false;
-      readyBtn.innerText = '✅ SIAP (READY / REMATCH)';
+      if (readyBtn) {
+        readyBtn.disabled = false;
+        readyBtn.innerText = '✅ SIAP (READY / REMATCH)';
+      }
     }
   } catch (e) {
     alert('Terjadi kesalahan koneksi.');
-    readyBtn.disabled = false;
-    readyBtn.innerText = '✅ SIAP (READY / REMATCH)';
+    if (readyBtn) {
+      readyBtn.disabled = false;
+      readyBtn.innerText = '✅ SIAP (READY / REMATCH)';
+    }
   }
 }
 
@@ -691,27 +740,28 @@ function setupRoomUI(room) {
 }
 
 async function checkRoomAndTriggerBattle() {
-  if (!activeRoomId) return;
-  const res = await fetch(`/api/gacha?action=check_room&roomId=${activeRoomId}`);
-  const data = await res.json();
-  if (data.success && data.room) {
-    const room = data.room;
-    setupRoomUI(room);
+  if (!activeRoomId || activeRoomId.length !== 24) return;
+  try {
+    const res = await fetch(`/api/gacha?action=check_room&roomId=${activeRoomId}`);
+    const data = await res.json();
+    if (data.success && data.room) {
+      const room = data.room;
+      setupRoomUI(room);
 
-    // Jika room berstatus battling dan log masih kosong, langsung eksekusi kalkulasi battle
-    if (room.status === 'battling' && (!room.logs || room.logs.length === 0)) {
-      const turnRes = await fetch('/api/gacha', { 
-        method: 'POST', 
-        headers: {'Content-Type': 'application/json'}, 
-        body: JSON.stringify({ action: 'get_pvp_status', userId: currentUser.id, roomId: activeRoomId }) 
-      });
-      const turnData = await turnRes.json();
-      if (turnData.success && turnData.room.status === 'finished') {
-        renderBattleAnimationAndLogs(turnData.room.logs, turnData.room.winner, turnData.room);
-        fetchUserData();
+      if (room.status === 'battling' && (!room.logs || room.logs.length === 0)) {
+        const turnRes = await fetch('/api/gacha', { 
+          method: 'POST', 
+          headers: {'Content-Type': 'application/json'}, 
+          body: JSON.stringify({ action: 'get_pvp_status', userId: currentUser.id, roomId: activeRoomId }) 
+        });
+        const turnData = await turnRes.json();
+        if (turnData.success && turnData.room && turnData.room.status === 'finished') {
+          renderBattleAnimationAndLogs(turnData.room.logs, turnData.room.winner, turnData.room);
+          fetchUserData();
+        }
       }
     }
-  }
+  } catch (e) {}
 }
 
 function startPollingRoom() {
@@ -734,6 +784,7 @@ function startOnlineTracker() {
 }
 
 async function sendHeartbeat() {
+  if (!currentUser || !currentUser.id) return;
   try {
     await fetch('/api/gacha', {
       method: 'POST',
@@ -782,6 +833,7 @@ function renderOnlineUsers(users) {
 
 async function renderBattleAnimationAndLogs(logs, winner, room) {
   const logBox = document.getElementById('battle-combat-logs');
+  if (!logBox) return;
   logBox.innerHTML = '<p class="text-pink-400 animate-pulse">⚔️ Pertarungan Real-Time Dimulai...</p>';
   
   const isP1 = room.player1.id === currentUser.id;
@@ -793,22 +845,28 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
     logBox.innerHTML += `<p>Turn ${l.turn}: <span class="text-pink-400">${l.attacker}</span> menyerang <span class="text-indigo-400">${l.defender}</span> sebesar <span class="text-rose-400">-${l.damage} DMG</span></p>`;
     logBox.scrollTop = logBox.scrollHeight;
 
+    const p1HpText = document.getElementById('p1-hp-text');
+    const p1HpBar = document.getElementById('p1-hp-bar');
+    const p2HpText = document.getElementById('p2-hp-text');
+    const p2HpBar = document.getElementById('p2-hp-bar');
+
     if (isP1) {
-      document.getElementById('p1-hp-text').innerText = `HP: ${l.p1Hp}/${room.player1.maxHp}`;
-      document.getElementById('p1-hp-bar').style.width = `${Math.max(0, (l.p1Hp / room.player1.maxHp) * 100)}%`;
-      document.getElementById('p2-hp-text').innerText = `HP: ${l.p2Hp}/${room.player2.maxHp}`;
-      document.getElementById('p2-hp-bar').style.width = `${Math.max(0, (l.p2Hp / room.player2.maxHp) * 100)}%`;
+      if (p1HpText) p1HpText.innerText = `HP: ${l.p1Hp}/${room.player1.maxHp}`;
+      if (p1HpBar) p1HpBar.style.width = `${Math.max(0, (l.p1Hp / room.player1.maxHp) * 100)}%`;
+      if (p2HpText) p2HpText.innerText = `HP: ${l.p2Hp}/${room.player2.maxHp}`;
+      if (p2HpBar) p2HpBar.style.width = `${Math.max(0, (l.p2Hp / room.player2.maxHp) * 100)}%`;
     } else {
-      document.getElementById('p1-hp-text').innerText = `HP: ${l.p2Hp}/${room.player2.maxHp}`;
-      document.getElementById('p1-hp-bar').style.width = `${Math.max(0, (l.p2Hp / room.player2.maxHp) * 100)}%`;
-      document.getElementById('p2-hp-text').innerText = `HP: ${l.p1Hp}/${room.player1.maxHp}`;
-      document.getElementById('p2-hp-bar').style.width = `${Math.max(0, (l.p1Hp / room.player1.maxHp) * 100)}%`;
+      if (p1HpText) p1HpText.innerText = `HP: ${l.p2Hp}/${room.player2.maxHp}`;
+      if (p1HpBar) p1HpBar.style.width = `${Math.max(0, (l.p2Hp / room.player2.maxHp) * 100)}%`;
+      if (p2HpText) p2HpText.innerText = `HP: ${l.p1Hp}/${room.player1.maxHp}`;
+      if (p2HpBar) p2HpBar.style.width = `${Math.max(0, (l.p1Hp / room.player1.maxHp) * 100)}%`;
     }
   }
 
   playAudio('audio-chime');
   logBox.innerHTML += `<p class="font-bold text-emerald-400 mt-2 text-sm">🎉 PEMENANG: ${winner}!</p>`;
-  document.getElementById('room-status-badge').innerText = `Status: Pertarungan Selesai! Pemenang: ${winner}. Tekan Ready untuk Rematch!`;
+  const statusBadge = document.getElementById('room-status-badge');
+  if (statusBadge) statusBadge.innerText = `Status: Pertarungan Selesai! Pemenang: ${winner}. Tekan Ready untuk Rematch!`;
 
   const myName = isP1 ? room.player1.name : room.player2.name;
   const isWinner = winner === myName;
@@ -835,12 +893,15 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
   }
   
   const readyBtn = document.getElementById('ready-btn');
-  readyBtn.disabled = false;
-  readyBtn.innerText = '✅ SIAP REMATCH (READY)';
-  readyBtn.className = 'px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg transition';
+  if (readyBtn) {
+    readyBtn.disabled = false;
+    readyBtn.innerText = '✅ SIAP REMATCH (READY)';
+    readyBtn.className = 'px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg transition';
+  }
 }
 
 async function leaveActiveRoom(roomId) {
+  if (!roomId || roomId.length !== 24) return;
   try {
     const res = await fetch('/api/gacha', {
       method: 'POST',
@@ -852,24 +913,27 @@ async function leaveActiveRoom(roomId) {
       alert("Room aktif berhasil dibersihkan! Silakan buat room baru.");
       window.location.reload();
     }
-  } catch (e) {
-    console.error("Gagal menghapus room", e);
-  }
+  } catch (e) {}
 }
 
 async function leaveRoom() {
-  if (activeRoomId) {
+  if (activeRoomId && activeRoomId.length === 24) {
     await fetch('/api/gacha', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'leave_room', userId:currentUser.id, roomId:activeRoomId}) });
   }
   if (pollInterval) clearInterval(pollInterval);
   activeRoomId = null;
-  document.getElementById('live-battle-room').classList.add('hidden');
-  document.getElementById('pvp-lobby').classList.remove('hidden');
+  const battleRoom = document.getElementById('live-battle-room');
+  const lobby = document.getElementById('pvp-lobby');
+  if (battleRoom) battleRoom.classList.add('hidden');
+  if (lobby) lobby.classList.remove('hidden');
   const banner = document.getElementById('battle-result-banner');
   if (banner) banner.classList.add('hidden');
-  document.getElementById('ready-btn').disabled = false;
-  document.getElementById('ready-btn').innerText = '✅ SIAP (READY)';
-  document.getElementById('ready-btn').className = 'px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg transition';
+  const readyBtn = document.getElementById('ready-btn');
+  if (readyBtn) {
+    readyBtn.disabled = false;
+    readyBtn.innerText = '✅ SIAP (READY)';
+    readyBtn.className = 'px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg transition';
+  }
   fetchUserData();
 }
 
