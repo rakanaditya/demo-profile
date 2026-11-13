@@ -692,8 +692,13 @@ function setupRoomUI(room) {
 
   const p1Ready = document.getElementById('p1-status-ready');
   if (p1Ready) {
-    p1Ready.innerText = me && me.ready ? "READY ✓" : "SELESAI";
-    p1Ready.className = me && me.ready ? "text-emerald-400 font-bold" : "text-slate-400 font-bold";
+    if (room.status === 'finished') {
+      p1Ready.innerText = "SELESAI";
+      p1Ready.className = "text-slate-400 font-bold";
+    } else {
+      p1Ready.innerText = me && me.ready ? "READY ✓" : "MENUNGGU READY...";
+      p1Ready.className = me && me.ready ? "text-emerald-400 font-bold" : "text-amber-400 font-bold";
+    }
   }
 
   if (op) {
@@ -706,12 +711,15 @@ function setupRoomUI(room) {
     
     const p2Ready = document.getElementById('p2-status-ready');
     if (p2Ready) {
-      if (isBotRoom) {
+      if (room.status === 'finished') {
+        p2Ready.innerText = "SELESAI";
+        p2Ready.className = "text-slate-400 font-bold";
+      } else if (isBotRoom) {
         p2Ready.innerText = "READY ✓ (BOT)";
         p2Ready.className = "text-emerald-400 font-bold";
       } else {
-        p2Ready.innerText = op.ready ? "READY ✓" : "SELESAI";
-        p2Ready.className = op.ready ? "text-emerald-400 font-bold" : "text-slate-400 font-bold";
+        p2Ready.innerText = op.ready ? "READY ✓" : "MENUNGGU READY...";
+        p2Ready.className = op.ready ? "text-emerald-400 font-bold" : "text-amber-400 font-bold";
       }
     }
     
@@ -719,7 +727,6 @@ function setupRoomUI(room) {
     const statusBadge = document.getElementById('room-status-badge');
 
     if (room.status === 'finished') {
-      // Mengubah tulisan kuning status menjadi "SELESAI" saja sesuai permintaan
       if (statusBadge) statusBadge.innerText = `Status: SELESAI`;
       const readyBtn = document.getElementById('ready-btn');
       if (readyBtn) {
@@ -739,8 +746,6 @@ function setupRoomUI(room) {
     if (statusBadge) statusBadge.innerText = "Status: Menunggu Lawan Bergabung ke Room...";
   }
 }
-
-
 
 async function checkRoomAndTriggerBattle() {
   if (!activeRoomId || typeof activeRoomId !== 'string' || activeRoomId.length !== 24) return;
@@ -834,7 +839,6 @@ function renderOnlineUsers(users) {
     `;
   });
 }
-
 
 // Variabel pengaman agar animasi log tidak terpanggil dua kali bersamaan
 let isRenderingLogs = false;
