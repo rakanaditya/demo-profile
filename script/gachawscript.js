@@ -635,7 +635,7 @@ async function joinPvPRoom(roomId) {
 
 async function setPlayerReady() {
   playAudio('audio-pop');
-  if (!activeRoomId) return;
+  if (!activeRoomId || activeRoomId.length !== 24) return;
 
   const readyBtn = document.getElementById('ready-btn');
   if (readyBtn) {
@@ -740,7 +740,7 @@ function setupRoomUI(room) {
 }
 
 async function checkRoomAndTriggerBattle() {
-  if (!activeRoomId || activeRoomId.length !== 24) return;
+  if (!activeRoomId || typeof activeRoomId !== 'string' || activeRoomId.length !== 24) return;
   try {
     const res = await fetch(`/api/gacha?action=check_room&roomId=${activeRoomId}`);
     const data = await res.json();
@@ -748,7 +748,6 @@ async function checkRoomAndTriggerBattle() {
       const room = data.room;
       setupRoomUI(room);
 
-      // Jika room sudah berubah status jadi 'battling' atau 'finished'
       if (room.status === 'battling' && (!room.logs || room.logs.length === 0)) {
         const turnRes = await fetch('/api/gacha', { 
           method: 'POST', 
@@ -899,22 +898,6 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
     readyBtn.innerText = '✅ SIAP REMATCH (READY)';
     readyBtn.className = 'px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg transition';
   }
-}
-
-async function leaveActiveRoom(roomId) {
-  if (!roomId || roomId.length !== 24) return;
-  try {
-    const res = await fetch('/api/gacha', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'leave_room', userId: currentUser.id, roomId: roomId })
-    });
-    const data = await res.json();
-    if (data.success) {
-      alert("Room aktif berhasil dibersihkan! Silakan buat room baru.");
-      window.location.reload();
-    }
-  } catch (e) {}
 }
 
 async function leaveRoom() {
