@@ -592,17 +592,35 @@ async function joinPvPRoom(roomId) {
 async function setPlayerReady() {
   playAudio('audio-pop');
   if (!activeRoomId) return;
-  const res = await fetch('/api/gacha', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'player_ready', userId:currentUser.id, roomId:activeRoomId}) });
-  const data = await res.json();
-  if(data.success) {
-    document.getElementById('ready-btn').disabled = true;
-    document.getElementById('ready-btn').innerText = '✓ READY';
-    document.getElementById('ready-btn').className = 'px-8 py-3 bg-slate-800 text-slate-400 font-bold text-sm rounded-xl cursor-not-allowed';
+
+  // Ubah tombol langsung jadi loading/ready agar responsif
+  const readyBtn = document.getElementById('ready-btn');
+  readyBtn.disabled = true;
+  readyBtn.innerText = '⏳ MEMPROSES...';
+
+  try {
+    const res = await fetch('/api/gacha', { 
+      method: 'POST', 
+      headers: {'Content-Type': 'application/json'}, 
+      body: JSON.stringify({ action: 'player_ready', userId: currentUser.id, roomId: activeRoomId }) 
+    });
+    const data = await res.json();
     
-    // Langsung picu pengecekan agar battle langsung jalan tanpa jeda
-    checkRoomAndTriggerBattle();
-  } else {
-    alert(data.error || 'Gagal mengubah status ready.');
+    if (data.success) {
+      readyBtn.innerText = '✓ READY';
+      readyBtn.className = 'px-8 py-3 bg-slate-800 text-slate-400 font-bold text-sm rounded-xl cursor-not-allowed';
+      
+      // Langsung panggil pengecekan room untuk memicu battle dengan bot
+      await checkRoomAndTriggerBattle();
+    } else {
+      alert(data.error || 'Gagal mengubah status ready.');
+      readyBtn.disabled = false;
+      readyBtn.innerText = '✅ SIAP (READY / REMATCH)';
+    }
+  } catch (e) {
+    alert('Terjadi kesalahan koneksi.');
+    readyBtn.disabled = false;
+    readyBtn.innerText = '✅ SIAP (READY / REMATCH)';
   }
 }
 
