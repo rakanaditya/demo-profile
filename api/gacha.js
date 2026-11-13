@@ -382,7 +382,7 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, roomId });
       }
 
-      // 7. PLAYER READY
+     // 7. PLAYER READY & REMATCH
       if (action === 'player_ready') {
         const { roomId } = req.body;
         let room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
@@ -397,14 +397,18 @@ export default async function handler(req, res) {
         await pvpRoomsCollection.updateOne({ _id: new ObjectId(roomId) }, { $set: updateField });
 
         const updatedRoom = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
+        
+        // Jika kedua pemain sudah siap, reset log, pulihkan HP, dan mulai battling
         if (updatedRoom.player1?.ready && updatedRoom.player2?.ready) {
           await pvpRoomsCollection.updateOne({ _id: new ObjectId(roomId) }, { 
             $set: { 
               status: 'battling', 
-              logs: [], 
+              logs: [], // KUNCI UTAMA: Kosongkan log agar kalkulasi turn terpanggil lagi
               winner: null,
               'player1.currentHp': updatedRoom.player1.maxHp,
-              'player2.currentHp': updatedRoom.player2.maxHp
+              'player2.currentHp': updatedRoom.player2.maxHp,
+              'player1.ready': false,
+              'player2.ready': false
             } 
           });
         }
