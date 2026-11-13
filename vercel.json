@@ -14,6 +14,7 @@
      { "source": "/gachaw", "destination": "/src/gachaw.html" },
      { "source": "/gachawleaderboard", "destination": "/src/gachawleaderboard.html" },
     { "source": "/marin", "destination": "/src/marin.html" },
+    { "source": "/pvpwaifu", "destination": "/src/pvpwaifu.html" },
     { "source": "/myprofile", "destination": "/src/myprofile.html" }
   ]
 }
