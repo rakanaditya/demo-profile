@@ -386,7 +386,7 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, roomId });
       }
 
-      // 7. PLAYER READY & REMATCH
+    // 7. PLAYER READY & REMATCH
       if (action === 'player_ready') {
         const { roomId } = req.body;
         let room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
@@ -396,13 +396,21 @@ export default async function handler(req, res) {
         if (room.player1 && room.player1.id === userId) updateField['player1.ready'] = true;
         else if (room.player2 && room.player2.id === userId) updateField['player2.ready'] = true;
 
-        if (room.player2 && room.player2.id === 'bot_ai') updateField['player2.ready'] = true;
+        // Jika lawan adalah bot, otomatis set ready juga untuk bot
+        if (room.player2 && room.player2.id === 'bot_ai') {
+          updateField['player2.ready'] = true;
+        }
 
         await pvpRoomsCollection.updateOne({ _id: new ObjectId(roomId) }, { $set: updateField });
 
-        const updatedRoom = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
+        // Ambil data room terbaru setelah di-update
+        let updatedRoom = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
         
-        if (updatedRoom.player1?.ready && updatedRoom.player2?.ready) {
+        // Cek apakah kedua pemain/bot sudah ready
+        const p1Ready = updatedRoom.player1?.ready;
+        const p2Ready = updatedRoom.player2?.ready;
+
+        if (p1Ready && p2Ready) {
           await pvpRoomsCollection.updateOne({ _id: new ObjectId(roomId) }, { 
             $set: { 
               status: 'battling', 
@@ -418,7 +426,6 @@ export default async function handler(req, res) {
 
         return res.status(200).json({ success: true });
       }
-
       // 8. GET PVP STATUS & LOGS
       if (action === 'get_pvp_status') {
         try {
