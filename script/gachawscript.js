@@ -748,6 +748,7 @@ async function checkRoomAndTriggerBattle() {
       const room = data.room;
       setupRoomUI(room);
 
+      // Jika room sudah berubah status jadi 'battling' atau 'finished'
       if (room.status === 'battling' && (!room.logs || room.logs.length === 0)) {
         const turnRes = await fetch('/api/gacha', { 
           method: 'POST', 
