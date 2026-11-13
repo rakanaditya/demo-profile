@@ -748,14 +748,17 @@ async function checkRoomAndTriggerBattle() {
       const room = data.room;
       setupRoomUI(room);
 
-      if (room.status === 'battling' && (!room.logs || room.logs.length === 0)) {
+      // Jika room sudah 'battling' atau 'finished', langsung ambil status/log pertempuran
+      if ((room.status === 'battling' || room.status === 'finished') && (!room.logs || room.logs.length === 0 || room.status === 'finished')) {
         const turnRes = await fetch('/api/gacha', { 
           method: 'POST', 
           headers: {'Content-Type': 'application/json'}, 
           body: JSON.stringify({ action: 'get_pvp_status', userId: currentUser.id, roomId: activeRoomId }) 
         });
         const turnData = await turnRes.json();
-        if (turnData.success && turnData.room && turnData.room.status === 'finished') {
+        if (turnData.success && turnData.room && turnData.room.logs && turnData.room.logs.length > 0) {
+          // Hentikan polling agar animasi berjalan mulus tanpa tumpang tindih
+          if (pollInterval) clearInterval(pollInterval);
           renderBattleAnimationAndLogs(turnData.room.logs, turnData.room.winner, turnData.room);
           fetchUserData();
         }
