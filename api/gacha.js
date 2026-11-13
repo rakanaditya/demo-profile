@@ -60,8 +60,8 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, user: dbUser, waifus: allWaifus, openRooms });
     }
 
-    if (getAction === 'check_room') {
-      if (!roomId) return res.status(400).json({ success: false, error: 'Room ID diperlukan.' });
+   if (getAction === 'check_room') {
+      if (!roomId || roomId.length !== 24) return res.status(400).json({ success: false, error: 'Room ID tidak valid.' });
       const room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
       return res.status(200).json({ success: true, room });
     }
