@@ -60,7 +60,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, user: dbUser, waifus: allWaifus, openRooms });
     }
 
-  if (getAction === 'check_room') {
+    if (getAction === 'check_room') {
       try {
         if (!roomId || roomId.length !== 24) return res.status(200).json({ success: true, room: null });
         const room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
@@ -386,7 +386,7 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, roomId });
       }
 
-     // 7. PLAYER READY & REMATCH
+      // 7. PLAYER READY & REMATCH
       if (action === 'player_ready') {
         const { roomId } = req.body;
         let room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
@@ -402,12 +402,11 @@ export default async function handler(req, res) {
 
         const updatedRoom = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
         
-        // Jika kedua pemain sudah siap, reset log, pulihkan HP, dan mulai battling
         if (updatedRoom.player1?.ready && updatedRoom.player2?.ready) {
           await pvpRoomsCollection.updateOne({ _id: new ObjectId(roomId) }, { 
             $set: { 
               status: 'battling', 
-              logs: [], // KUNCI UTAMA: Kosongkan log agar kalkulasi turn terpanggil lagi
+              logs: [], 
               winner: null,
               'player1.currentHp': updatedRoom.player1.maxHp,
               'player2.currentHp': updatedRoom.player2.maxHp,
@@ -420,93 +419,92 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true });
       }
 
-      // 8. GET PVP STATUS & LOGS (Kalkulasi Battle + Reward Poin: +200 untuk vs Bot, +500 untuk vs User)
+      // 8. GET PVP STATUS & LOGS
       if (action === 'get_pvp_status') {
-        const { roomId } = req.body;
-        let room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
-        if (!room) return res.status(400).json({ success: false, error: 'Room tidak ditemukan.' });
-
-        if (room.status === 'battling' && (!room.logs || room.logs.length === 0)) {
-          let p1Hp = room.player1.currentHp;
-          let p2Hp = room.player2.currentHp;
-          const p1W = room.player1.waifu;
-          const p2W = room.player2.waifu;
-          let logs = [];
-
-          let turn = 1;
-          while (p1Hp > 0 && p2Hp > 0 && turn <= 10) {
-            let p1Damage = Math.max(15, Math.round(p1W.attack * (Math.random() * 0.3 + 0.85) - p2W.defense * 0.25));
-            p2Hp = Math.max(0, p2Hp - p1Damage);
-            logs.push({ turn, attacker: room.player1.name, defender: room.player2.name, damage: p1Damage, p2Hp, p1Hp });
-            if (p2Hp <= 0) break;
-
-            let p2Damage = Math.max(15, Math.round(p2W.attack * (Math.random() * 0.3 + 0.85) - p1W.defense * 0.25));
-            p1Hp = Math.max(0, p1Hp - p2Damage);
-            logs.push({ turn, attacker: room.player2.name, defender: room.player1.name, damage: p2Damage, p2Hp, p1Hp });
-            turn++;
-          }
-
-          let winner = p1Hp > p2Hp ? room.player1.name : (p2Hp > p1Hp ? room.player2.name : 'Draw');
+        try {
+          const { roomId } = req.body;
+          if (!roomId || roomId.length !== 24) return res.status(400).json({ success: false, error: 'Room ID tidak valid.' });
           
-          let updateData = { 
-            status: 'finished', 
-            logs, 
-            winner, 
-            'player1.currentHp': p1Hp, 
-            'player2.currentHp': p2Hp,
-            'player1.ready': false,
-            'player2.ready': false
-          };
+          let room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
+          if (!room) return res.status(400).json({ success: false, error: 'Room tidak ditemukan.' });
 
-          // Khusus User vs Bot: Jika bot kalah (HP 0), otomatis ganti bot baru untuk rematch berikutnya
-          if (room.player2 && room.player2.id === 'bot_ai' && p2Hp <= 0) {
-            const allWaifus = await waifusCollection.find({}).toArray();
-            const randBotWaifu = allWaifus[Math.floor(Math.random() * allWaifus.length)];
-            updateData['player2'] = {
-              id: 'bot_ai',
-              name: `[Bot] ${randBotWaifu.name}`,
-              avatar: '',
-              waifu: { ...randBotWaifu, instanceId: 'bot_inst', dupes: 1 },
-              currentHp: randBotWaifu.hp,
-              maxHp: randBotWaifu.hp,
-              ready: true
+          if (room.status === 'battling' && (!room.logs || room.logs.length === 0)) {
+            let p1Hp = room.player1.currentHp ?? room.player1.maxHp;
+            let p2Hp = room.player2.currentHp ?? room.player2.maxHp;
+            const p1W = room.player1.waifu;
+            const p2W = room.player2.waifu;
+            let logs = [];
+
+            let turn = 1;
+            while (p1Hp > 0 && p2Hp > 0 && turn <= 10) {
+              let p1Damage = Math.max(15, Math.round(p1W.attack * (Math.random() * 0.3 + 0.85) - (p2W.defense || 0) * 0.25));
+              p2Hp = Math.max(0, p2Hp - p1Damage);
+              logs.push({ turn, attacker: room.player1.name, defender: room.player2.name, damage: p1Damage, p2Hp, p1Hp });
+              if (p2Hp <= 0) break;
+
+              let p2Damage = Math.max(15, Math.round(p2W.attack * (Math.random() * 0.3 + 0.85) - (p1W.defense || 0) * 0.25));
+              p1Hp = Math.max(0, p1Hp - p2Damage);
+              logs.push({ turn, attacker: room.player2.name, defender: room.player1.name, damage: p2Damage, p2Hp, p1Hp });
+              turn++;
+            }
+
+            let winner = p1Hp > p2Hp ? room.player1.name : (p2Hp > p1Hp ? room.player2.name : 'Draw');
+            
+            let updateData = { 
+              status: 'finished', 
+              logs, 
+              winner, 
+              'player1.currentHp': p1Hp, 
+              'player2.currentHp': p2Hp,
+              'player1.ready': false,
+              'player2.ready': false
             };
-          }
 
-          await pvpRoomsCollection.updateOne({ _id: new ObjectId(roomId) }, { $set: updateData });
-
-          // Update statistik kemenangan & Berikan Reward Poin
-          if (winner !== 'Draw') {
-            const winningPlayerId = winner === room.player1.name ? room.player1.id : room.player2?.id;
-            const losingPlayerId = winner === room.player1.name ? room.player2?.id : room.player1.id;
-            const isAgainstBot = room.player2?.id === 'bot_ai';
-
-            if (winningPlayerId && winningPlayerId !== 'bot_ai') {
-              // Tentukan besar reward: +200 jika melawan bot, +500 jika melawan user lain
-              const rewardPoints = isAgainstBot ? 200 : 500;
-
-              await usersCollection.updateOne(
-                { id: winningPlayerId }, 
-                { 
-                  $inc: { pvpWins: 1, points: rewardPoints } 
-                }
-              );
+            if (room.player2 && room.player2.id === 'bot_ai' && p2Hp <= 0) {
+              const allWaifus = await waifusCollection.find({}).toArray();
+              const randBotWaifu = allWaifus[Math.floor(Math.random() * allWaifus.length)];
+              updateData['player2'] = {
+                id: 'bot_ai',
+                name: `[Bot] ${randBotWaifu.name}`,
+                avatar: '',
+                waifu: { ...randBotWaifu, instanceId: 'bot_inst', dupes: 1 },
+                currentHp: randBotWaifu.hp,
+                maxHp: randBotWaifu.hp,
+                ready: true
+              };
             }
 
-            if (losingPlayerId && losingPlayerId !== 'bot_ai') {
-              await usersCollection.updateOne({ id: losingPlayerId }, { $inc: { pvpLosses: 1 } });
+            await pvpRoomsCollection.updateOne({ _id: new ObjectId(roomId) }, { $set: updateData });
+
+            if (winner !== 'Draw') {
+              const winningPlayerId = winner === room.player1.name ? room.player1.id : room.player2?.id;
+              const losingPlayerId = winner === room.player1.name ? room.player2?.id : room.player1.id;
+              const isAgainstBot = room.player2?.id === 'bot_ai';
+
+              if (winningPlayerId && winningPlayerId !== 'bot_ai') {
+                const rewardPoints = isAgainstBot ? 200 : 500;
+                await usersCollection.updateOne({ id: winningPlayerId }, { $inc: { pvpWins: 1, points: rewardPoints } });
+              }
+              if (losingPlayerId && losingPlayerId !== 'bot_ai') {
+                await usersCollection.updateOne({ id: losingPlayerId }, { $inc: { pvpLosses: 1 } });
+              }
             }
           }
+
+          room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
+          return res.status(200).json({ success: true, room });
+        } catch (err) {
+          console.error("PVP Status Error:", err);
+          return res.status(500).json({ success: false, error: err.message });
         }
-
-        room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
-        return res.status(200).json({ success: true, room });
       }
 
       // 9. LEAVE ROOM / KELUAR ROOM
       if (action === 'leave_room') {
         const { roomId } = req.body;
-        await pvpRoomsCollection.deleteOne({ _id: new ObjectId(roomId) });
+        if (roomId && roomId.length === 24) {
+          await pvpRoomsCollection.deleteOne({ _id: new ObjectId(roomId) });
+        }
         return res.status(200).json({ success: true });
       }
 
