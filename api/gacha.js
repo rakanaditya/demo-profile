@@ -228,10 +228,10 @@ export default async function handler(req, res) {
         let pityCounter = dbUser.pityCounter || 0;
         pityCounter++;
 
-        const rand = Math.random() * 300;
+        const rand = Math.random() * 200;
         let targetRarity = 'R';
 
-        if (pityCounter >= 200) {
+        if (pityCounter >= 100) {
           targetRarity = 'SSR';
           pityCounter = 0;
         } else {
