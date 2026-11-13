@@ -500,9 +500,10 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true });
       }
 
-      return res.status(400).json({ success: false, error: 'Aksi POST tidak valid.' });
+     return res.status(400).json({ success: false, error: 'Aksi POST tidak valid.' });
     } catch (e) {
-      return res.status(500).json({ success: false, error: 'Terjadi kesalahan pada server.' });
+      console.error("SERVER ERROR DETAIL:", e); // <-- Tambahkan ini untuk melacak error asli di logs
+      return res.status(500).json({ success: false, error: e.message || 'Terjadi kesalahan pada server.' });
     }
   }
 }
