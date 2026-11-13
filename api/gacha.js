@@ -140,7 +140,6 @@ export default async function handler(req, res) {
     try {
       const { action, userId, user } = req.body;
 
-      // 10. HEARTBEAT / UPDATE LAST ACTIVE
       if (action === 'heartbeat') {
         if (!userId) return res.status(400).json({ success: false, error: 'User ID diperlukan.' });
         await usersCollection.updateOne(
@@ -169,7 +168,6 @@ export default async function handler(req, res) {
 
       if (!dbUser) return res.status(404).json({ success: false, error: 'User tidak ditemukan.' });
 
-      // 1. DAILY LOGIN REWARD
       if (action === 'daily') {
         const now = new Date();
         const lastClaim = dbUser.lastDailyClaim ? new Date(dbUser.lastDailyClaim) : null;
@@ -205,7 +203,6 @@ export default async function handler(req, res) {
         });
       }
 
-      // 2. GACHA PULL & SISTEM PITY
       if (action === 'gacha') {
         const gachaCost = 50;
         if (dbUser.points < gachaCost) {
@@ -288,7 +285,6 @@ export default async function handler(req, res) {
         });
       }
 
-      // 3. DELETE WAIFU
       if (action === 'delete_waifu') {
         const { instanceId } = req.body;
         let inventory = dbUser.inventory || [];
@@ -297,7 +293,6 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, inventory });
       }
 
-      // 4. MERGE DUPES
       if (action === 'merge_dupes') {
         let inventory = dbUser.inventory || [];
         const mergedMap = {};
@@ -317,7 +312,6 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, inventory: newInventory, message: 'Berhasil merge duplikat!' });
       }
 
-      // 5. CREATE PVP ROOM
       if (action === 'create_pvp_room') {
         const { instanceId, isBot } = req.body;
         const waifu = (dbUser.inventory || []).find(i => i.instanceId === instanceId);
@@ -366,9 +360,9 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, roomId: result.insertedId.toString(), room: newRoom });
       }
 
-      // 6. JOIN PVP ROOM
       if (action === 'join_pvp_room') {
         const { roomId, instanceId } = req.body;
+        if (!roomId || roomId.length !== 24) return res.status(400).json({ success: false, error: 'Room ID tidak valid.' });
         const waifu = (dbUser.inventory || []).find(i => i.instanceId === instanceId);
         if (!waifu) return res.status(400).json({ success: false, error: 'Waifu tidak ditemukan.' });
 
@@ -386,9 +380,10 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, roomId });
       }
 
-    // 7. PLAYER READY & REMATCH
       if (action === 'player_ready') {
         const { roomId } = req.body;
+        if (!roomId || roomId.length !== 24) return res.status(400).json({ success: false, error: 'Room ID tidak valid.' });
+        
         let room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
         if (!room) return res.status(400).json({ success: false, error: 'Room tidak ditemukan.' });
 
@@ -396,21 +391,13 @@ export default async function handler(req, res) {
         if (room.player1 && room.player1.id === userId) updateField['player1.ready'] = true;
         else if (room.player2 && room.player2.id === userId) updateField['player2.ready'] = true;
 
-        // Jika lawan adalah bot, otomatis set ready juga untuk bot
-        if (room.player2 && room.player2.id === 'bot_ai') {
-          updateField['player2.ready'] = true;
-        }
+        if (room.player2 && room.player2.id === 'bot_ai') updateField['player2.ready'] = true;
 
         await pvpRoomsCollection.updateOne({ _id: new ObjectId(roomId) }, { $set: updateField });
 
-        // Ambil data room terbaru setelah di-update
         let updatedRoom = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
         
-        // Cek apakah kedua pemain/bot sudah ready
-        const p1Ready = updatedRoom.player1?.ready;
-        const p2Ready = updatedRoom.player2?.ready;
-
-        if (p1Ready && p2Ready) {
+        if (updatedRoom.player1?.ready && updatedRoom.player2?.ready) {
           await pvpRoomsCollection.updateOne({ _id: new ObjectId(roomId) }, { 
             $set: { 
               status: 'battling', 
@@ -426,7 +413,7 @@ export default async function handler(req, res) {
 
         return res.status(200).json({ success: true });
       }
-      // 8. GET PVP STATUS & LOGS
+
       if (action === 'get_pvp_status') {
         try {
           const { roomId } = req.body;
@@ -501,12 +488,10 @@ export default async function handler(req, res) {
           room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
           return res.status(200).json({ success: true, room });
         } catch (err) {
-          console.error("PVP Status Error:", err);
           return res.status(500).json({ success: false, error: err.message });
         }
       }
 
-      // 9. LEAVE ROOM / KELUAR ROOM
       if (action === 'leave_room') {
         const { roomId } = req.body;
         if (roomId && roomId.length === 24) {
@@ -517,7 +502,6 @@ export default async function handler(req, res) {
 
       return res.status(400).json({ success: false, error: 'Aksi POST tidak valid.' });
     } catch (e) {
-      console.error(e);
       return res.status(500).json({ success: false, error: 'Terjadi kesalahan pada server.' });
     }
   }
