@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live PvP Arena Spectator - Rakan Aditya Community</title>
+  <script>
+    const origConsoleWarn = console.warn;
+    console.warn = function(...args) {
+      if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) return;
+      origConsoleWarn.apply(console, args);
+    };
+    tailwind = { config: { theme: { extend: { colors: { discord: { bg: '#313338', card: '#2b2d31', inner: '#1e1f22', accent: '#5865f2' } } } } } };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=gg+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { font-family: 'gg Sans', sans-serif; }
+    @keyframes livePulse {
+      0%, 100% { box-shadow: 0 0 12px rgba(236, 72, 153, 0.25); }
+      50% { box-shadow: 0 0 24px rgba(236, 72, 153, 0.55); }
+    }
+    .arena-glow { animation: livePulse 2.5s infinite; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-pink-500 selection:text-white">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-900/60 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between flex-wrap gap-3">
+      <div class="flex items-center space-x-3">
+        <a href="/gachaw" class="w-10 h-10 rounded-2xl overflow-hidden flex items-center justify-center shadow-lg border border-slate-700">
+          <img src="/Assets/server.png" alt="Server" class="w-full h-full object-cover">
+        </a>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="font-bold text-lg text-white leading-none">Live PvP Arena Monitor</h1>
+            <span class="text-[10px] bg-rose-500/20 text-rose-400 border border-rose-500/30 px-2 py-0.5 rounded font-mono font-bold flex items-center space-x-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping inline-block mr-1"></span>LIVE
+            </span>
+          </div>
+          <span class="text-xs text-pink-400">Rakan Aditya Community</span>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-2.5 flex-wrap gap-2">
+        <a href="/gachaw" class="px-4 py-2 rounded-xl text-xs font-bold transition bg-pink-600 hover:bg-pink-500 text-white shadow-lg">⚔️ Ikut Bertarung</a>
+        <a href="/gachawleaderboard" class="px-4 py-2 rounded-xl text-xs font-bold transition bg-slate-900 text-slate-300 hover:text-white border border-slate-800">🏆 Leaderboard</a>
+        <a href="/" class="text-xs text-slate-400 hover:text-white px-2">← Beranda</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-8 w-full flex-grow space-y-6">
+
+    <!-- Ringkasan Statistik Live Arena -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-lg">
+        <div>
+          <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Sedang Bertarung / Selesai</p>
+          <p id="stat-active-battles" class="text-2xl font-black text-pink-400 font-mono mt-1">0</p>
+        </div>
+        <div class="w-11 h-11 rounded-2xl bg-pink-500/15 text-pink-400 flex items-center justify-center text-xl">⚔️</div>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-lg">
+        <div>
+          <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Room Menunggu Lawan</p>
+          <p id="stat-waiting-rooms" class="text-2xl font-black text-amber-400 font-mono mt-1">0</p>
+        </div>
+        <div class="w-11 h-11 rounded-2xl bg-amber-500/15 text-amber-400 flex items-center justify-center text-xl">⏳</div>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-lg">
+        <div>
+          <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Total Pemain di Arena</p>
+          <p id="stat-total-fighters" class="text-2xl font-black text-emerald-400 font-mono mt-1">0</p>
+        </div>
+        <div class="w-11 h-11 rounded-2xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center text-xl">🔥</div>
+      </div>
+    </div>
+
+    <!-- Widget Utama: User Sedang Bertarung -->
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+        <div class="space-y-1">
+          <div class="flex items-center space-x-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <h2 class="text-xl font-black text-white">Widget Pertarungan PvP Real-Time</h2>
+          </div>
+          <p class="text-xs text-slate-400">Pantau langsung siapa saja yang sedang berduel, status HP waifu, hingga pemenang pertandingan.</p>
+        </div>
+
+        <div class="flex items-center space-x-2 flex-wrap gap-2">
+          <select id="filter-room-status" onchange="renderSpectateRooms()" class="bg-slate-950 border border-slate-800 text-xs text-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-pink-500">
+            <option value="all">Semua Room</option>
+            <option value="battling">Sedang Bertarung / Selesai</option>
+            <option value="waiting">Menunggu Lawan</option>
+          </select>
+
+          <button onclick="fetchLiveBattles(true)" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl transition flex items-center space-x-1.5 border border-slate-700">
+            <i id="refresh-icon" class="fa-solid fa-rotate"></i>
+            <span>Refresh</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Grid Daftar Pertarungan -->
+      <div id="live-battles-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div class="col-span-full text-center py-12 text-slate-500 text-sm">
+          Memuat data pertarungan dari arena...
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Modal Combat Log Spectator -->
+  <div id="log-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-pink-500/40 w-full max-w-lg rounded-3xl p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h4 id="log-modal-title" class="font-bold text-white text-base">📜 Detail Log Pertarungan</h4>
+        <button onclick="closeLogModal()" class="text-slate-400 hover:text-white text-sm bg-slate-800 w-7 h-7 rounded-full flex items-center justify-center">✕</button>
+      </div>
+      <div id="log-modal-content" class="bg-slate-950 p-4 rounded-2xl border border-slate-800 max-h-80 overflow-y-auto font-mono text-xs space-y-1.5 text-slate-300">
+      </div>
+    </div>
+  </div>
+
+  <footer class="border-t border-slate-800 py-6 bg-slate-900/40 text-center text-xs text-slate-500">
+    <p>Rakan Aditya Community &bull; Live PvP Spectator Feed (Auto-update tiap 3 detik)</p>
+  </footer>
+
+  <script>
+    let cachedRooms = [];
+
+    function formatNumber(num) {
+      if (num === undefined || num === null || isNaN(num)) return '0';
+      const val = Number(num);
+      if (val < 10000) return Math.round(val).toLocaleString('id-ID');
+      const suffixes = [
+        { value: 1e12, symbol: 'T' },
+        { value: 1e9,  symbol: 'B' },
+        { value: 1e6,  symbol: 'M' },
+        { value: 1e3,  symbol: 'k' }
+      ];
+      for (let i = 0; i < suffixes.length; i++) {
+        if (val >= suffixes[i].value) {
+          return (val / suffixes[i].value).toFixed(2).replace(/\.?0+$/, '') + suffixes[i].symbol;
+        }
+      }
+      return Math.round(val).toString();
+    }
+
+    function getAvatarUrl(player) {
+      if (!player || player.id === 'bot_ai') {
+        return player?.waifu?.image || 'https://cdn.discordapp.com/embed/avatars/1.png';
+      }
+      return player.avatar
+        ? `https://cdn.discordapp.com/avatars/${player.id}/${player.avatar}.png`
+        : 'https://cdn.discordapp.com/embed/avatars/0.png';
+    }
+
+    async function fetchLiveBattles(manual = false) {
+  const icon = document.getElementById('refresh-icon');
+  if (manual && icon) icon.classList.add('fa-spin');
+
+  try {
+    const res = await fetch('/api/gacha?action=pvp_spectate');
+    const data = await res.json();
+    if (data.success) {
+      cachedRooms = data.rooms || [];
+      updateStats();
+      renderSpectateRooms();
+    }
+  } catch (e) {
+    console.error(e);
+  } finally {
+    if (manual && icon) setTimeout(() => icon.classList.remove('fa-spin'), 400);
+  }
+}
+    function updateStats() {
+      const activeBattles = cachedRooms.filter(r => r.status === 'battling' || r.status === 'finished').length;
+      const waitingRooms = cachedRooms.filter(r => r.status === 'waiting').length;
+      let totalFighters = 0;
+      cachedRooms.forEach(r => {
+        if (r.player1) totalFighters++;
+        if (r.player2) totalFighters++;
+      });
+
+      document.getElementById('stat-active-battles').innerText = activeBattles;
+      document.getElementById('stat-waiting-rooms').innerText = waitingRooms;
+      document.getElementById('stat-total-fighters').innerText = totalFighters;
+    }
+
+    function renderSpectateRooms() {
+      const grid = document.getElementById('live-battles-grid');
+      const filter = document.getElementById('filter-room-status').value;
+      if (!grid) return;
+
+      let filtered = cachedRooms;
+      if (filter === 'battling') {
+        filtered = cachedRooms.filter(r => r.status === 'battling' || r.status === 'finished');
+      } else if (filter === 'waiting') {
+        filtered = cachedRooms.filter(r => r.status === 'waiting');
+      }
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full bg-slate-950/70 border border-slate-800 rounded-2xl p-10 text-center space-y-3">
+            <div class="text-3xl">🏟️</div>
+            <p class="text-sm font-bold text-slate-300">Belum ada pertarungan di kategori ini</p>
+            <p class="text-xs text-slate-500">Jadilah yang pertama membuka room di halaman Waifu Gacha & Battle Hub!</p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = '';
+      filtered.forEach((room, idx) => {
+        const p1 = room.player1 || {};
+        const p2 = room.player2 || null;
+        const p1W = p1.waifu || {};
+        const p2W = p2?.waifu || {};
+
+        const p1Cur = p1.currentHp ?? p1.maxHp ?? 0;
+        const p1Max = Math.max(1, p1.maxHp || 1);
+        const p1Pct = Math.max(0, Math.min(100, (p1Cur / p1Max) * 100));
+
+        const p2Cur = p2 ? (p2.currentHp ?? p2.maxHp ?? 0) : 0;
+        const p2Max = p2 ? Math.max(1, p2.maxHp || 1) : 1;
+        const p2Pct = p2 ? Math.max(0, Math.min(100, (p2Cur / p2Max) * 100)) : 0;
+
+        let badgeHtml = '';
+        let cardBorder = 'border-slate-800';
+        if (room.status === 'battling') {
+          badgeHtml = '<span class="text-[10px] bg-rose-500/20 text-rose-400 border border-rose-500/40 px-2.5 py-0.5 rounded-full font-black animate-pulse">🔥 SEDANG BERTARUNG</span>';
+          cardBorder = 'border-pink-500/50 arena-glow';
+        } else if (room.status === 'finished') {
+          badgeHtml = `<span class="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2.5 py-0.5 rounded-full font-bold">🏆 PEMENANG: ${room.winner || '-'}</span>`;
+          cardBorder = 'border-emerald-500/30';
+        } else {
+          badgeHtml = '<span class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2.5 py-0.5 rounded-full font-bold">⏳ MENUNGGU LAWAN</span>';
+        }
+
+        const hasLogs = room.logs && room.logs.length > 0;
+
+        grid.innerHTML += `
+          <div class="bg-slate-950 border ${cardBorder} rounded-2xl p-5 space-y-4 shadow-xl flex flex-col justify-between transition">
+            <!-- Top Bar Room -->
+            <div class="flex items-center justify-between gap-2 border-b border-slate-900 pb-3">
+              <div class="flex items-center space-x-2">
+                <span class="text-[11px] font-mono text-slate-500">#${room._id ? room._id.slice(-5).toUpperCase() : idx + 1}</span>
+                ${p2?.id === 'bot_ai' ? '<span class="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded font-bold">🤖 VS BOT</span>' : '<span class="text-[10px] bg-pink-500/20 text-pink-300 px-2 py-0.5 rounded font-bold">⚔️ PvP USER</span>'}
+              </div>
+              ${badgeHtml}
+            </div>
+
+            <!-- VS Fighters -->
+            <div class="grid grid-cols-11 gap-2 items-center">
+              <!-- Player 1 -->
+              <div class="col-span-5 bg-slate-900/90 border border-indigo-500/30 rounded-xl p-3 text-center space-y-2">
+                <div class="flex items-center justify-center space-x-1.5">
+                  <img src="${getAvatarUrl(p1)}" class="w-5 h-5 rounded-full object-cover border border-slate-700">
+                  <span class="text-xs font-bold text-white truncate max-w-[95px]">${p1.name || 'Player 1'}</span>
+                </div>
+                <img src="${p1W.image || '/Assets/server.png'}" class="w-16 h-16 mx-auto rounded-xl object-cover border border-slate-700">
+                <div>
+                  <p class="text-xs font-black text-indigo-300 truncate">${p1W.name || '-'}</p>
+                  <p class="text-[10px] text-slate-400 font-mono">${p1W.rarity || ''} &bull; ATK ${formatNumber(p1W.attack)}</p>
+                </div>
+                <div class="space-y-1">
+                  <p class="text-[10px] font-mono text-slate-300">${formatNumber(p1Cur)} / ${formatNumber(p1Max)}</p>
+                  <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                    <div class="bg-emerald-500 h-full transition-all duration-300" style="width: ${p1Pct}%"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- VS Divider -->
+              <div class="col-span-1 text-center">
+                <span class="text-xs font-black text-pink-500 italic">VS</span>
+              </div>
+
+              <!-- Player 2 -->
+              <div class="col-span-5 bg-slate-900/90 border ${p2 ? 'border-rose-500/30' : 'border-dashed border-slate-800'} rounded-xl p-3 text-center space-y-2">
+                ${p2 ? `
+                  <div class="flex items-center justify-center space-x-1.5">
+                    <img src="${getAvatarUrl(p2)}" class="w-5 h-5 rounded-full object-cover border border-slate-700">
+                    <span class="text-xs font-bold text-white truncate max-w-[95px]">${p2.name}</span>
+                  </div>
+                  <img src="${p2W.image || '/Assets/server.png'}" class="w-16 h-16 mx-auto rounded-xl object-cover border border-slate-700">
+                  <div>
+                    <p class="text-xs font-black text-rose-300 truncate">${p2W.name || '-'}</p>
+                    <p class="text-[10px] text-slate-400 font-mono">${p2W.rarity || ''} &bull; ATK ${formatNumber(p2W.attack)}</p>
+                  </div>
+                  <div class="space-y-1">
+                    <p class="text-[10px] font-mono text-slate-300">${formatNumber(p2Cur)} / ${formatNumber(p2Max)}</p>
+                    <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                      <div class="bg-rose-500 h-full transition-all duration-300" style="width: ${p2Pct}%"></div>
+                    </div>
+                  </div>
+                ` : `
+                  <div class="py-7 space-y-2">
+                    <div class="w-12 h-12 mx-auto rounded-full bg-slate-800/80 flex items-center justify-center text-slate-500 text-lg">?</div>
+                    <p class="text-[11px] font-bold text-slate-400">Menunggu Penantang...</p>
+                    <a href="/gachaw" class="inline-block text-[10px] bg-pink-600/20 hover:bg-pink-600 text-pink-300 hover:text-white border border-pink-500/30 px-2.5 py-1 rounded-lg font-bold transition">Tantang Sekarang</a>
+                  </div>
+                `}
+              </div>
+            </div>
+
+            <!-- Footer Action -->
+            <div class="flex items-center justify-between pt-2 border-t border-slate-900">
+              <span class="text-[10px] text-slate-500 font-mono">
+                ${hasLogs ? `Total ${room.logs.length} Serangan` : 'Belum ada log serangan'}
+              </span>
+              ${hasLogs ? `
+                <button onclick="openLogModal(${idx})" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-pink-400 font-bold text-[11px] rounded-xl transition">
+                  📜 Lihat Log Pertarungan
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function openLogModal(roomIndex) {
+      const filter = document.getElementById('filter-room-status').value;
+      let filtered = cachedRooms;
+      if (filter === 'battling') filtered = cachedRooms.filter(r => r.status === 'battling' || r.status === 'finished');
+      else if (filter === 'waiting') filtered = cachedRooms.filter(r => r.status === 'waiting');
+
+      const room = filtered[roomIndex];
+      if (!room || !room.logs) return;
+
+      document.getElementById('log-modal-title').innerText = `📜 ${room.player1?.name} vs ${room.player2?.name}`;
+      const content = document.getElementById('log-modal-content');
+      content.innerHTML = room.logs.map(l => `
+        <p>[Round ${l.turn}] <span class="text-pink-400 font-bold">${l.attacker}</span> menyerang <span class="text-indigo-400 font-bold">${l.defender}</span> sebesar <span class="text-rose-400 font-bold">-${formatNumber(l.damage)} DMG</span></p>
+      `).join('');
+
+      if (room.winner) {
+        content.innerHTML += `<p class="font-bold text-emerald-400 pt-2 border-t border-slate-800 mt-2">🎉 PEMENANG: ${room.winner}</p>`;
+      }
+
+      document.getElementById('log-modal').classList.remove('hidden');
+    }
+
+    function closeLogModal() {
+      document.getElementById('log-modal').classList.add('hidden');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      fetchLiveBattles();
+      setInterval(() => fetchLiveBattles(false), 3000);
+    });
+  </script>
+</body>
+</html>
