@@ -313,7 +313,7 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, inventory: newInventory, message: 'Berhasil merge duplikat!' });
       }
 
-      // 5. CREATE PVP ROOM (Status awal: waiting dengan tombol Ready)
+      // 5. CREATE PVP ROOM
       if (action === 'create_pvp_room') {
         const { instanceId, isBot } = req.body;
         const waifu = (dbUser.inventory || []).find(i => i.instanceId === instanceId);
@@ -337,7 +337,7 @@ export default async function handler(req, res) {
             waifu: { ...randBotWaifu, instanceId: 'bot_inst', dupes: 1 },
             currentHp: randBotWaifu.hp,
             maxHp: randBotWaifu.hp,
-            ready: true // Bot otomatis ready
+            ready: true
           };
         }
 
@@ -382,7 +382,7 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, roomId });
       }
 
-      // 7. PLAYER READY (Rematch Ready Diperlukan Sebelum Pertarungan Dimulai)
+      // 7. PLAYER READY
       if (action === 'player_ready') {
         const { roomId } = req.body;
         let room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
@@ -397,7 +397,6 @@ export default async function handler(req, res) {
         await pvpRoomsCollection.updateOne({ _id: new ObjectId(roomId) }, { $set: updateField });
 
         const updatedRoom = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
-        // Jika kedua pemain sudah menekan ready, ubah status menjadi battling dan reset HP untuk ronde baru / rematch
         if (updatedRoom.player1?.ready && updatedRoom.player2?.ready) {
           await pvpRoomsCollection.updateOne({ _id: new ObjectId(roomId) }, { 
             $set: { 
@@ -413,7 +412,7 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true });
       }
 
-      // 8. GET PVP STATUS & LOGS (Mengecek HP bar masing-masing dan menangani Rematch / Pergantian Bot Baru jika HP 0)
+      // 8. GET PVP STATUS & LOGS (Kalkulasi Battle + Reward Poin: +200 untuk vs Bot, +500 untuk vs User)
       if (action === 'get_pvp_status') {
         const { roomId } = req.body;
         let room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
@@ -451,7 +450,7 @@ export default async function handler(req, res) {
             'player2.ready': false
           };
 
-          // Khusus User vs Bot: Jika bot kalah (HP 0), otomatis ganti bot baru (merged otomatis) untuk ronde Rematch berikutnya
+          // Khusus User vs Bot: Jika bot kalah (HP 0), otomatis ganti bot baru untuk rematch berikutnya
           if (room.player2 && room.player2.id === 'bot_ai' && p2Hp <= 0) {
             const allWaifus = await waifusCollection.find({}).toArray();
             const randBotWaifu = allWaifus[Math.floor(Math.random() * allWaifus.length)];
@@ -462,20 +461,30 @@ export default async function handler(req, res) {
               waifu: { ...randBotWaifu, instanceId: 'bot_inst', dupes: 1 },
               currentHp: randBotWaifu.hp,
               maxHp: randBotWaifu.hp,
-              ready: true // Bot otomatis siap untuk rematch berikutnya
+              ready: true
             };
           }
 
           await pvpRoomsCollection.updateOne({ _id: new ObjectId(roomId) }, { $set: updateData });
 
-          // Update statistik kemenangan PvP
+          // Update statistik kemenangan & Berikan Reward Poin
           if (winner !== 'Draw') {
             const winningPlayerId = winner === room.player1.name ? room.player1.id : room.player2?.id;
             const losingPlayerId = winner === room.player1.name ? room.player2?.id : room.player1.id;
+            const isAgainstBot = room.player2?.id === 'bot_ai';
 
             if (winningPlayerId && winningPlayerId !== 'bot_ai') {
-              await usersCollection.updateOne({ id: winningPlayerId }, { $inc: { pvpWins: 1 } });
+              // Tentukan besar reward: +200 jika melawan bot, +500 jika melawan user lain
+              const rewardPoints = isAgainstBot ? 200 : 500;
+
+              await usersCollection.updateOne(
+                { id: winningPlayerId }, 
+                { 
+                  $inc: { pvpWins: 1, points: rewardPoints } 
+                }
+              );
             }
+
             if (losingPlayerId && losingPlayerId !== 'bot_ai') {
               await usersCollection.updateOne({ id: losingPlayerId }, { $inc: { pvpLosses: 1 } });
             }
