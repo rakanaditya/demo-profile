@@ -1040,16 +1040,6 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
   isRenderingLogs = false;
 }
 
-  const readyBtn = document.getElementById('ready-btn');
-  if (readyBtn) {
-    readyBtn.disabled = false;
-    readyBtn.innerText = '✅ SIAP REMATCH (READY)';
-    readyBtn.className = 'px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg transition';
-  }
-
-  isRenderingLogs = false;
-}
-
 async function leaveRoom() {
   if (activeRoomId && activeRoomId.length === 24) {
     await fetch('/api/gacha', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'leave_room', userId: currentUser.id, roomId: activeRoomId }) });
