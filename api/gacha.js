@@ -77,11 +77,11 @@ export default async function handler(req, res) {
 
     if (getAction === 'check_room') {
       try {
-        if (!roomId || roomId.length !== 24) return res.status(200).json({ success: true, room: null });
+        if (!roomId || roomId.length !== 24) return res.status(200).json({ success: true, room: null, serverNow: Date.now() });
         const room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
-        return res.status(200).json({ success: true, room });
+        return res.status(200).json({ success: true, room, serverNow: Date.now() });
       } catch (err) {
-        return res.status(200).json({ success: true, room: null });
+        return res.status(200).json({ success: true, room: null, serverNow: Date.now() });
       }
     }
 
@@ -155,7 +155,7 @@ export default async function handler(req, res) {
           .limit(20)
           .toArray();
 
-        return res.status(200).json({ success: true, rooms });
+        return res.status(200).json({ success: true, rooms, serverNow: Date.now() });
       } catch (err) {
         console.error('PVP SPECTATE ERROR:', err);
         return res.status(500).json({ success: false, error: err.message });
@@ -455,7 +455,7 @@ export default async function handler(req, res) {
 
           let updateData = { 
             status: 'finished', 
-            battleStartTime: Date.now(), // <-- TAMBAHKAN INI UNTUK SINKRONISASI WAKTU
+            battleStartTime: Date.now(),
             logs, 
             winner, 
             'player1.currentHp': p1Hp, 
@@ -493,7 +493,7 @@ export default async function handler(req, res) {
           let room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
           if (!room) return res.status(400).json({ success: false, error: 'Room tidak ditemukan.' });
 
-          return res.status(200).json({ success: true, room });
+          return res.status(200).json({ success: true, room, serverNow: Date.now() });
         } catch (err) {
           return res.status(500).json({ success: false, error: err.message });
         }
