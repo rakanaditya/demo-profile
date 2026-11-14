@@ -10,6 +10,7 @@ let autoGachaTimer = null;
 let shopCountdownInterval = null;
 let targetResetTimestamp = null;
 let isRenderingLogs = false;
+let lastRenderedBattleKey = null;
 
 function playAudio(s) {
   try {
@@ -808,6 +809,11 @@ async function checkRoomAndTriggerBattle() {
       setupRoomUI(room);
 
       if (room.status === 'battling' || room.status === 'finished') {
+        const battleKey = `${room._id}_${room.battleStartTime || room.winner}_${room.logs?.length || 0}`;
+        
+        // Hentikan jika pertarungan ini sudah selesai diputar animasinya
+        if (lastRenderedBattleKey === battleKey) return;
+
         const turnRes = await fetch('/api/gacha', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -815,6 +821,7 @@ async function checkRoomAndTriggerBattle() {
         });
         const turnData = await turnRes.json();
         if (turnData.success && turnData.room && turnData.room.logs && turnData.room.logs.length > 0) {
+          lastRenderedBattleKey = battleKey;
           if (pollInterval) clearInterval(pollInterval);
           await renderBattleAnimationAndLogs(turnData.room.logs, turnData.room.winner, turnData.room);
           fetchUserData();
@@ -1050,6 +1057,9 @@ async function leaveRoom() {
   if (pollInterval) clearInterval(pollInterval);
   activeRoomId = null;
   isRenderingLogs = false;
+  lastRenderedBattleKey = null;
+  
+  
   const battleRoom = document.getElementById('live-battle-room');
   const lobby = document.getElementById('pvp-lobby');
   const roundBox = document.getElementById('battle-round-indicator');
