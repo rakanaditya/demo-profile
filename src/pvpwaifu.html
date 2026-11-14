@@ -129,11 +129,13 @@
   </div>
 
   <footer class="border-t border-slate-800 py-6 bg-slate-900/40 text-center text-xs text-slate-500">
-    <p>Rakan Aditya Community &bull; Live PvP Spectator Feed (Auto-update tiap 3 detik)</p>
+    <p>Rakan Aditya Community &bull; Live PvP Spectator Feed (Real-Time Sync)</p>
   </footer>
 
   <script>
     let cachedRooms = [];
+    // Samakan angka STEP_MS ini dengan STEP_MS di script/gachawscript.js agar animasi penonton & pemain 100% sinkron
+    const STEP_MS = 1800;
 
     function formatNumber(num) {
       if (num === undefined || num === null || isNaN(num)) return '0';
@@ -163,23 +165,24 @@
     }
 
     async function fetchLiveBattles(manual = false) {
-  const icon = document.getElementById('refresh-icon');
-  if (manual && icon) icon.classList.add('fa-spin');
+      const icon = document.getElementById('refresh-icon');
+      if (manual && icon) icon.classList.add('fa-spin');
 
-  try {
-    const res = await fetch('/api/gacha?action=pvp_spectate');
-    const data = await res.json();
-    if (data.success) {
-      cachedRooms = data.rooms || [];
-      updateStats();
-      renderSpectateRooms();
+      try {
+        const res = await fetch('/api/gacha?action=pvp_spectate');
+        const data = await res.json();
+        if (data.success) {
+          cachedRooms = data.rooms || [];
+          updateStats();
+          renderSpectateRooms();
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        if (manual && icon) setTimeout(() => icon.classList.remove('fa-spin'), 400);
+      }
     }
-  } catch (e) {
-    console.error(e);
-  } finally {
-    if (manual && icon) setTimeout(() => icon.classList.remove('fa-spin'), 400);
-  }
-}
+
     function updateStats() {
       const activeBattles = cachedRooms.filter(r => r.status === 'battling' || r.status === 'finished').length;
       const waitingRooms = cachedRooms.filter(r => r.status === 'waiting').length;
@@ -192,6 +195,31 @@
       document.getElementById('stat-active-battles').innerText = activeBattles;
       document.getElementById('stat-waiting-rooms').innerText = waitingRooms;
       document.getElementById('stat-total-fighters').innerText = totalFighters;
+    }
+
+    function getRoomPlaybackState(room) {
+      const logs = room.logs || [];
+      const totalAnimMs = logs.length * STEP_MS + 500;
+      const elapsedMs = room.battleStartTime ? (Date.now() - room.battleStartTime) : Infinity;
+      const isStillAnimating = Boolean(room.battleStartTime && logs.length > 0 && elapsedMs < totalAnimMs);
+
+      let visibleLogsCount = logs.length;
+      let currentRound = logs.length > 0 ? logs[logs.length - 1].turn : 1;
+      let activeAttacker = null;
+
+      if (isStillAnimating) {
+        const stepIdx = Math.floor(elapsedMs / STEP_MS);
+        visibleLogsCount = Math.max(0, Math.min(logs.length, stepIdx));
+        if (visibleLogsCount > 0) {
+          const latestVisible = logs[visibleLogsCount - 1];
+          currentRound = latestVisible.turn;
+          activeAttacker = latestVisible.attacker;
+        } else {
+          currentRound = 1;
+        }
+      }
+
+      return { isStillAnimating, visibleLogsCount, currentRound, activeAttacker };
     }
 
     function renderSpectateRooms() {
@@ -224,18 +252,33 @@
         const p1W = p1.waifu || {};
         const p2W = p2?.waifu || {};
 
-        const p1Cur = p1.currentHp ?? p1.maxHp ?? 0;
+        const { isStillAnimating, visibleLogsCount, currentRound, activeAttacker } = getRoomPlaybackState(room);
+
+        // Sinkronisasi HP sesuai ronde yang sedang berjalan di arena
+        let p1Cur = p1.currentHp ?? p1.maxHp ?? 0;
+        let p2Cur = p2 ? (p2.currentHp ?? p2.maxHp ?? 0) : 0;
+
+        if (isStillAnimating) {
+          if (visibleLogsCount === 0) {
+            p1Cur = p1.maxHp ?? p1Cur;
+            p2Cur = p2 ? (p2.maxHp ?? p2Cur) : 0;
+          } else {
+            const activeLog = room.logs[visibleLogsCount - 1];
+            p1Cur = activeLog.p1Hp;
+            p2Cur = activeLog.p2Hp;
+          }
+        }
+
         const p1Max = Math.max(1, p1.maxHp || 1);
         const p1Pct = Math.max(0, Math.min(100, (p1Cur / p1Max) * 100));
 
-        const p2Cur = p2 ? (p2.currentHp ?? p2.maxHp ?? 0) : 0;
         const p2Max = p2 ? Math.max(1, p2.maxHp || 1) : 1;
         const p2Pct = p2 ? Math.max(0, Math.min(100, (p2Cur / p2Max) * 100)) : 0;
 
         let badgeHtml = '';
         let cardBorder = 'border-slate-800';
-        if (room.status === 'battling') {
-          badgeHtml = '<span class="text-[10px] bg-rose-500/20 text-rose-400 border border-rose-500/40 px-2.5 py-0.5 rounded-full font-black animate-pulse">🔥 SEDANG BERTARUNG</span>';
+        if (room.status === 'battling' || (room.status === 'finished' && isStillAnimating)) {
+          badgeHtml = `<span class="text-[10px] bg-rose-500/20 text-rose-400 border border-rose-500/40 px-2.5 py-0.5 rounded-full font-black animate-pulse">🔥 ROUND ${currentRound} — BATTLING</span>`;
           cardBorder = 'border-pink-500/50 arena-glow';
         } else if (room.status === 'finished') {
           badgeHtml = `<span class="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2.5 py-0.5 rounded-full font-bold">🏆 PEMENANG: ${room.winner || '-'}</span>`;
@@ -245,6 +288,8 @@
         }
 
         const hasLogs = room.logs && room.logs.length > 0;
+        const p1AttackRing = isStillAnimating && activeAttacker === p1.name ? 'ring-2 ring-pink-500 scale-[1.02]' : '';
+        const p2AttackRing = isStillAnimating && p2 && activeAttacker === p2.name ? 'ring-2 ring-rose-500 scale-[1.02]' : '';
 
         grid.innerHTML += `
           <div class="bg-slate-950 border ${cardBorder} rounded-2xl p-5 space-y-4 shadow-xl flex flex-col justify-between transition">
@@ -260,7 +305,7 @@
             <!-- VS Fighters -->
             <div class="grid grid-cols-11 gap-2 items-center">
               <!-- Player 1 -->
-              <div class="col-span-5 bg-slate-900/90 border border-indigo-500/30 rounded-xl p-3 text-center space-y-2">
+              <div class="col-span-5 bg-slate-900/90 border border-indigo-500/30 rounded-xl p-3 text-center space-y-2 transition-all duration-300 ${p1AttackRing}">
                 <div class="flex items-center justify-center space-x-1.5">
                   <img src="${getAvatarUrl(p1)}" class="w-5 h-5 rounded-full object-cover border border-slate-700">
                   <span class="text-xs font-bold text-white truncate max-w-[95px]">${p1.name || 'Player 1'}</span>
@@ -273,7 +318,7 @@
                 <div class="space-y-1">
                   <p class="text-[10px] font-mono text-slate-300">${formatNumber(p1Cur)} / ${formatNumber(p1Max)}</p>
                   <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-                    <div class="bg-emerald-500 h-full transition-all duration-300" style="width: ${p1Pct}%"></div>
+                    <div class="bg-emerald-500 h-full transition-all duration-500" style="width: ${p1Pct}%"></div>
                   </div>
                 </div>
               </div>
@@ -284,7 +329,7 @@
               </div>
 
               <!-- Player 2 -->
-              <div class="col-span-5 bg-slate-900/90 border ${p2 ? 'border-rose-500/30' : 'border-dashed border-slate-800'} rounded-xl p-3 text-center space-y-2">
+              <div class="col-span-5 bg-slate-900/90 border ${p2 ? 'border-rose-500/30' : 'border-dashed border-slate-800'} rounded-xl p-3 text-center space-y-2 transition-all duration-300 ${p2AttackRing}">
                 ${p2 ? `
                   <div class="flex items-center justify-center space-x-1.5">
                     <img src="${getAvatarUrl(p2)}" class="w-5 h-5 rounded-full object-cover border border-slate-700">
@@ -298,7 +343,7 @@
                   <div class="space-y-1">
                     <p class="text-[10px] font-mono text-slate-300">${formatNumber(p2Cur)} / ${formatNumber(p2Max)}</p>
                     <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-                      <div class="bg-rose-500 h-full transition-all duration-300" style="width: ${p2Pct}%"></div>
+                      <div class="bg-rose-500 h-full transition-all duration-500" style="width: ${p2Pct}%"></div>
                     </div>
                   </div>
                 ` : `
@@ -314,7 +359,7 @@
             <!-- Footer Action -->
             <div class="flex items-center justify-between pt-2 border-t border-slate-900">
               <span class="text-[10px] text-slate-500 font-mono">
-                ${hasLogs ? `Total ${room.logs.length} Serangan` : 'Belum ada log serangan'}
+                ${hasLogs ? (isStillAnimating ? `Serangan ${visibleLogsCount} / ${room.logs.length}` : `Total ${room.logs.length} Serangan`) : 'Belum ada log serangan'}
               </span>
               ${hasLogs ? `
                 <button onclick="openLogModal(${idx})" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-pink-400 font-bold text-[11px] rounded-xl transition">
@@ -336,13 +381,21 @@
       const room = filtered[roomIndex];
       if (!room || !room.logs) return;
 
+      const { isStillAnimating, visibleLogsCount } = getRoomPlaybackState(room);
+      const logsToShow = isStillAnimating ? room.logs.slice(0, visibleLogsCount) : room.logs;
+
       document.getElementById('log-modal-title').innerText = `📜 ${room.player1?.name} vs ${room.player2?.name}`;
       const content = document.getElementById('log-modal-content');
-      content.innerHTML = room.logs.map(l => `
-        <p>[Round ${l.turn}] <span class="text-pink-400 font-bold">${l.attacker}</span> menyerang <span class="text-indigo-400 font-bold">${l.defender}</span> sebesar <span class="text-rose-400 font-bold">-${formatNumber(l.damage)} DMG</span></p>
-      `).join('');
 
-      if (room.winner) {
+      if (logsToShow.length === 0) {
+        content.innerHTML = `<p class="text-pink-400 animate-pulse">⚔️ Pertarungan baru saja dimulai...</p>`;
+      } else {
+        content.innerHTML = logsToShow.map(l => `
+          <p>[Round ${l.turn}] <span class="text-pink-400 font-bold">${l.attacker}</span> menyerang <span class="text-indigo-400 font-bold">${l.defender}</span> sebesar <span class="text-rose-400 font-bold">-${formatNumber(l.damage)} DMG</span></p>
+        `).join('');
+      }
+
+      if (room.winner && !isStillAnimating) {
         content.innerHTML += `<p class="font-bold text-emerald-400 pt-2 border-t border-slate-800 mt-2">🎉 PEMENANG: ${room.winner}</p>`;
       }
 
@@ -355,7 +408,14 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       fetchLiveBattles();
-      setInterval(() => fetchLiveBattles(false), 3000);
+      // Fetch data terbaru dari server setiap 2.5 detik
+      setInterval(() => fetchLiveBattles(false), 2500);
+      // Update progres bar HP & ronde di layar penonton secara mulus setiap 500ms tanpa membebani server
+      setInterval(() => {
+        if (cachedRooms.some(r => r.battleStartTime)) {
+          renderSpectateRooms();
+        }
+      }, 500);
     });
   </script>
 </body>
