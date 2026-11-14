@@ -27,6 +27,15 @@ function getSyncedNow() {
   return Date.now() + serverTimeOffset;
 }
 
+function getWibDayInfo(timestampMs) {
+  const WIB_OFFSET_MS = 7 * 60 * 60 * 1000;
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  const shifted = timestampMs + WIB_OFFSET_MS;
+  const dayIndex = Math.floor(shifted / DAY_MS);
+  const nextMidnightWibUtcMs = (dayIndex + 1) * DAY_MS - WIB_OFFSET_MS;
+  return { dayIndex, nextMidnightWibUtcMs };
+}
+
 async function initRealtimeClient() {
   if (pusherClient || typeof Pusher === 'undefined') return;
   try {
@@ -199,7 +208,7 @@ function startShopCountdown() {
   if (shopCountdownInterval) clearInterval(shopCountdownInterval);
   shopCountdownInterval = setInterval(() => {
     if (!targetResetTimestamp) return;
-    const now = new Date().getTime();
+    const now = getSyncedNow();
     const distance = targetResetTimestamp - now;
     const timerEl = document.getElementById('shop-reset-timer');
     if (!timerEl) return;
@@ -401,8 +410,10 @@ async function initAuthAndData() {
 async function fetchUserData() {
   if (!currentUser || !currentUser.id) return;
   try {
+    const t0 = Date.now();
     const res = await fetch(`/api/gacha?action=profile&id=${currentUser.id}&username=${encodeURIComponent(currentUser.username)}&global_name=${encodeURIComponent(currentUser.global_name || currentUser.username)}&avatar=${currentUser.avatar || ''}`);
     const data = await res.json();
+    if (data.serverNow) syncServerClock(data.serverNow, t0);
     if (data.success) {
       userData = data.user;
       serverWaifusData = data.waifus || [];
@@ -449,11 +460,22 @@ async function refreshOpenRooms() {
 function renderDailyStreakGrid() {
   const grid = document.getElementById('daily-streak-grid');
   if (!grid || !userData) return;
-  const currentStreak = userData.loginStreak || 0;
+
+  const nowMs = getSyncedNow();
+  const currentWib = getWibDayInfo(nowMs);
+  let effectiveStreak = userData.loginStreak || 0;
+
+  if (userData.lastDailyClaim) {
+    const lastClaimWib = getWibDayInfo(new Date(userData.lastDailyClaim).getTime());
+    if (currentWib.dayIndex - lastClaimWib.dayIndex > 1) {
+      effectiveStreak = 0;
+    }
+  }
+
   grid.innerHTML = '';
 
   for (let i = 1; i <= 7; i++) {
-    const isClaimed = i <= currentStreak;
+    const isClaimed = i <= effectiveStreak;
     grid.innerHTML += `
       <div class="relative bg-slate-950/90 border ${isClaimed ? 'border-emerald-500 bg-emerald-950/20 shadow-lg shadow-emerald-950/40' : 'border-slate-800'} p-4 rounded-2xl flex flex-col items-center justify-center space-y-2 transition transform hover:scale-105">
         <span class="text-[11px] font-bold text-slate-400 font-mono uppercase tracking-wider">Hari ${i}</span>
@@ -475,37 +497,38 @@ function checkDailyClaimStatus() {
   const dailyMsg = document.getElementById('daily-msg');
   const claimBtn = document.getElementById('claim-daily-btn');
 
-  if (!userData || !userData.lastDailyClaim) {
+  if (dailyCountdownInterval) clearInterval(dailyCountdownInterval);
+
+  const enableClaimBtn = () => {
     if (countdownBanner) countdownBanner.classList.add('hidden');
-    if (dailyMsg) dailyMsg.innerText = '';
     if (claimBtn) {
       claimBtn.disabled = false;
       claimBtn.className = 'px-10 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm rounded-2xl shadow-xl shadow-emerald-900/30 transition transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center space-x-2 mx-auto cursor-pointer';
     }
+  };
+
+  if (!userData || !userData.lastDailyClaim) {
+    if (dailyMsg) dailyMsg.innerText = '';
+    enableClaimBtn();
     return;
   }
 
-  const lastClaimTime = new Date(userData.lastDailyClaim).getTime();
-  const nextClaimTime = lastClaimTime + (24 * 60 * 60 * 1000);
+  const lastClaimMs = new Date(userData.lastDailyClaim).getTime();
+  const lastClaimWib = getWibDayInfo(lastClaimMs);
 
-  if (dailyCountdownInterval) clearInterval(dailyCountdownInterval);
+  const updateTimer = () => {
+    const nowMs = getSyncedNow();
+    const currentWib = getWibDayInfo(nowMs);
 
-  dailyCountdownInterval = setInterval(() => {
-    const now = new Date().getTime();
-    const distance = nextClaimTime - now;
-
-    if (distance <= 0) {
+    if (currentWib.dayIndex > lastClaimWib.dayIndex) {
       clearInterval(dailyCountdownInterval);
-      if (countdownBanner) countdownBanner.classList.add('hidden');
-      if (dailyMsg) dailyMsg.innerText = '✨ Reward harian siap diklaim sekarang!';
-      if (claimBtn) {
-        claimBtn.disabled = false;
-        claimBtn.className = 'px-10 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm rounded-2xl shadow-xl shadow-emerald-900/30 transition transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center space-x-2 mx-auto cursor-pointer';
-      }
+      if (dailyMsg) dailyMsg.innerText = '✨ Reward harian baru telah tersedia (Reset 00:00 WIB)!';
+      enableClaimBtn();
       return;
     }
 
-    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const distance = Math.max(0, currentWib.nextMidnightWibUtcMs - nowMs);
+    const hours = Math.floor(distance / (1000 * 60 * 60));
     const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
@@ -513,26 +536,35 @@ function checkDailyClaimStatus() {
     const timerVal = document.getElementById('daily-timer-val');
     if (timerVal) timerVal.innerText = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
     if (countdownBanner) countdownBanner.classList.remove('hidden');
-    if (dailyMsg) dailyMsg.innerText = 'Reward harian sudah diambil hari ini. Coba lagi besok!';
+    if (dailyMsg) dailyMsg.innerText = 'Reward harian sudah diambil hari ini. Reset otomatis pukul 00:00 WIB!';
 
     if (claimBtn) {
       claimBtn.disabled = true;
       claimBtn.className = 'px-10 py-4 bg-slate-800 text-slate-500 font-black text-sm rounded-2xl shadow-inner cursor-not-allowed flex items-center justify-center space-x-2 mx-auto';
     }
-  }, 1000);
+  };
+
+  updateTimer();
+  dailyCountdownInterval = setInterval(updateTimer, 1000);
 }
 
 async function claimDailyReward() {
   playAudio('audio-pop');
   try {
-    const res = await fetch('/api/gacha', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'daily', userId: currentUser.id }) });
+    const t0 = Date.now();
+    const res = await fetch('/api/gacha', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'daily', userId: currentUser.id })
+    });
     const data = await res.json();
+    if (data.serverNow) syncServerClock(data.serverNow, t0);
     const dailyMsg = document.getElementById('daily-msg');
     if (data.success) {
       playAudio('audio-chime');
       userData.points = data.points;
       userData.loginStreak = data.streak;
-      userData.lastDailyClaim = new Date();
+      userData.lastDailyClaim = data.lastDailyClaim || new Date().toISOString();
       updateUIState();
       if (dailyMsg) dailyMsg.innerText = data.message;
     } else {
@@ -941,7 +973,6 @@ async function checkRoomAndTriggerBattle() {
 
 function startPollingRoom() {
   if (pollInterval) clearInterval(pollInterval);
-  // Polling fallback 3 detik sebagai cadangan keamanan di luar event WebSocket Pusher
   pollInterval = setInterval(async () => {
     if (!activeRoomId) return;
     await checkRoomAndTriggerBattle();
