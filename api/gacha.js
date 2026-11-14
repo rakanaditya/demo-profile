@@ -24,6 +24,12 @@ async function broadcastRoomEvent(roomId, eventName, payload) {
   }
 }
 
+// Helper kalender WIB (UTC+7) untuk reset Daily Reward pukul 00:00 WIB
+function getWibDayIndex(dateObj) {
+  const WIB_OFFSET_MS = 7 * 60 * 60 * 1000;
+  return Math.floor((new Date(dateObj).getTime() + WIB_OFFSET_MS) / (24 * 60 * 60 * 1000));
+}
+
 const DEFAULT_WAIFUS = [
   // ================= SSR TIER (Base Total Power Tinggi: ~5.200 - 5.500) =================
   // Dark & Shadow: Glass Cannon / Burst DMG tinggi, DEF sedang
@@ -108,7 +114,13 @@ export default async function handler(req, res) {
         'player1.id': { $ne: id }
       }).toArray();
 
-      return res.status(200).json({ success: true, user: dbUser, waifus: allWaifus, openRooms });
+      return res.status(200).json({
+        success: true,
+        user: dbUser,
+        waifus: allWaifus,
+        openRooms,
+        serverNow: Date.now()
+      });
     }
 
     if (getAction === 'check_room') {
@@ -241,18 +253,25 @@ export default async function handler(req, res) {
 
       if (action === 'daily') {
         const now = new Date();
+        const todayWibDay = getWibDayIndex(now);
         const lastClaim = dbUser.lastDailyClaim ? new Date(dbUser.lastDailyClaim) : null;
         let streak = dbUser.loginStreak || 0;
 
         if (lastClaim) {
-          const diffHours = (now - lastClaim) / (1000 * 60 * 60);
-          if (diffHours < 24) {
-            return res.status(400).json({ success: false, error: 'Reward harian sudah diambil hari ini. Coba lagi besok!' });
+          const lastClaimWibDay = getWibDayIndex(lastClaim);
+          const dayDiff = todayWibDay - lastClaimWibDay;
+
+          if (dayDiff <= 0) {
+            return res.status(400).json({
+              success: false,
+              error: 'Reward harian sudah diambil hari ini. Reset otomatis pada pukul 00:00 WIB!'
+            });
           }
-          if (diffHours > 48) {
-            streak = 1;
-          } else {
+
+          if (dayDiff === 1) {
             streak = (streak % 7) + 1;
+          } else {
+            streak = 1;
           }
         } else {
           streak = 1;
@@ -270,7 +289,9 @@ export default async function handler(req, res) {
           success: true,
           message: `Berhasil klaim Daily Reward Hari ke-${streak}! Mendapatkan +${rewardPoints} Poin.`,
           points: newPoints,
-          streak: streak
+          streak: streak,
+          lastDailyClaim: now.toISOString(),
+          serverNow: Date.now()
         });
       }
 
