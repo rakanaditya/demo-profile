@@ -455,6 +455,7 @@ export default async function handler(req, res) {
 
           let updateData = { 
             status: 'finished', 
+            battleStartTime: Date.now(), // <-- TAMBAHKAN INI UNTUK SINKRONISASI WAKTU
             logs, 
             winner, 
             'player1.currentHp': p1Hp, 
