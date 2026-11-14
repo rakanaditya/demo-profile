@@ -11,6 +11,19 @@ let shopCountdownInterval = null;
 let targetResetTimestamp = null;
 let isRenderingLogs = false;
 let lastRenderedBattleKey = null;
+let serverTimeOffset = 0;
+
+function syncServerClock(serverNow, requestStartLocalMs) {
+  if (!serverNow) return;
+  const requestEndLocalMs = Date.now();
+  const oneWayLatency = (requestEndLocalMs - requestStartLocalMs) / 2;
+  const adjustedServerNow = serverNow + oneWayLatency;
+  serverTimeOffset = adjustedServerNow - requestEndLocalMs;
+}
+
+function getSyncedNow() {
+  return Date.now() + serverTimeOffset;
+}
 
 function playAudio(s) {
   try {
@@ -50,7 +63,7 @@ function formatNumber(num) {
   return Math.round(val).toString();
 }
 
-function animateHpTransition(textEl, barEl, startHp, endHp, maxHp, duration = 650) {
+function animateHpTransition(textEl, barEl, startHp, endHp, maxHp, duration = 1200) {
   if (!textEl || !barEl) return;
   const startTime = performance.now();
   const safeMax = Math.max(1, maxHp);
@@ -648,6 +661,7 @@ async function createPvPRoom(isBot) {
   const data = await res.json();
   if (data.success) {
     activeRoomId = data.roomId;
+    lastRenderedBattleKey = null;
     const lobby = document.getElementById('pvp-lobby');
     const battleRoom = document.getElementById('live-battle-room');
     if (lobby) lobby.classList.add('hidden');
@@ -665,6 +679,7 @@ async function joinPvPRoom(roomId) {
   const data = await res.json();
   if (data.success) {
     activeRoomId = data.roomId;
+    lastRenderedBattleKey = null;
     const lobby = document.getElementById('pvp-lobby');
     const battleRoom = document.getElementById('live-battle-room');
     if (lobby) lobby.classList.add('hidden');
@@ -781,7 +796,7 @@ function setupRoomUI(room) {
     if (room.status === 'finished' && !isRenderingLogs) {
       if (statusBadge) statusBadge.innerText = 'Status: SELESAI';
       const readyBtn = document.getElementById('ready-btn');
-      if (readyBtn) {
+      if (readyBtn && !me?.ready) {
         readyBtn.disabled = false;
         readyBtn.innerText = '✅ SIAP REMATCH (READY)';
         readyBtn.className = 'px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg transition';
@@ -802,24 +817,28 @@ function setupRoomUI(room) {
 async function checkRoomAndTriggerBattle() {
   if (!activeRoomId || typeof activeRoomId !== 'string' || activeRoomId.length !== 24) return;
   try {
+    const t0 = Date.now();
     const res = await fetch(`/api/gacha?action=check_room&roomId=${activeRoomId}`);
     const data = await res.json();
+    if (data.serverNow) syncServerClock(data.serverNow, t0);
+
     if (data.success && data.room) {
       const room = data.room;
       setupRoomUI(room);
 
       if (room.status === 'battling' || room.status === 'finished') {
         const battleKey = `${room._id}_${room.battleStartTime || room.winner}_${room.logs?.length || 0}`;
-        
-        // Hentikan jika pertarungan ini sudah selesai diputar animasinya
         if (lastRenderedBattleKey === battleKey) return;
 
+        const t1 = Date.now();
         const turnRes = await fetch('/api/gacha', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'get_pvp_status', userId: currentUser.id, roomId: activeRoomId })
         });
         const turnData = await turnRes.json();
+        if (turnData.serverNow) syncServerClock(turnData.serverNow, t1);
+
         if (turnData.success && turnData.room && turnData.room.logs && turnData.room.logs.length > 0) {
           lastRenderedBattleKey = battleKey;
           if (pollInterval) clearInterval(pollInterval);
@@ -897,13 +916,15 @@ function renderOnlineUsers(users) {
     `;
   });
 }
+
 async function renderBattleAnimationAndLogs(logs, winner, room) {
   const logBox = document.getElementById('battle-combat-logs');
   if (!logBox || isRenderingLogs) return;
   isRenderingLogs = true;
 
-  const STEP_MS = 1800; // Dipercepat dari 1100ms menjadi 650ms per serangan
-  const startTime = room.battleStartTime || Date.now();
+  // Samakan STEP_MS ini dengan STEP_MS di src/pvpwaifu.html
+  const STEP_MS = 1800;
+  const startTime = room.battleStartTime || getSyncedNow();
 
   const roundBox = document.getElementById('battle-round-indicator');
   const roundText = document.getElementById('round-indicator-text');
@@ -957,12 +978,12 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
   for (let i = 0; i < logs.length; i++) {
     const l = logs[i];
 
-    // SINKRONISASI WAKTU: Tunggu hingga tepat waktu jadwal serangan ke-i berdasarkan jam server
+    // Sinkronisasi waktu berbasis jam server yang terkalibrasi
     const targetTime = startTime + (i + 1) * STEP_MS;
-    const waitMs = Math.max(80, targetTime - Date.now());
+    const waitMs = Math.max(80, targetTime - getSyncedNow());
     await new Promise(r => setTimeout(r, waitMs));
 
-    // Update teks kuning ROUND tepat saat jadwal serangannya tiba (sinkron dengan lawan & penonton)
+    // Update teks kuning indikator ROUND tepat saat serangan tiba
     if (l.turn !== lastTurn) {
       lastTurn = l.turn;
       if (roundText) {
@@ -972,7 +993,6 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
     }
 
     playAudio('audio-pop');
-  
 
     const isMeAttacking = (isP1 && l.attacker === room.player1.name) || (!isP1 && l.attacker === room.player2.name);
     if (p1Card && p2Card) {
@@ -1058,8 +1078,6 @@ async function leaveRoom() {
   activeRoomId = null;
   isRenderingLogs = false;
   lastRenderedBattleKey = null;
-  
-  
   const battleRoom = document.getElementById('live-battle-room');
   const lobby = document.getElementById('pvp-lobby');
   const roundBox = document.getElementById('battle-round-indicator');
