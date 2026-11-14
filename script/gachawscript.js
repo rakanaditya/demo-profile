@@ -829,7 +829,7 @@ function startPollingRoom() {
   pollInterval = setInterval(async () => {
     if (!activeRoomId) return;
     await checkRoomAndTriggerBattle();
-  }, 8000);
+  }, 800);
 }
 
 function startOnlineTracker() {
@@ -950,6 +950,12 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
   for (let i = 0; i < logs.length; i++) {
     const l = logs[i];
 
+    // SINKRONISASI WAKTU: Tunggu hingga tepat waktu jadwal serangan ke-i berdasarkan jam server
+    const targetTime = startTime + (i + 1) * STEP_MS;
+    const waitMs = Math.max(80, targetTime - Date.now());
+    await new Promise(r => setTimeout(r, waitMs));
+
+    // Update teks kuning ROUND tepat saat jadwal serangannya tiba (sinkron dengan lawan & penonton)
     if (l.turn !== lastTurn) {
       lastTurn = l.turn;
       if (roundText) {
@@ -958,12 +964,8 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
       logBox.innerHTML += `<div class="text-[11px] font-black text-amber-400 border-b border-slate-800 pb-0.5 pt-1.5 tracking-wider uppercase">— ROUND ${l.turn} —</div>`;
     }
 
-    // SINKRONISASI WAKTU: Tunggu hingga tepat waktu jadwal serangan ke-i berdasarkan jam server
-    const targetTime = startTime + (i + 1) * STEP_MS;
-    const waitMs = Math.max(80, targetTime - Date.now());
-    await new Promise(r => setTimeout(r, waitMs));
-
     playAudio('audio-pop');
+  
 
     const isMeAttacking = (isP1 && l.attacker === room.player1.name) || (!isP1 && l.attacker === room.player2.name);
     if (p1Card && p2Card) {
@@ -1038,6 +1040,7 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
   }
 
   isRenderingLogs = false;
+  startPollingRoom();
 }
 
 async function leaveRoom() {
