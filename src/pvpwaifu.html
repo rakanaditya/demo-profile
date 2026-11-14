@@ -134,8 +134,23 @@
 
   <script>
     let cachedRooms = [];
+    let activeModalRoomId = null;
+    let serverTimeOffset = 0;
+
     // Samakan angka STEP_MS ini dengan STEP_MS di script/gachawscript.js agar animasi penonton & pemain 100% sinkron
     const STEP_MS = 1800;
+
+    function syncServerClock(serverNow, requestStartLocalMs) {
+      if (!serverNow) return;
+      const requestEndLocalMs = Date.now();
+      const oneWayLatency = (requestEndLocalMs - requestStartLocalMs) / 2;
+      const adjustedServerNow = serverNow + oneWayLatency;
+      serverTimeOffset = adjustedServerNow - requestEndLocalMs;
+    }
+
+    function getSyncedNow() {
+      return Date.now() + serverTimeOffset;
+    }
 
     function formatNumber(num) {
       if (num === undefined || num === null || isNaN(num)) return '0';
@@ -169,12 +184,16 @@
       if (manual && icon) icon.classList.add('fa-spin');
 
       try {
+        const t0 = Date.now();
         const res = await fetch('/api/gacha?action=pvp_spectate');
         const data = await res.json();
+        if (data.serverNow) syncServerClock(data.serverNow, t0);
+
         if (data.success) {
           cachedRooms = data.rooms || [];
           updateStats();
           renderSpectateRooms();
+          if (activeModalRoomId) refreshOpenLogModal();
         }
       } catch (e) {
         console.error(e);
@@ -199,8 +218,8 @@
 
     function getRoomPlaybackState(room) {
       const logs = room.logs || [];
-      const totalAnimMs = logs.length * STEP_MS + 500;
-      const elapsedMs = room.battleStartTime ? (Date.now() - room.battleStartTime) : Infinity;
+      const totalAnimMs = logs.length * STEP_MS + 450;
+      const elapsedMs = room.battleStartTime ? (getSyncedNow() - room.battleStartTime) : Infinity;
       const isStillAnimating = Boolean(room.battleStartTime && logs.length > 0 && elapsedMs < totalAnimMs);
 
       let visibleLogsCount = logs.length;
@@ -208,7 +227,7 @@
       let activeAttacker = null;
 
       if (isStillAnimating) {
-        const stepIdx = Math.floor(elapsedMs / STEP_MS);
+        const stepIdx = Math.floor(Math.max(0, elapsedMs) / STEP_MS);
         visibleLogsCount = Math.max(0, Math.min(logs.length, stepIdx));
         if (visibleLogsCount > 0) {
           const latestVisible = logs[visibleLogsCount - 1];
@@ -362,7 +381,7 @@
                 ${hasLogs ? (isStillAnimating ? `Serangan ${visibleLogsCount} / ${room.logs.length}` : `Total ${room.logs.length} Serangan`) : 'Belum ada log serangan'}
               </span>
               ${hasLogs ? `
-                <button onclick="openLogModal(${idx})" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-pink-400 font-bold text-[11px] rounded-xl transition">
+                <button onclick="openLogModal('${room._id}')" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-pink-400 font-bold text-[11px] rounded-xl transition">
                   📜 Lihat Log Pertarungan
                 </button>
               ` : ''}
@@ -372,13 +391,15 @@
       });
     }
 
-    function openLogModal(roomIndex) {
-      const filter = document.getElementById('filter-room-status').value;
-      let filtered = cachedRooms;
-      if (filter === 'battling') filtered = cachedRooms.filter(r => r.status === 'battling' || r.status === 'finished');
-      else if (filter === 'waiting') filtered = cachedRooms.filter(r => r.status === 'waiting');
+    function openLogModal(roomId) {
+      activeModalRoomId = roomId;
+      refreshOpenLogModal();
+      document.getElementById('log-modal').classList.remove('hidden');
+    }
 
-      const room = filtered[roomIndex];
+    function refreshOpenLogModal() {
+      if (!activeModalRoomId) return;
+      const room = cachedRooms.find(r => r._id === activeModalRoomId);
       if (!room || !room.logs) return;
 
       const { isStillAnimating, visibleLogsCount } = getRoomPlaybackState(room);
@@ -398,11 +419,11 @@
       if (room.winner && !isStillAnimating) {
         content.innerHTML += `<p class="font-bold text-emerald-400 pt-2 border-t border-slate-800 mt-2">🎉 PEMENANG: ${room.winner}</p>`;
       }
-
-      document.getElementById('log-modal').classList.remove('hidden');
+      content.scrollTop = content.scrollHeight;
     }
 
     function closeLogModal() {
+      activeModalRoomId = null;
       document.getElementById('log-modal').classList.add('hidden');
     }
 
@@ -414,6 +435,7 @@
       setInterval(() => {
         if (cachedRooms.some(r => r.battleStartTime)) {
           renderSpectateRooms();
+          if (activeModalRoomId) refreshOpenLogModal();
         }
       }, 500);
     });
