@@ -70,7 +70,11 @@ export default async function handler(req, res) {
       }
       
       const allWaifus = await waifusCollection.find({}).toArray();
-      const openRooms = await pvpRoomsCollection.find({ status: 'waiting', 'player1.id': { $ne: id } }).toArray();
+      const openRooms = await pvpRoomsCollection.find({
+        status: 'waiting',
+        player2: null,
+        'player1.id': { $ne: id }
+      }).toArray();
 
       return res.status(200).json({ success: true, user: dbUser, waifus: allWaifus, openRooms });
     }
@@ -86,7 +90,11 @@ export default async function handler(req, res) {
     }
 
     if (getAction === 'get_open_rooms') {
-      const openRooms = await pvpRoomsCollection.find({ status: 'waiting', 'player1.id': { $ne: id } }).toArray();
+      const openRooms = await pvpRoomsCollection.find({
+        status: 'waiting',
+        player2: null,
+        'player1.id': { $ne: id }
+      }).toArray();
       return res.status(200).json({ success: true, openRooms });
     }
 
@@ -379,6 +387,7 @@ export default async function handler(req, res) {
 
         const newRoom = {
           status: 'waiting',
+          isBotRoom: Boolean(isBot),
           player1: {
             id: dbUser.id,
             name: dbUser.global_name || dbUser.username,
@@ -404,6 +413,12 @@ export default async function handler(req, res) {
         const waifu = (dbUser.inventory || []).find(i => i.instanceId === instanceId);
         if (!waifu) return res.status(400).json({ success: false, error: 'Waifu tidak ditemukan.' });
 
+        const targetRoom = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
+        if (!targetRoom) return res.status(404).json({ success: false, error: 'Room sudah tidak tersedia.' });
+        if (targetRoom.player2 !== null || targetRoom.isBotRoom || targetRoom.status !== 'waiting') {
+          return res.status(400).json({ success: false, error: 'Room ini sudah terisi atau terkunci.' });
+        }
+
         const currentWaifuHp = waifu.currentHp ?? waifu.hp;
         if (currentWaifuHp <= 0) {
           return res.status(400).json({ success: false, error: 'HP waifu ini habis (0)! Sembuhkan di Shop terlebih dahulu sebelum masuk PvP.' });
@@ -419,7 +434,10 @@ export default async function handler(req, res) {
           ready: false
         };
 
-        await pvpRoomsCollection.updateOne({ _id: new ObjectId(roomId) }, { $set: { player2: player2Data } });
+        await pvpRoomsCollection.updateOne(
+          { _id: new ObjectId(roomId), player2: null },
+          { $set: { player2: player2Data } }
+        );
         return res.status(200).json({ success: true, roomId });
       }
 
