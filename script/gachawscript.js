@@ -695,9 +695,15 @@ async function setPlayerReady() {
   if (!activeRoomId || activeRoomId.length !== 24) return;
 
   const readyBtn = document.getElementById('ready-btn');
+  const p1ReadyBadge = document.getElementById('p1-status-ready');
+
   if (readyBtn) {
     readyBtn.disabled = true;
     readyBtn.innerText = '⏳ MEMPROSES...';
+  }
+  if (p1ReadyBadge) {
+    p1ReadyBadge.innerText = 'READY ✓';
+    p1ReadyBadge.className = 'text-emerald-400 font-bold';
   }
 
   try {
@@ -716,6 +722,10 @@ async function setPlayerReady() {
       await checkRoomAndTriggerBattle();
     } else {
       alert(data.error || 'Gagal mengubah status ready.');
+      if (p1ReadyBadge) {
+        p1ReadyBadge.innerText = 'MENUNGGU READY...';
+        p1ReadyBadge.className = 'text-amber-400 font-bold';
+      }
       if (readyBtn) {
         readyBtn.disabled = false;
         readyBtn.innerText = '✅ SIAP (READY / REMATCH)';
@@ -723,6 +733,10 @@ async function setPlayerReady() {
     }
   } catch (e) {
     alert('Terjadi kesalahan koneksi.');
+    if (p1ReadyBadge) {
+      p1ReadyBadge.innerText = 'MENUNGGU READY...';
+      p1ReadyBadge.className = 'text-amber-400 font-bold';
+    }
     if (readyBtn) {
       readyBtn.disabled = false;
       readyBtn.innerText = '✅ SIAP (READY / REMATCH)';
@@ -753,8 +767,8 @@ function setupRoomUI(room) {
   }
 
   const p1Ready = document.getElementById('p1-status-ready');
-  if (p1Ready) {
-    if (room.status === 'finished' && !isRenderingLogs) {
+  if (p1Ready && !isRenderingLogs) {
+    if (room.status === 'finished') {
       p1Ready.innerText = 'SELESAI';
       p1Ready.className = 'text-slate-400 font-bold';
     } else {
@@ -777,8 +791,8 @@ function setupRoomUI(room) {
     }
 
     const p2Ready = document.getElementById('p2-status-ready');
-    if (p2Ready) {
-      if (room.status === 'finished' && !isRenderingLogs) {
+    if (p2Ready && !isRenderingLogs) {
+      if (room.status === 'finished') {
         p2Ready.innerText = 'SELESAI';
         p2Ready.className = 'text-slate-400 font-bold';
       } else if (isBotRoom) {
@@ -801,10 +815,10 @@ function setupRoomUI(room) {
         readyBtn.innerText = '✅ SIAP REMATCH (READY)';
         readyBtn.className = 'px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg transition';
       }
-    } else if (room.status === 'battling') {
+    } else if (room.status === 'battling' && !isRenderingLogs) {
       if (statusBadge) statusBadge.innerText = 'Status: Pertarungan Sedang Berlangsung!';
       if (banner) banner.classList.add('hidden');
-    } else {
+    } else if (!isRenderingLogs) {
       if (statusBadge) statusBadge.innerText = isBotRoom ? 'Status: Lawan Bot Siap! Silakan tekan Ready.' : 'Status: Lawan Bergabung! Silakan tekan Ready.';
       if (banner) banner.classList.add('hidden');
     }
@@ -1087,8 +1101,6 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
   isRenderingLogs = false;
   startPollingRoom();
 }
-
-
 
 async function leaveRoom() {
   if (activeRoomId && activeRoomId.length === 24) {
