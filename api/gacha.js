@@ -1,5 +1,28 @@
 import { connectToDatabase } from './db.js';
 import { ObjectId } from 'mongodb';
+import Pusher from 'pusher';
+
+const pusher = (process.env.PUSHER_APP_ID && process.env.PUSHER_KEY && process.env.PUSHER_SECRET)
+  ? new Pusher({
+      appId: process.env.PUSHER_APP_ID,
+      key: process.env.PUSHER_KEY,
+      secret: process.env.PUSHER_SECRET,
+      cluster: process.env.PUSHER_CLUSTER || 'ap1',
+      useTLS: true
+    })
+  : null;
+
+async function broadcastRoomEvent(roomId, eventName, payload) {
+  if (!pusher || !roomId) return;
+  try {
+    await pusher.trigger(`pvp-room-${roomId}`, eventName, {
+      ...payload,
+      serverNow: Date.now()
+    });
+  } catch (err) {
+    console.error('PUSHER TRIGGER ERROR:', err.message);
+  }
+}
 
 const DEFAULT_WAIFUS = [
   // ================= SSR TIER (Base Total Power Tinggi: ~5.200 - 5.500) =================
@@ -48,11 +71,20 @@ export default async function handler(req, res) {
   // PENANGANAN METHOD GET
   if (req.method === 'GET') {
     const { action: getAction, id, roomId } = req.query;
-    
+
+    if (getAction === 'realtime_config') {
+      return res.status(200).json({
+        success: true,
+        enabled: Boolean(process.env.PUSHER_KEY),
+        key: process.env.PUSHER_KEY || '',
+        cluster: process.env.PUSHER_CLUSTER || 'ap1'
+      });
+    }
+
     if (getAction === 'profile') {
       if (!id) return res.status(400).json({ success: false, error: 'User ID diperlukan.' });
       let dbUser = await usersCollection.findOne({ id: id });
-      
+
       if (!dbUser) {
         dbUser = {
           id: id,
@@ -68,7 +100,7 @@ export default async function handler(req, res) {
         };
         await usersCollection.insertOne(dbUser);
       }
-      
+
       const allWaifus = await waifusCollection.find({}).toArray();
       const openRooms = await pvpRoomsCollection.find({
         status: 'waiting',
@@ -110,9 +142,9 @@ export default async function handler(req, res) {
     if (getAction === 'leaderboard') {
       const topPoints = await usersCollection.find({}).sort({ points: -1 }).limit(10).project({ id: 1, username: 1, global_name: 1, avatar: 1, points: 1 }).toArray();
       const topStreak = await usersCollection.find({}).sort({ loginStreak: -1, points: -1 }).limit(10).project({ id: 1, username: 1, global_name: 1, avatar: 1, loginStreak: 1 }).toArray();
-      
+
       const allUsers = await usersCollection.find({}).toArray();
-      
+
       const topInventory = allUsers.map(u => ({
         id: u.id,
         username: u.username,
@@ -211,7 +243,7 @@ export default async function handler(req, res) {
         const now = new Date();
         const lastClaim = dbUser.lastDailyClaim ? new Date(dbUser.lastDailyClaim) : null;
         let streak = dbUser.loginStreak || 0;
-        
+
         if (lastClaim) {
           const diffHours = (now - lastClaim) / (1000 * 60 * 60);
           if (diffHours < 24) {
@@ -404,7 +436,9 @@ export default async function handler(req, res) {
         };
 
         const result = await pvpRoomsCollection.insertOne(newRoom);
-        return res.status(200).json({ success: true, roomId: result.insertedId.toString(), room: newRoom });
+        const insertedId = result.insertedId.toString();
+        newRoom._id = result.insertedId;
+        return res.status(200).json({ success: true, roomId: insertedId, room: newRoom });
       }
 
       if (action === 'join_pvp_room') {
@@ -438,13 +472,17 @@ export default async function handler(req, res) {
           { _id: new ObjectId(roomId), player2: null },
           { $set: { player2: player2Data } }
         );
+
+        const joinedRoom = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
+        await broadcastRoomEvent(roomId, 'room_updated', { room: joinedRoom });
+
         return res.status(200).json({ success: true, roomId });
       }
 
       if (action === 'player_ready') {
         const { roomId } = req.body;
         if (!roomId || roomId.length !== 24) return res.status(400).json({ success: false, error: 'Room ID tidak valid.' });
-        
+
         let room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
         if (!room) return res.status(400).json({ success: false, error: 'Room tidak ditemukan.' });
 
@@ -475,7 +513,7 @@ export default async function handler(req, res) {
         await pvpRoomsCollection.updateOne({ _id: new ObjectId(roomId) }, { $set: updateField });
 
         let updatedRoom = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
-        
+
         // JIKA KEDUANYA READY, LANGSUNG HITUNG PERTARUNGAN HINGGA SELESAI
         if (updatedRoom.player1?.ready && updatedRoom.player2?.ready) {
           let p1Hp = updatedRoom.player1.maxHp;
@@ -501,6 +539,8 @@ export default async function handler(req, res) {
                 { _id: new ObjectId(roomId) },
                 { $set: { 'player1.ready': false, 'player2.ready': false } }
               );
+              const resetRoom = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
+              await broadcastRoomEvent(roomId, 'room_updated', { room: resetRoom });
               return res.status(400).json({
                 success: false,
                 error: 'Salah satu pemain memiliki waifu dengan HP 0! Sembuhkan di Shop terlebih dahulu.'
@@ -527,19 +567,17 @@ export default async function handler(req, res) {
 
           let winner = p1Hp > p2Hp ? updatedRoom.player1.name : (p2Hp > p1Hp ? updatedRoom.player2.name : 'Draw');
 
-          // Jika lawan Bot: HP di room langsung dipulihkan 100% dan inventory tetap utuh.
-          // Jika PvP lawan User: Simpan sisa HP ke room DAN kurangi HP asli waifu di inventory kedua pemain.
-          let updateData = { 
-            status: 'finished', 
+          let updateData = {
+            status: 'finished',
             battleStartTime: Date.now(),
-            logs, 
-            winner, 
+            logs,
+            winner,
             'player1.maxHp': p1MaxHp,
             'player2.maxHp': p2MaxHp,
-            'player1.currentHp': isAgainstBot ? p1MaxHp : p1Hp, 
-            'player2.currentHp': isAgainstBot ? p2MaxHp : p2Hp, 
-            'player1.ready': false, 
-            'player2.ready': false 
+            'player1.currentHp': isAgainstBot ? p1MaxHp : p1Hp,
+            'player2.currentHp': isAgainstBot ? p2MaxHp : p2Hp,
+            'player1.ready': false,
+            'player2.ready': false
           };
 
           await pvpRoomsCollection.updateOne({ _id: new ObjectId(roomId) }, { $set: updateData });
@@ -568,6 +606,11 @@ export default async function handler(req, res) {
               await usersCollection.updateOne({ id: losingPlayerId }, { $inc: { pvpLosses: 1 } });
             }
           }
+
+          const finalRoom = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
+          await broadcastRoomEvent(roomId, 'battle_start', { room: finalRoom });
+        } else {
+          await broadcastRoomEvent(roomId, 'room_updated', { room: updatedRoom });
         }
 
         return res.status(200).json({ success: true });
@@ -577,7 +620,7 @@ export default async function handler(req, res) {
         try {
           const { roomId } = req.body;
           if (!roomId || roomId.length !== 24) return res.status(400).json({ success: false, error: 'Room ID tidak valid.' });
-          
+
           let room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
           if (!room) return res.status(400).json({ success: false, error: 'Room tidak ditemukan.' });
 
@@ -590,6 +633,7 @@ export default async function handler(req, res) {
       if (action === 'leave_room') {
         const { roomId } = req.body;
         if (roomId && roomId.length === 24) {
+          await broadcastRoomEvent(roomId, 'room_closed', { roomId });
           await pvpRoomsCollection.deleteOne({ _id: new ObjectId(roomId) });
         }
         return res.status(200).json({ success: true });
