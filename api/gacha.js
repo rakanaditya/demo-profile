@@ -9,7 +9,7 @@ const DEFAULT_WAIFUS = [
   // Light: Seimbang (All-Rounder), DEF & kecepatan tinggi
   { id: 'asuna', name: 'AsunaYuuki', title: 'The Lightning Flash', element: 'Light', rarity: 'SSR', attack: 1050, defense: 880, hp: 3450, image: '/Assets/Waifu/asuna.gif', description: 'Pendekar pedang super cepat dari dunia Aincrad yang terkenal dengan tusukan kilatnya.' },
   // Fire: Serangan ofensif brutal, HP tebal, DEF rendah
-  { id: 'zero_two', name: 'ZeroTwo', title: 'Partner Killer', element: 'Fire', rarity: 'SSR', attack: 1100, defense: 760, hp: 3600, image: '/Assets/Waifu/zerotwo.gif', description: 'Gadis bertanduk dengan darah klakosaur di nadinya, petarung Franxx yang buas.' },
+  { id: 'zerotwo', name: 'ZeroTwo', title: 'Partner Killer', element: 'Fire', rarity: 'SSR', attack: 1100, defense: 760, hp: 3600, image: '/Assets/Waifu/zerotwo.gif', description: 'Gadis bertanduk dengan darah klakosaur di nadinya, petarung Franxx yang buas.' },
 
   // ================= SR TIER (Base Total Power Menengah: ~4.200 - 4.550) =================
   // Water & Ice: Tanky / Sustain (HP & DEF tinggi, ATK stabil)
