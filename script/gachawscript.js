@@ -976,7 +976,7 @@ function startPollingRoom() {
   pollInterval = setInterval(async () => {
     if (!activeRoomId) return;
     await checkRoomAndTriggerBattle();
-  }, 3000);
+  }, 5000);
 }
 
 function startOnlineTracker() {
