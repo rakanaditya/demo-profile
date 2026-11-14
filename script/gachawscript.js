@@ -12,6 +12,8 @@ let targetResetTimestamp = null;
 let isRenderingLogs = false;
 let lastRenderedBattleKey = null;
 let serverTimeOffset = 0;
+let pusherClient = null;
+let activeRoomChannel = null;
 
 function syncServerClock(serverNow, requestStartLocalMs) {
   if (!serverNow) return;
@@ -23,6 +25,76 @@ function syncServerClock(serverNow, requestStartLocalMs) {
 
 function getSyncedNow() {
   return Date.now() + serverTimeOffset;
+}
+
+async function initRealtimeClient() {
+  if (pusherClient || typeof Pusher === 'undefined') return;
+  try {
+    const res = await fetch('/api/gacha?action=realtime_config');
+    const cfg = await res.json();
+    if (cfg.success && cfg.enabled && cfg.key) {
+      pusherClient = new Pusher(cfg.key, {
+        cluster: cfg.cluster || 'ap1',
+        forceTLS: true
+      });
+    }
+  } catch (e) {}
+}
+
+function subscribeToRoomChannel(roomId) {
+  if (!pusherClient || !roomId) return;
+  unsubscribeFromRoomChannel();
+
+  const channelName = `pvp-room-${roomId}`;
+  activeRoomChannel = pusherClient.subscribe(channelName);
+
+  activeRoomChannel.bind('room_updated', (data) => {
+    if (!data || !data.room || activeRoomId !== roomId) return;
+    if (data.serverNow) syncServerClock(data.serverNow, Date.now());
+    setupRoomUI(data.room);
+  });
+
+  activeRoomChannel.bind('battle_start', async (data) => {
+    if (!data || !data.room || activeRoomId !== roomId) return;
+    if (data.serverNow) syncServerClock(data.serverNow, Date.now());
+
+    const room = data.room;
+    if (!room.logs || room.logs.length === 0) return;
+
+    const battleKey = `${room._id}_${room.battleStartTime || room.winner}_${room.logs.length}`;
+    if (lastRenderedBattleKey === battleKey) return;
+
+    lastRenderedBattleKey = battleKey;
+    if (pollInterval) clearInterval(pollInterval);
+    setupRoomUI(room);
+    await renderBattleAnimationAndLogs(room.logs, room.winner, room);
+    fetchUserData();
+  });
+
+  activeRoomChannel.bind('room_closed', () => {
+    if (activeRoomId === roomId) {
+      unsubscribeFromRoomChannel();
+      if (pollInterval) clearInterval(pollInterval);
+      activeRoomId = null;
+      isRenderingLogs = false;
+      lastRenderedBattleKey = null;
+      const battleRoom = document.getElementById('live-battle-room');
+      const lobby = document.getElementById('pvp-lobby');
+      const roundBox = document.getElementById('battle-round-indicator');
+      if (battleRoom) battleRoom.classList.add('hidden');
+      if (lobby) lobby.classList.remove('hidden');
+      if (roundBox) roundBox.classList.add('hidden');
+      alert('Lawan telah menutup / keluar dari room.');
+      refreshOpenRooms();
+    }
+  });
+}
+
+function unsubscribeFromRoomChannel() {
+  if (pusherClient && activeRoomChannel) {
+    pusherClient.unsubscribe(activeRoomChannel.name);
+    activeRoomChannel = null;
+  }
 }
 
 function playAudio(s) {
@@ -319,7 +391,7 @@ async function initAuthAndData() {
     if (navName) navName.innerText = currentUser.global_name || currentUser.username;
     if (navAvatar) navAvatar.src = getAvatarUrl(currentUser);
 
-    await fetchUserData();
+    await Promise.all([fetchUserData(), initRealtimeClient()]);
     startOnlineTracker();
   } else {
     if (loginPrompt) loginPrompt.classList.remove('hidden');
@@ -662,6 +734,7 @@ async function createPvPRoom(isBot) {
   if (data.success) {
     activeRoomId = data.roomId;
     lastRenderedBattleKey = null;
+    subscribeToRoomChannel(activeRoomId);
     const lobby = document.getElementById('pvp-lobby');
     const battleRoom = document.getElementById('live-battle-room');
     if (lobby) lobby.classList.add('hidden');
@@ -680,10 +753,12 @@ async function joinPvPRoom(roomId) {
   if (data.success) {
     activeRoomId = data.roomId;
     lastRenderedBattleKey = null;
+    subscribeToRoomChannel(activeRoomId);
     const lobby = document.getElementById('pvp-lobby');
     const battleRoom = document.getElementById('live-battle-room');
     if (lobby) lobby.classList.add('hidden');
     if (battleRoom) battleRoom.classList.remove('hidden');
+    await checkRoomAndTriggerBattle();
     startPollingRoom();
   } else {
     alert(data.error);
@@ -866,10 +941,11 @@ async function checkRoomAndTriggerBattle() {
 
 function startPollingRoom() {
   if (pollInterval) clearInterval(pollInterval);
+  // Polling fallback 3 detik sebagai cadangan keamanan di luar event WebSocket Pusher
   pollInterval = setInterval(async () => {
     if (!activeRoomId) return;
     await checkRoomAndTriggerBattle();
-  }, 800);
+  }, 3000);
 }
 
 function startOnlineTracker() {
@@ -1103,6 +1179,7 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
 }
 
 async function leaveRoom() {
+  unsubscribeFromRoomChannel();
   if (activeRoomId && activeRoomId.length === 24) {
     await fetch('/api/gacha', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'leave_room', userId: currentUser.id, roomId: activeRoomId }) });
   }
