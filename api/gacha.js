@@ -348,6 +348,11 @@ export default async function handler(req, res) {
         const waifu = (dbUser.inventory || []).find(i => i.instanceId === instanceId);
         if (!waifu) return res.status(400).json({ success: false, error: 'Waifu tidak ditemukan.' });
 
+        const currentWaifuHp = waifu.currentHp ?? waifu.hp;
+        if (!isBot && currentWaifuHp <= 0) {
+          return res.status(400).json({ success: false, error: 'HP waifu ini habis (0)! Sembuhkan di Shop terlebih dahulu sebelum PvP melawan user.' });
+        }
+
         await pvpRoomsCollection.deleteMany({
           $or: [
             { 'player1.id': userId, status: { $in: ['waiting', 'battling', 'finished'] } },
@@ -370,14 +375,16 @@ export default async function handler(req, res) {
           };
         }
 
+        const startHpP1 = isBot ? waifu.hp : currentWaifuHp;
+
         const newRoom = {
           status: 'waiting',
           player1: {
             id: dbUser.id,
             name: dbUser.global_name || dbUser.username,
             avatar: dbUser.avatar,
-            waifu: { ...waifu, currentHp: waifu.currentHp ?? waifu.hp },
-            currentHp: waifu.currentHp ?? waifu.hp,
+            waifu: { ...waifu, currentHp: startHpP1 },
+            currentHp: startHpP1,
             maxHp: waifu.hp,
             ready: false
           },
@@ -397,12 +404,17 @@ export default async function handler(req, res) {
         const waifu = (dbUser.inventory || []).find(i => i.instanceId === instanceId);
         if (!waifu) return res.status(400).json({ success: false, error: 'Waifu tidak ditemukan.' });
 
+        const currentWaifuHp = waifu.currentHp ?? waifu.hp;
+        if (currentWaifuHp <= 0) {
+          return res.status(400).json({ success: false, error: 'HP waifu ini habis (0)! Sembuhkan di Shop terlebih dahulu sebelum masuk PvP.' });
+        }
+
         const player2Data = {
           id: dbUser.id,
           name: dbUser.global_name || dbUser.username,
           avatar: dbUser.avatar,
-          waifu: { ...waifu, currentHp: waifu.currentHp ?? waifu.hp },
-          currentHp: waifu.currentHp ?? waifu.hp,
+          waifu: { ...waifu, currentHp: currentWaifuHp },
+          currentHp: currentWaifuHp,
           maxHp: waifu.hp,
           ready: false
         };
@@ -418,11 +430,29 @@ export default async function handler(req, res) {
         let room = await pvpRoomsCollection.findOne({ _id: new ObjectId(roomId) });
         if (!room) return res.status(400).json({ success: false, error: 'Room tidak ditemukan.' });
 
+        const isAgainstBot = room.player2?.id === 'bot_ai';
+
+        // Cek HP terkini di inventory sebelum mengizinkan Ready / Rematch pada PvP lawan User
+        if (!isAgainstBot) {
+          const callerWaifuInstId = room.player1?.id === userId
+            ? room.player1?.waifu?.instanceId
+            : room.player2?.waifu?.instanceId;
+          const callerWaifu = (dbUser.inventory || []).find(w => w.instanceId === callerWaifuInstId);
+          const callerCurHp = callerWaifu ? (callerWaifu.currentHp ?? callerWaifu.hp) : 0;
+
+          if (callerCurHp <= 0) {
+            return res.status(400).json({
+              success: false,
+              error: 'HP waifu Anda sudah habis (0)! Sembuhkan di Shop terlebih dahulu sebelum Rematch PvP.'
+            });
+          }
+        }
+
         let updateField = {};
         if (room.player1 && room.player1.id === userId) updateField['player1.ready'] = true;
         else if (room.player2 && room.player2.id === userId) updateField['player2.ready'] = true;
 
-        if (room.player2 && room.player2.id === 'bot_ai') updateField['player2.ready'] = true;
+        if (isAgainstBot) updateField['player2.ready'] = true;
 
         await pvpRoomsCollection.updateOne({ _id: new ObjectId(roomId) }, { $set: updateField });
 
@@ -430,10 +460,36 @@ export default async function handler(req, res) {
         
         // JIKA KEDUANYA READY, LANGSUNG HITUNG PERTARUNGAN HINGGA SELESAI
         if (updatedRoom.player1?.ready && updatedRoom.player2?.ready) {
-          // Reset HP penuh jika ini adalah Rematch dari pertandingan yang sudah selesai
-          const isRematch = updatedRoom.status === 'finished';
-          let p1Hp = isRematch ? updatedRoom.player1.maxHp : (updatedRoom.player1.currentHp ?? updatedRoom.player1.maxHp);
-          let p2Hp = isRematch ? updatedRoom.player2.maxHp : (updatedRoom.player2.currentHp ?? updatedRoom.player2.maxHp);
+          let p1Hp = updatedRoom.player1.maxHp;
+          let p2Hp = updatedRoom.player2.maxHp;
+          let p1MaxHp = updatedRoom.player1.maxHp;
+          let p2MaxHp = updatedRoom.player2.maxHp;
+
+          if (!isAgainstBot) {
+            // PvP Lawan User: Ambil HP asli terbaru dari inventory masing-masing pemain (termasuk saat Rematch)
+            const p1UserDoc = await usersCollection.findOne({ id: updatedRoom.player1.id });
+            const p2UserDoc = await usersCollection.findOne({ id: updatedRoom.player2.id });
+
+            const p1InvWaifu = (p1UserDoc?.inventory || []).find(w => w.instanceId === updatedRoom.player1.waifu.instanceId);
+            const p2InvWaifu = (p2UserDoc?.inventory || []).find(w => w.instanceId === updatedRoom.player2.waifu.instanceId);
+
+            p1MaxHp = p1InvWaifu ? p1InvWaifu.hp : updatedRoom.player1.maxHp;
+            p2MaxHp = p2InvWaifu ? p2InvWaifu.hp : updatedRoom.player2.maxHp;
+            p1Hp = p1InvWaifu ? (p1InvWaifu.currentHp ?? p1InvWaifu.hp) : 0;
+            p2Hp = p2InvWaifu ? (p2InvWaifu.currentHp ?? p2InvWaifu.hp) : 0;
+
+            if (p1Hp <= 0 || p2Hp <= 0) {
+              await pvpRoomsCollection.updateOne(
+                { _id: new ObjectId(roomId) },
+                { $set: { 'player1.ready': false, 'player2.ready': false } }
+              );
+              return res.status(400).json({
+                success: false,
+                error: 'Salah satu pemain memiliki waifu dengan HP 0! Sembuhkan di Shop terlebih dahulu.'
+              });
+            }
+          }
+
           const p1W = updatedRoom.player1.waifu;
           const p2W = updatedRoom.player2.waifu;
           let logs = [];
@@ -453,24 +509,38 @@ export default async function handler(req, res) {
 
           let winner = p1Hp > p2Hp ? updatedRoom.player1.name : (p2Hp > p1Hp ? updatedRoom.player2.name : 'Draw');
 
+          // Jika lawan Bot: HP di room langsung dipulihkan 100% dan inventory tetap utuh.
+          // Jika PvP lawan User: Simpan sisa HP ke room DAN kurangi HP asli waifu di inventory kedua pemain.
           let updateData = { 
             status: 'finished', 
             battleStartTime: Date.now(),
             logs, 
             winner, 
-            'player1.currentHp': p1Hp, 
-            'player2.currentHp': p2Hp, 
+            'player1.maxHp': p1MaxHp,
+            'player2.maxHp': p2MaxHp,
+            'player1.currentHp': isAgainstBot ? p1MaxHp : p1Hp, 
+            'player2.currentHp': isAgainstBot ? p2MaxHp : p2Hp, 
             'player1.ready': false, 
             'player2.ready': false 
           };
 
           await pvpRoomsCollection.updateOne({ _id: new ObjectId(roomId) }, { $set: updateData });
 
+          if (!isAgainstBot) {
+            await usersCollection.updateOne(
+              { id: updatedRoom.player1.id, 'inventory.instanceId': updatedRoom.player1.waifu.instanceId },
+              { $set: { 'inventory.$.currentHp': p1Hp } }
+            );
+            await usersCollection.updateOne(
+              { id: updatedRoom.player2.id, 'inventory.instanceId': updatedRoom.player2.waifu.instanceId },
+              { $set: { 'inventory.$.currentHp': p2Hp } }
+            );
+          }
+
           // BERI REWARD POIN KEPADA PEMENANG
           if (winner !== 'Draw') {
             const winningPlayerId = winner === updatedRoom.player1.name ? updatedRoom.player1.id : updatedRoom.player2?.id;
             const losingPlayerId = winner === updatedRoom.player1.name ? updatedRoom.player2?.id : updatedRoom.player1.id;
-            const isAgainstBot = updatedRoom.player2?.id === 'bot_ai';
 
             if (winningPlayerId && winningPlayerId !== 'bot_ai') {
               const rewardPoints = isAgainstBot ? 200 : 500;
