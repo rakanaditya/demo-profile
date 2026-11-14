@@ -929,6 +929,8 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
   const roundBox = document.getElementById('battle-round-indicator');
   const roundText = document.getElementById('round-indicator-text');
   const statusBadge = document.getElementById('room-status-badge');
+  const p1ReadyBadge = document.getElementById('p1-status-ready');
+  const p2ReadyBadge = document.getElementById('p2-status-ready');
   const p1Card = document.getElementById('p1-card');
   const p2Card = document.getElementById('p2-card');
   const banner = document.getElementById('battle-result-banner');
@@ -963,6 +965,16 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
     p2HpBar.className = 'bg-emerald-500 h-full transition-all duration-150';
   }
 
+  // Ubah status badge kedua pemain menjadi BATTLING saat animasi duel dimulai
+  if (p1ReadyBadge) {
+    p1ReadyBadge.innerText = '⚔️ BATTLING...';
+    p1ReadyBadge.className = 'text-rose-400 font-bold animate-pulse';
+  }
+  if (p2ReadyBadge) {
+    p2ReadyBadge.innerText = '⚔️ BATTLING...';
+    p2ReadyBadge.className = 'text-rose-400 font-bold animate-pulse';
+  }
+
   if (banner) banner.classList.add('hidden');
   if (statusBadge) statusBadge.innerText = 'Status: Pertarungan Sedang Berlangsung! (BATTLING)';
   if (roundBox) roundBox.classList.remove('hidden');
@@ -978,12 +990,10 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
   for (let i = 0; i < logs.length; i++) {
     const l = logs[i];
 
-    // Sinkronisasi waktu berbasis jam server yang terkalibrasi
     const targetTime = startTime + (i + 1) * STEP_MS;
     const waitMs = Math.max(80, targetTime - getSyncedNow());
     await new Promise(r => setTimeout(r, waitMs));
 
-    // Update teks kuning indikator ROUND tepat saat serangan tiba
     if (l.turn !== lastTurn) {
       lastTurn = l.turn;
       if (roundText) {
@@ -1031,6 +1041,14 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
   logBox.scrollTop = logBox.scrollHeight;
 
   if (statusBadge) statusBadge.innerText = 'Status: SELESAI';
+  if (p1ReadyBadge) {
+    p1ReadyBadge.innerText = 'SELESAI';
+    p1ReadyBadge.className = 'text-slate-400 font-bold';
+  }
+  if (p2ReadyBadge) {
+    p2ReadyBadge.innerText = 'SELESAI';
+    p2ReadyBadge.className = 'text-slate-400 font-bold';
+  }
   if (roundText) {
     roundText.innerText = `🏁 PERTARUNGAN SELESAI (${lastTurn} ROUND)`;
     roundText.className = 'text-sm sm:text-base font-black tracking-widest uppercase text-emerald-400';
@@ -1069,6 +1087,8 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
   isRenderingLogs = false;
   startPollingRoom();
 }
+
+
 
 async function leaveRoom() {
   if (activeRoomId && activeRoomId.length === 24) {
