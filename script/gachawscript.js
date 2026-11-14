@@ -829,7 +829,7 @@ function startPollingRoom() {
   pollInterval = setInterval(async () => {
     if (!activeRoomId) return;
     await checkRoomAndTriggerBattle();
-  }, 2000);
+  }, 8000);
 }
 
 function startOnlineTracker() {
@@ -890,11 +890,13 @@ function renderOnlineUsers(users) {
     `;
   });
 }
-
 async function renderBattleAnimationAndLogs(logs, winner, room) {
   const logBox = document.getElementById('battle-combat-logs');
   if (!logBox || isRenderingLogs) return;
   isRenderingLogs = true;
+
+  const STEP_MS = 1800; // Dipercepat dari 1100ms menjadi 650ms per serangan
+  const startTime = room.battleStartTime || Date.now();
 
   const roundBox = document.getElementById('battle-round-indicator');
   const roundText = document.getElementById('round-indicator-text');
@@ -912,7 +914,6 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
   const myMaxHp = isP1 ? room.player1.maxHp : room.player2.maxHp;
   const opMaxHp = isP1 ? room.player2.maxHp : room.player1.maxHp;
 
-  // Setel Health Bar awal sebelum ronde 1 dimulai
   const firstLog = logs[0];
   let curMyHp = isP1
     ? (firstLog.p1Hp + (firstLog.attacker === room.player2.name ? firstLog.damage : 0))
@@ -957,7 +958,11 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
       logBox.innerHTML += `<div class="text-[11px] font-black text-amber-400 border-b border-slate-800 pb-0.5 pt-1.5 tracking-wider uppercase">— ROUND ${l.turn} —</div>`;
     }
 
-    await new Promise(r => setTimeout(r, 1100));
+    // SINKRONISASI WAKTU: Tunggu hingga tepat waktu jadwal serangan ke-i berdasarkan jam server
+    const targetTime = startTime + (i + 1) * STEP_MS;
+    const waitMs = Math.max(80, targetTime - Date.now());
+    await new Promise(r => setTimeout(r, waitMs));
+
     playAudio('audio-pop');
 
     const isMeAttacking = (isP1 && l.attacker === room.player1.name) || (!isP1 && l.attacker === room.player2.name);
@@ -978,16 +983,16 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
     const nextOpHp = isP1 ? l.p2Hp : l.p1Hp;
 
     if (nextMyHp !== curMyHp) {
-      animateHpTransition(p1HpText, p1HpBar, curMyHp, nextMyHp, myMaxHp, 650);
+      animateHpTransition(p1HpText, p1HpBar, curMyHp, nextMyHp, myMaxHp, 1200);
       curMyHp = nextMyHp;
     }
     if (nextOpHp !== curOpHp) {
-      animateHpTransition(p2HpText, p2HpBar, curOpHp, nextOpHp, opMaxHp, 650);
+      animateHpTransition(p2HpText, p2HpBar, curOpHp, nextOpHp, opMaxHp, 1200);
       curOpHp = nextOpHp;
     }
   }
 
-  await new Promise(r => setTimeout(r, 700));
+  await new Promise(r => setTimeout(r, 450));
 
   if (p1Card) p1Card.classList.remove('ring-2', 'ring-pink-500', 'scale-[1.02]');
   if (p2Card) p2Card.classList.remove('ring-2', 'ring-rose-500', 'scale-[1.02]');
@@ -1024,6 +1029,16 @@ async function renderBattleAnimationAndLogs(logs, winner, room) {
       outcomeDesc.innerHTML = `Sayang sekali waifu lawan lebih tangguh. Tingkatkan level atau gacha waifu lain untuk balas dendam!`;
     }
   }
+
+  const readyBtn = document.getElementById('ready-btn');
+  if (readyBtn) {
+    readyBtn.disabled = false;
+    readyBtn.innerText = '✅ SIAP REMATCH (READY)';
+    readyBtn.className = 'px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg transition';
+  }
+
+  isRenderingLogs = false;
+}
 
   const readyBtn = document.getElementById('ready-btn');
   if (readyBtn) {
