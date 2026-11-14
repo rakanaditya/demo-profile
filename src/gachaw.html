@@ -162,25 +162,21 @@
               <i class="fa-solid fa-calendar-check"></i>
             </div>
             <h3 class="text-3xl font-black text-white tracking-tight">Daily Login Reward</h3>
-            <p class="text-xs sm:text-sm text-slate-400 max-w-lg mx-auto">Klaim poin gratis setiap hari secara beruntun hingga 7 hari!</p>
+            <p class="text-xs sm:text-sm text-slate-400 max-w-lg mx-auto">Klaim poin gratis setiap hari secara beruntun hingga 7 hari! Reset otomatis setiap pukul 00:00 WIB.</p>
           </div>
-          
           <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-4 relative z-10" id="daily-streak-grid"></div>
           <div class="text-center space-y-4 pt-2 relative z-10">
-<!-- TAMBAHKAN BANNER TIMER INI -->
             <div id="daily-countdown-banner" class="hidden inline-flex items-center space-x-2 bg-slate-950 border border-amber-500/40 px-4 py-2 rounded-2xl shadow-inner">
-              <i class="fa-solid fa-clock text-amber-400 animate-spin" style="animation-duration: 8s;"></i>
-              <span class="text-xs text-slate-300">Klaim berikutnya dalam:</span>
+              <i class="fa-solid fa-clock text-amber-400"></i>
+              <span class="text-xs text-slate-300">Reset Daily (00:00 WIB) dalam:</span>
               <span id="daily-timer-val" class="text-sm font-mono font-black text-amber-400">00:00:00</span>
             </div>
-            
+
             <div id="daily-msg" class="text-xs font-bold text-pink-400 min-h-[20px]"></div>
             <button onclick="claimDailyReward()" id="claim-daily-btn" class="px-10 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm rounded-2xl shadow-xl transition flex items-center justify-center space-x-2 mx-auto">
               <i class="fa-solid fa-gift text-base"></i><span>Klaim Reward Hari Ini</span>
             </button>
           </div>
-
-          
         </div>
       </div>
 
