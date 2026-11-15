@@ -84,21 +84,61 @@
     <!-- POST LIST -->
     <div class="space-y-6">
 
-      <!-- UPDATE HARI INI: FITUR GACHA & PITY SYSTEM -->
+      <!-- UPDATE TERBARU: SHOWCASE TESTING PVP REAL-TIME -->
       <article class="bg-slate-900 border border-pink-500/40 p-6 rounded-3xl space-y-4 shadow-xl update-glow relative overflow-hidden">
         <div class="absolute top-0 right-0 bg-gradient-to-l from-pink-600 to-rose-600 text-white text-[10px] font-black uppercase tracking-widest px-4 py-1 rounded-bl-xl">
-          🔥 HOT UPDATE HARI INI
+          ⚔️ LIVE PVP SHOWCASE
         </div>
         <div class="flex justify-between items-center text-xs text-slate-400 flex-wrap gap-2 pt-2">
+          <span class="px-2.5 py-1 bg-rose-500/10 text-rose-400 border border-rose-500/30 rounded-full font-bold">🎥 Video Testing Real-Time</span>
+          <span class="font-mono">Pembaruan Sistem v3.5</span>
+        </div>
+        <h3 class="text-xl font-black text-white">⚔️ Hasil Testing PvP Waifu Arena Secara Real-Time!</h3>
+        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+          Berikut adalah cuplikan hasil uji coba langsung fitur <strong>PvP Arena Real-Time</strong> yang kini sudah sinkron antar layar pemain maupun penonton (<em>Live PvP Spectator</em>) dengan animasi HP bar dan indikator ronde:
+        </p>
+
+        <!-- Video Autoplay Showcase -->
+        <div class="relative rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 shadow-2xl">
+          <video 
+            id="pvp-showcase-video"
+            class="w-full max-h-[480px] object-contain bg-black mx-auto block"
+            src="https://cdn.discordapp.com/attachments/798768164653105213/1571220806963437638/2026-11-15_00-47-04.mp4"
+            autoplay 
+            loop 
+            muted 
+            playsinline 
+            controls
+            preload="metadata">
+            Browser Anda tidak mendukung pemutaran video HTML5.
+          </video>
+          <div id="video-fallback-msg" class="hidden p-6 text-center space-y-2">
+            <p class="text-xs text-rose-400 font-bold">⚠️ Video gagal dimuat (link CDN Discord kemungkinan sudah kedaluwarsa).</p>
+            <a href="https://cdn.discordapp.com/attachments/798768164653105213/1571220806963437638/2026-11-15_00-47-04.mp4" target="_blank" rel="noopener noreferrer" class="inline-block text-xs text-pink-400 underline">Buka tautan video langsung</a>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between flex-wrap gap-2 pt-1">
+          <span class="text-[11px] text-slate-400">Ingin ikut bertarung atau menonton duel member lain?</span>
+          <div class="flex items-center gap-2">
+            <a href="/gachaw" class="px-4 py-2 bg-pink-600 hover:bg-pink-500 text-white text-xs font-bold rounded-xl transition shadow-md">⚔️ Masuk Arena PvP</a>
+            <a href="/pvpwaifu" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-rose-400 border border-rose-500/30 text-xs font-bold rounded-xl transition">📺 Live Spectator</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- UPDATE SEBELUMNYA: FITUR GACHA & PITY SYSTEM -->
+      <article class="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4 shadow-lg relative overflow-hidden">
+        <div class="flex justify-between items-center text-xs text-slate-400 flex-wrap gap-2">
           <span class="px-2.5 py-1 bg-pink-500/10 text-pink-400 border border-pink-500/30 rounded-full font-bold">✨ Major Gacha Upgrade</span>
           <span class="font-mono">Pembaruan Sistem v3.4</span>
         </div>
         <h3 class="text-xl font-black text-white">🎁 Fitur Pity Counter, Auto-Sync Database, & Animasi "New Unlocked!"</h3>
         <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
-          Hari ini kami meluncurkan pembaruan besar untuk fitur <strong>Gacha Waifu</strong> agar pengalaman summon semakin seru dan adil bagi seluruh member komunitas:
+          Pembaruan besar untuk fitur <strong>Gacha Waifu</strong> agar pengalaman summon semakin seru dan adil bagi seluruh member komunitas:
         </p>
         <ul class="text-xs text-slate-400 space-y-2 pl-4 list-disc font-medium">
-          <li><strong>Sistem Pity Counter (0/21):</strong> Dijamin mendapatkan karakter SSR 100% otomatis pada tarikan ke-21 jika belum beruntung sebelumnya.</li>
+          <li><strong>Sistem Pity Counter:</strong> Dijamin mendapatkan karakter SSR 100% otomatis saat mencapai batas pity jika belum beruntung sebelumnya.</li>
           <li><strong>Auto-Sync Master Database:</strong> Karakter baru (seperti <em>Mikhail</em> dan waifu lainnya) kini otomatis tersinkronisasi ke database MongoDB lama tanpa perlu menghapus data member.</li>
           <li><strong>Animasi "✨ NEW UNLOCKED!":</strong> Banner spesial berwarna emas/amber serta efek animasi khusus saat pemain berhasil mendapatkan waifu baru untuk pertama kalinya, mirip bot Discord gacha profesional.</li>
           <li><strong>Badge Pity & UI Indicator:</strong> Indikator penghitung pity transparan yang langsung terpampang di sebelah panel drop rate portal gacha.</li>
@@ -158,6 +198,16 @@
             if (activityNav) activityNav.classList.remove('hidden');
           }
         } catch(e) {}
+      }
+
+      const showcaseVid = document.getElementById('pvp-showcase-video');
+      const fallbackMsg = document.getElementById('video-fallback-msg');
+      if (showcaseVid) {
+        showcaseVid.play().catch(() => {});
+        showcaseVid.addEventListener('error', () => {
+          showcaseVid.classList.add('hidden');
+          if (fallbackMsg) fallbackMsg.classList.remove('hidden');
+        });
       }
     });
   </script>
