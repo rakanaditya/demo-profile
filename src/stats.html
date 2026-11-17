@@ -357,7 +357,7 @@
           <span id="badge-vercel" class="px-2.5 py-0.5 text-[10px] bg-slate-800 text-slate-300 border border-slate-600 rounded-full font-semibold">Checking...</span>
         </div>
         <div class="flex justify-between items-center text-xs text-slate-400">
-          <span>Region: <span id="text-vercel-region" class="font-mono text-slate-200">sin1</span></span>
+          <span>Region: <span id="text-vercel-region" class="font-mono text-slate-200">iad1</span></span>
           <span id="ping-vercel" class="font-mono text-emerald-400 font-bold">-- ms</span>
         </div>
         <div class="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden border border-slate-800">
@@ -490,7 +490,7 @@
         // Update Vercel Card
         const vercelMs = data.vercel?.latencyMs ?? roundTripMs;
         setServiceBadge(document.getElementById('badge-vercel'), true, 'Operational');
-        document.getElementById('text-vercel-region').innerText = data.vercel?.region || 'sin1';
+        document.getElementById('text-vercel-region').innerText = data.vercel?.region || 'iad1';
         document.getElementById('ping-vercel').innerText = `${roundTripMs} ms`;
         document.getElementById('bar-vercel').style.width = `${calcHealthPercent(roundTripMs)}%`;
 
