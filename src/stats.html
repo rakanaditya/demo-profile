@@ -8,7 +8,7 @@
   <!-- Primary Meta Tags -->
   <meta name="title" content="System Status & Owner Presence - Rakan Aditya Community">
   <meta name="description" content="Status sistem backend Vercel, MongoDB, serta pemantauan aktivitas Discord Presence Owner secara real-time.">
-  <meta name="theme-color" content="#5865F2">
+  <meta name="theme-color" content="#94a3b8">
 
   <script>
     const origConsoleWarn = console.warn;
@@ -29,59 +29,130 @@
     };
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=gg+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=gg+Sans:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="/css/statsmob.css">
   
   <style> 
-    body { font-family: 'gg Sans', sans-serif; } 
+    body { font-family: 'gg Sans', 'Noto Sans JP', sans-serif; } 
+    .jp-font { font-family: 'Noto Sans JP', sans-serif; }
     .scrollbar-none::-webkit-scrollbar { display: none; }
     .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Japanese Modern Metallic Silver Button Style */
+    .btn-jp-silver {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      background: linear-gradient(145deg, #f8fafc 0%, #cbd5e1 48%, #94a3b8 100%);
+      color: #0f172a;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      border: 1px solid rgba(255, 255, 255, 0.75);
+      box-shadow: 0 4px 14px rgba(148, 163, 184, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      transition: all 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+      overflow: hidden;
+    }
+    .btn-jp-silver::before {
+      content: "";
+      position: absolute;
+      top: 0; left: -100%;
+      width: 60%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.75), transparent);
+      transform: skewX(-25deg);
+      transition: left 0.45s ease;
+    }
+    .btn-jp-silver:hover::before {
+      left: 140%;
+    }
+    .btn-jp-silver:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(226, 232, 240, 0.4), inset 0 1px 0 #ffffff;
+    }
+    .btn-jp-silver:active {
+      transform: scale(0.97);
+    }
+
+    /* Dark Japanese Silver Ghost Button */
+    .btn-jp-silver-dark {
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+      color: #e2e8f0;
+      border: 1px solid rgba(203, 213, 225, 0.28);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 4px 12px rgba(0, 0, 0, 0.35);
+      transition: all 0.2s ease;
+    }
+    .btn-jp-silver-dark:hover {
+      border-color: rgba(248, 250, 252, 0.65);
+      color: #ffffff;
+      background: linear-gradient(180deg, rgba(51, 65, 85, 0.95) 0%, rgba(15, 23, 42, 1) 100%);
+    }
+
+    /* Subtle Japanese Grid Background */
+    .jp-grid-bg {
+      background-image: 
+        linear-gradient(to right, rgba(148, 163, 184, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(148, 163, 184, 0.04) 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+<body class="bg-slate-950 jp-grid-bg text-slate-100 min-h-screen flex flex-col justify-between selection:bg-slate-300 selection:text-slate-950">
 
   <!-- Header & Navbar Lengkap -->
-  <header id="main-header" class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-40 transition-all">
+  <header id="main-header" class="border-b border-slate-800/90 bg-slate-900/70 backdrop-blur-md sticky top-0 z-40 transition-all">
     <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2">
       <!-- Kiri: Logo & Title -->
       <div class="flex items-center space-x-3">
-        <a href="/" class="w-10 h-10 rounded-2xl bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-600/30 hover:scale-105 transition">
-          <span class="text-xl">📊</span>
+        <a href="/" class="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-200 via-slate-400 to-slate-600 p-[1px] shadow-lg shadow-slate-400/15 hover:scale-105 transition">
+          <div class="w-full h-full bg-slate-950 rounded-[11px] flex items-center justify-center">
+            <span class="text-lg">📊</span>
+          </div>
         </a>
         <div>
-          <h1 class="font-bold text-base sm:text-lg text-white leading-none">Rakan Aditya Community</h1>
+          <div class="flex items-center gap-2">
+            <h1 class="font-bold text-base sm:text-lg text-white leading-none">Rakan Aditya Community</h1>
+            <span class="jp-font hidden sm:inline-block text-[10px] px-1.5 py-0.5 rounded border border-slate-600/60 bg-slate-800/80 text-slate-300 tracking-widest">システム監視</span>
+          </div>
           <span class="text-xs text-slate-400">System Status & Live Presence Monitor</span>
         </div>
       </div>
       
-      <!-- Kanan: Tombol Beranda -->
-      <div class="flex items-center space-x-2 sm:space-x-3">
-        <a href="/" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold border border-slate-700 transition flex items-center space-x-1">
-          <span>← Beranda</span>
+      <!-- Kanan: Tombol Japanese Silver -->
+      <div class="flex items-center space-x-2">
+        <button id="btn-refresh-status" onclick="refreshAllTelemetry(true)" class="btn-jp-silver-dark px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
+          <i id="refresh-icon" class="fa-solid fa-rotate text-slate-300"></i>
+          <span class="jp-font">更新</span>
+        </button>
+        <a href="/" class="btn-jp-silver px-3.5 py-1.5 rounded-xl text-xs">
+          <span>←</span>
+          <span>Beranda</span>
+          <span class="jp-font text-[10px] opacity-75">ホーム</span>
         </a>
       </div>
 
-      <!-- Baris Navbar Menu Lengkap (Responsive Desktop & Mobile Horizontal Scroll) -->
-      <nav id="main-nav-links" class="w-full flex items-center space-x-1 overflow-x-auto py-1.5 border-t border-slate-800/60 mt-1 scrollbar-none">
-        <a href="/" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-house mr-1"></i>Home</a>
-        <a href="/giveaway" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-gift mr-1"></i>Giveaway</a>
-        <a href="/giveawayleaderboard" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-trophy mr-1 text-amber-400"></i>Top Leaderboard</a>
-        <a href="/rating" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-star mr-1 text-amber-400"></i>Rating</a>
-        <a href="/gachaw" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-dice mr-1 text-pink-400"></i>Gacha Waifu</a>
-        <a href="/announcements" class="nav-item px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition whitespace-nowrap"><i class="fa-solid fa-bullhorn mr-1"></i>News</a>
+      <!-- Baris Navbar Menu Lengkap -->
+      <nav id="main-nav-links" class="w-full flex items-center space-x-1.5 overflow-x-auto py-1.5 border-t border-slate-800/70 mt-1 scrollbar-none">
+        <a href="/" class="nav-item btn-jp-silver-dark px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap"><i class="fa-solid fa-house mr-1 text-slate-300"></i>Home</a>
+        <a href="/giveaway" class="nav-item btn-jp-silver-dark px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap"><i class="fa-solid fa-gift mr-1 text-slate-300"></i>Giveaway</a>
+        <a href="/giveawayleaderboard" class="nav-item btn-jp-silver-dark px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap"><i class="fa-solid fa-trophy mr-1 text-amber-400"></i>Top Leaderboard</a>
+        <a href="/rating" class="nav-item btn-jp-silver-dark px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap"><i class="fa-solid fa-star mr-1 text-amber-400"></i>Rating</a>
+        <a href="/gachaw" class="nav-item btn-jp-silver-dark px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap"><i class="fa-solid fa-dice mr-1 text-pink-400"></i>Gacha Waifu</a>
+        <a href="/announcements" class="nav-item btn-jp-silver-dark px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap"><i class="fa-solid fa-bullhorn mr-1 text-slate-300"></i>News</a>
+        <a href="/status" class="nav-item btn-jp-silver px-3 py-1.5 rounded-lg text-xs whitespace-nowrap"><i class="fa-solid fa-server mr-1"></i>Status</a>
         <!-- Menu Khusus Owner -->
-        <a href="/activitylog" id="nav-activity-log" class="nav-item hidden px-3 py-1.5 rounded-lg text-xs font-medium text-amber-400 bg-amber-500/10 border border-amber-500/30 whitespace-nowrap"><i class="fa-solid fa-chart-line mr-1"></i>Activity Log</a>
+        <a href="/activitylog" id="nav-activity-log" class="nav-item hidden px-3 py-1.5 rounded-lg text-xs font-medium text-amber-300 bg-amber-500/10 border border-amber-400/40 whitespace-nowrap"><i class="fa-solid fa-chart-line mr-1"></i>Activity Log</a>
       </nav>
     </div>
   </header>
 
-  <main class="max-w-5xl mx-auto px-4 py-10 w-full flex-grow space-y-10">
+  <main class="max-w-5xl mx-auto px-4 py-8 sm:py-10 w-full flex-grow space-y-8 sm:space-y-10">
     
     <!-- YOUTUBE LIVE SUBSCRIBER COUNTER WIDGET EMBED -->
-    <div class="flex flex-col items-center justify-center space-y-2 bg-slate-900/80 border border-slate-800 p-4 rounded-2xl shadow-xl max-w-sm mx-auto">
-      <div class="flex items-center space-x-2 text-xs font-bold text-red-400">
-        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+    <div class="flex flex-col items-center justify-center space-y-2 bg-slate-900/80 border border-slate-700/60 p-4 rounded-2xl shadow-xl max-w-sm mx-auto backdrop-blur">
+      <div class="flex items-center space-x-2 text-xs font-bold text-slate-200">
+        <svg class="w-4 h-4 fill-red-500" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
         <span>YouTube Live Subscriber Counter</span>
       </div>
       <div class="overflow-hidden rounded-xl border border-slate-800 bg-slate-950 flex justify-center w-full">
@@ -90,26 +161,29 @@
     </div>
 
     <div class="text-center space-y-2">
-      <h2 class="text-3xl font-extrabold text-white">Status Sistem & Live Presence</h2>
-      <p class="text-sm text-slate-400">Pemantauan performa infrastruktur serverless serta status aktivitas Discord Owner secara real-time.</p>
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-700/80 text-[11px] text-slate-300 font-mono">
+        <span class="w-2 h-2 rounded-full bg-slate-200 animate-ping"></span>
+        <span class="jp-font">リアルタイム監視 // TELEMETRY</span>
+      </div>
+      <h2 class="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">Status Sistem & Live Presence</h2>
+      <p class="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto">Pemantauan performa infrastruktur serverless, deteksi pengunjung web, serta aktivitas Discord Owner secara real-time.</p>
     </div>
 
     <!-- SECTION 1: DISCORD OWNER LIVE PRESENCE & SERVER WIDGET GRID -->
     <div class="space-y-4">
       <div class="flex items-center justify-between border-b border-slate-800 pb-2 flex-wrap gap-2">
-        <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+        <h3 class="text-base sm:text-lg font-bold text-white flex items-center space-x-2">
           <span>👑 Community Owner & Server Widget</span>
-          <span class="text-[10px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded-full font-mono">Realtime WebSocket</span>
+          <span class="text-[10px] bg-slate-800 text-slate-200 border border-slate-600/60 px-2 py-0.5 rounded-full font-mono">Realtime API</span>
         </h3>
-        <span id="presence-uptime-counter" class="text-xs font-mono text-emerald-400">Loading counter...</span>
+        <span id="presence-uptime-counter" class="text-xs font-mono text-slate-300">Loading counter...</span>
       </div>
 
-      <!-- Grid Layout: Kartu Owner di Kiri & Widget Discord Server di Kanan -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
         
         <!-- Kartu Profil Discord Owner -->
         <div class="w-full">
-          <div class="bg-[#232428] rounded-2xl overflow-hidden shadow-2xl border border-slate-800">
+          <div class="bg-[#232428] rounded-2xl overflow-hidden shadow-2xl border border-slate-700/70">
             
             <!-- Custom GIF Banner Owner -->
             <div id="owner-banner" class="h-32 sm:h-36 w-full relative overflow-hidden bg-slate-900">
@@ -119,7 +193,7 @@
                 class="w-full h-full object-cover object-center"
                 loading="lazy"
               >
-              <div class="absolute top-3 right-3 px-2 py-1 bg-black/60 backdrop-blur rounded-full text-[10px] font-mono text-slate-300 border border-white/10 z-10">
+              <div class="absolute top-3 right-3 px-2.5 py-1 bg-black/70 backdrop-blur rounded-full text-[10px] font-mono text-slate-200 border border-white/15 z-10">
                 ID: 628205121704296458
               </div>
             </div>
@@ -127,7 +201,6 @@
             <!-- Detail Profil & Avatar -->
             <div class="px-4 pt-0 pb-4 relative">
               <div class="flex justify-between items-end -mt-12 mb-3 px-2">
-                
                 <div class="relative w-20 h-20 flex items-center justify-center">
                   <img id="owner-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Avatar Discord" class="w-20 h-20 rounded-full border-4 border-[#232428] bg-[#232428] object-cover shadow-lg relative z-0">
                   <span id="owner-status-dot" class="w-5 h-5 bg-slate-500 border-4 border-[#232428] rounded-full absolute bottom-0 right-0 z-20" title="Offline / Invisible"></span>
@@ -135,10 +208,9 @@
 
                 <div id="owner-badges-container" class="bg-[#111214] px-2.5 py-1.5 rounded-lg flex items-center space-x-2 border border-slate-800 flex-wrap gap-y-1 z-10">
                 </div>
-
               </div>
 
-              <div class="bg-[#111214] rounded-xl p-4 space-y-3">
+              <div class="bg-[#111214] rounded-xl p-4 space-y-3 border border-slate-800/80">
                 <div>
                   <div class="flex items-center space-x-2 flex-wrap">
                     <h3 id="owner-global-name" class="text-lg font-bold text-white leading-tight">! Lufas Maphaahl</h3>
@@ -183,16 +255,14 @@
                   <span id="owner-status-label" class="px-2 py-0.5 bg-slate-800 text-slate-400 border border-slate-700 rounded text-[10px]">Checking...</span>
                 </div>
               </div>
-
             </div>
-
           </div>
         </div>
 
         <!-- Discord Server Widget (iframe) -->
         <div class="w-full flex justify-center">
-          <div class="bg-[#232428] rounded-2xl overflow-hidden shadow-2xl border border-slate-800 p-2 w-full max-w-sm flex flex-col items-center">
-            <div class="w-full px-3 py-2 text-xs font-bold text-slate-300 border-b border-slate-800 mb-2 flex items-center justify-between">
+          <div class="bg-[#232428] rounded-2xl overflow-hidden shadow-2xl border border-slate-700/70 p-2 w-full max-w-sm flex flex-col items-center">
+            <div class="w-full px-3 py-2 text-xs font-bold text-slate-200 border-b border-slate-800 mb-2 flex items-center justify-between">
               <span>💬 Rakan Aditya Community Server</span>
               <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
             </div>
@@ -203,58 +273,121 @@
       </div>
     </div>
 
-    <!-- OVERALL STATUS BANNER -->
-    <div class="bg-emerald-950/40 border border-emerald-500/40 p-5 rounded-2xl flex items-center justify-between flex-wrap gap-3">
-      <div class="flex items-center space-x-3">
-        <span class="w-3.5 h-3.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0"></span>
-        <div>
-          <h3 class="font-bold text-white text-sm">All Systems Operational</h3>
-          <p class="text-xs text-emerald-300">Seluruh layanan backend dan infrastruktur berjalan normal.</p>
+    <!-- SECTION 2: WEB VISITOR ANALYTICS (REAL-TIME MONGODB) -->
+    <div class="space-y-3">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+        <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+          <span>👁️ Deteksi Pengunjung Web</span>
+          <span class="jp-font text-[10px] px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300">アクセス解析</span>
+        </h3>
+        <span id="visitor-device-tag" class="text-[11px] font-mono text-slate-400">Detecting device...</span>
+      </div>
+
+      <div class="grid grid-cols-3 gap-3 sm:gap-4 visitor-grid-mobile">
+        <div class="bg-slate-900/90 border border-slate-700/70 p-4 rounded-2xl relative overflow-hidden">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[11px] text-slate-400 font-semibold">Online Sekarang</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          </div>
+          <p id="stat-visitors-online" class="text-xl sm:text-2xl font-black text-white font-mono">--</p>
+          <span class="text-[10px] text-slate-500">Aktif &lt; 5 menit terakhir</span>
+        </div>
+
+        <div class="bg-slate-900/90 border border-slate-700/70 p-4 rounded-2xl relative overflow-hidden">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[11px] text-slate-400 font-semibold">Kunjungan Hari Ini</span>
+            <i class="fa-solid fa-eye text-xs text-slate-400"></i>
+          </div>
+          <p id="stat-visitors-today" class="text-xl sm:text-2xl font-black text-slate-100 font-mono">--</p>
+          <span class="text-[10px] text-slate-500">Pageviews (UTC)</span>
+        </div>
+
+        <div class="bg-slate-900/90 border border-slate-700/70 p-4 rounded-2xl relative overflow-hidden">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[11px] text-slate-400 font-semibold">Total Pengunjung</span>
+            <i class="fa-solid fa-users text-xs text-slate-400"></i>
+          </div>
+          <p id="stat-visitors-total" class="text-xl sm:text-2xl font-black bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent font-mono">--</p>
+          <span class="text-[10px] text-slate-500">Unique browser/IP</span>
         </div>
       </div>
-      <span class="text-xs font-mono text-slate-400">Updated Real-Time</span>
     </div>
 
-    <!-- SERVICES STATUS GRID -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-3">
-        <div class="flex justify-between items-center">
-          <h4 class="font-bold text-white text-sm">MongoDB Atlas</h4>
-          <span class="px-2 py-0.5 text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full font-semibold">Online</span>
+    <!-- OVERALL STATUS BANNER (DINAMIS) -->
+    <div id="overall-status-banner" class="bg-slate-900/90 border border-slate-700/80 p-5 rounded-2xl flex items-center justify-between flex-wrap gap-3 shadow-lg">
+      <div class="flex items-center space-x-3">
+        <span id="overall-status-dot" class="w-3.5 h-3.5 rounded-full bg-amber-400 animate-pulse flex-shrink-0"></span>
+        <div>
+          <h3 id="overall-status-title" class="font-bold text-white text-sm">Checking Infrastructure...</h3>
+          <p id="overall-status-desc" class="text-xs text-slate-400">Menghubungkan ke Vercel API & MongoDB Atlas...</p>
         </div>
-        <p class="text-xs text-slate-400">Cluster: <span class="font-mono text-slate-300">cluster0.6ya52vd</span></p>
-        <div class="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden">
-          <div class="bg-emerald-500 h-full w-[99%]"></div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span id="overall-last-checked" class="text-xs font-mono text-slate-400">Syncing...</span>
+      </div>
+    </div>
+
+    <!-- REAL-TIME SERVICES STATUS GRID -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 services-grid-mobile">
+      <!-- 1. MongoDB Atlas -->
+      <div class="bg-slate-900/90 border border-slate-700/70 p-5 rounded-2xl space-y-3 shadow-md">
+        <div class="flex justify-between items-center">
+          <h4 class="font-bold text-white text-sm flex items-center gap-2">
+            <i class="fa-solid fa-database text-slate-300"></i>
+            <span>MongoDB Atlas</span>
+          </h4>
+          <span id="badge-mongo" class="px-2.5 py-0.5 text-[10px] bg-slate-800 text-slate-300 border border-slate-600 rounded-full font-semibold">Checking...</span>
+        </div>
+        <div class="flex justify-between items-center text-xs text-slate-400">
+          <span>Cluster: <span id="text-mongo-cluster" class="font-mono text-slate-200">detecting...</span></span>
+          <span id="ping-mongo" class="font-mono text-emerald-400 font-bold">-- ms</span>
+        </div>
+        <div class="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden border border-slate-800">
+          <div id="bar-mongo" class="bg-gradient-to-r from-slate-300 to-emerald-400 h-full w-[15%] transition-all duration-500"></div>
         </div>
       </div>
 
-      <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-3">
+      <!-- 2. Vercel Serverless -->
+      <div class="bg-slate-900/90 border border-slate-700/70 p-5 rounded-2xl space-y-3 shadow-md">
         <div class="flex justify-between items-center">
-          <h4 class="font-bold text-white text-sm">Vercel Serverless</h4>
-          <span class="px-2 py-0.5 text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full font-semibold">Operational</span>
+          <h4 class="font-bold text-white text-sm flex items-center gap-2">
+            <i class="fa-solid fa-bolt text-slate-300"></i>
+            <span>Vercel Serverless</span>
+          </h4>
+          <span id="badge-vercel" class="px-2.5 py-0.5 text-[10px] bg-slate-800 text-slate-300 border border-slate-600 rounded-full font-semibold">Checking...</span>
         </div>
-        <p class="text-xs text-slate-400">Region: <span class="font-mono text-slate-300">sin1 (Singapore)</span></p>
-        <div class="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden">
-          <div class="bg-emerald-500 h-full w-full"></div>
+        <div class="flex justify-between items-center text-xs text-slate-400">
+          <span>Region: <span id="text-vercel-region" class="font-mono text-slate-200">sin1</span></span>
+          <span id="ping-vercel" class="font-mono text-emerald-400 font-bold">-- ms</span>
+        </div>
+        <div class="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden border border-slate-800">
+          <div id="bar-vercel" class="bg-gradient-to-r from-slate-300 to-emerald-400 h-full w-[15%] transition-all duration-500"></div>
         </div>
       </div>
 
-      <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-3">
+      <!-- 3. Lanyard REST API -->
+      <div class="bg-slate-900/90 border border-slate-700/70 p-5 rounded-2xl space-y-3 shadow-md">
         <div class="flex justify-between items-center">
-          <h4 class="font-bold text-white text-sm">Lanyard REST API</h4>
-          <span class="px-2 py-0.5 text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full font-semibold">Connected</span>
+          <h4 class="font-bold text-white text-sm flex items-center gap-2">
+            <i class="fa-brands fa-discord text-slate-300"></i>
+            <span>Lanyard REST API</span>
+          </h4>
+          <span id="badge-lanyard" class="px-2.5 py-0.5 text-[10px] bg-slate-800 text-slate-300 border border-slate-600 rounded-full font-semibold">Checking...</span>
         </div>
-        <p class="text-xs text-slate-400">Service: <span class="font-mono text-slate-300">api.lanyard.rest</span></p>
-        <div class="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden">
-          <div class="bg-emerald-500 h-full w-[98%]"></div>
+        <div class="flex justify-between items-center text-xs text-slate-400">
+          <span>Host: <span class="font-mono text-slate-200">api.lanyard.rest</span></span>
+          <span id="ping-lanyard" class="font-mono text-emerald-400 font-bold">-- ms</span>
+        </div>
+        <div class="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden border border-slate-800">
+          <div id="bar-lanyard" class="bg-gradient-to-r from-slate-300 to-emerald-400 h-full w-[15%] transition-all duration-500"></div>
         </div>
       </div>
     </div>
 
   </main>
 
-  <footer class="border-t border-slate-800 py-6 bg-slate-900/40 text-center text-xs text-slate-500">
-    <p>Rakan Aditya Community &bull; Hosted on Vercel</p>
+  <footer class="border-t border-slate-800 py-6 bg-slate-900/50 text-center text-xs text-slate-500">
+    <p>Rakan Aditya Community &bull; <span class="jp-font text-slate-400">シルバーシステム</span> &bull; Hosted on Vercel</p>
   </footer>
 
   <script>
@@ -268,38 +401,139 @@
 
     let activityStartTime = null;
     let presenceTimerInterval = null;
+    let lanyardOk = false;
+    let backendOk = false;
+
+    // Generate / ambil Visitor ID unik dari localStorage untuk pelacakan akurat
+    function getOrCreateVisitorId() {
+      let vid = localStorage.getItem('rac_visitor_id');
+      if (!vid) {
+        vid = 'v_' + Math.random().toString(36).substring(2, 10) + '_' + Date.now().toString(36);
+        localStorage.setItem('rac_visitor_id', vid);
+      }
+      return vid;
+    }
+
+    function detectDeviceSummary() {
+      const ua = navigator.userAgent;
+      const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(ua);
+      const os = /Windows/i.test(ua) ? 'Windows' : /Android/i.test(ua) ? 'Android' : /iPhone|iPad/i.test(ua) ? 'iOS' : /Mac/i.test(ua) ? 'macOS' : 'Linux';
+      const el = document.getElementById('visitor-device-tag');
+      if (el) el.innerText = `${isMobile ? '📱 Mobile' : '💻 Desktop'} • ${os}`;
+    }
 
     function formatTime(seconds) {
       const hrs = Math.floor(seconds / 3600);
       const mins = Math.floor((seconds % 3600) / 60);
       const secs = Math.floor(seconds % 60);
-      if (hrs > 0) {
-        return `${hrs}:${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
-      }
+      if (hrs > 0) return `${hrs}:${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
       return `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    function calcHealthPercent(ms) {
+      if (ms == null) return 0;
+      if (ms <= 120) return 100;
+      if (ms <= 300) return 92;
+      if (ms <= 700) return 80;
+      return 65;
+    }
+
+    function setServiceBadge(badgeEl, isOnline, onlineText = 'Online', offlineText = 'Offline') {
+      if (!badgeEl) return;
+      if (isOnline) {
+        badgeEl.className = 'px-2.5 py-0.5 text-[10px] bg-emerald-500/15 text-emerald-300 border border-emerald-400/40 rounded-full font-bold';
+        badgeEl.innerText = `● ${onlineText}`;
+      } else {
+        badgeEl.className = 'px-2.5 py-0.5 text-[10px] bg-rose-500/15 text-rose-300 border border-rose-400/40 rounded-full font-bold';
+        badgeEl.innerText = `✕ ${offlineText}`;
+      }
+    }
+
+    function updateOverallBanner() {
+      const banner = document.getElementById('overall-status-banner');
+      const dot = document.getElementById('overall-status-dot');
+      const title = document.getElementById('overall-status-title');
+      const desc = document.getElementById('overall-status-desc');
+      const checked = document.getElementById('overall-last-checked');
+
+      const nowTime = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      checked.innerText = `Last ping: ${nowTime}`;
+
+      if (backendOk && lanyardOk) {
+        banner.className = 'bg-gradient-to-r from-slate-900 via-emerald-950/30 to-slate-900 border border-emerald-500/40 p-5 rounded-2xl flex items-center justify-between flex-wrap gap-3 shadow-lg';
+        dot.className = 'w-3.5 h-3.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0';
+        title.innerText = 'All Systems Operational';
+        desc.innerText = 'Vercel Serverless, MongoDB Atlas, dan Lanyard API merespons normal secara real-time.';
+      } else if (backendOk || lanyardOk) {
+        banner.className = 'bg-amber-950/30 border border-amber-500/40 p-5 rounded-2xl flex items-center justify-between flex-wrap gap-3 shadow-lg';
+        dot.className = 'w-3.5 h-3.5 rounded-full bg-amber-400 animate-pulse flex-shrink-0';
+        title.innerText = 'Partial System Degradation';
+        desc.innerText = 'Salah satu layanan mengalami latensi tinggi atau gagal terhubung.';
+      } else {
+        banner.className = 'bg-rose-950/30 border border-rose-500/40 p-5 rounded-2xl flex items-center justify-between flex-wrap gap-3 shadow-lg';
+        dot.className = 'w-3.5 h-3.5 rounded-full bg-rose-500 flex-shrink-0';
+        title.innerText = 'System Connection Issue';
+        desc.innerText = 'Gagal terhubung ke server backend. Periksa variabel .env MongoDB Anda.';
+      }
+    }
+
+    // Fetch Real-Time Status MongoDB, Vercel & Pengunjung Web
+    async function fetchBackendTelemetry(isInitialHit = false) {
+      const t0 = performance.now();
+      try {
+        const vid = encodeURIComponent(getOrCreateVisitorId());
+        const trackParam = isInitialHit ? '&track=1' : '';
+        const res = await fetch(`/api/logs?type=status&vid=${vid}${trackParam}`);
+        const roundTripMs = Math.round(performance.now() - t0);
+        const data = await res.json();
+
+        // Update Vercel Card
+        const vercelMs = data.vercel?.latencyMs ?? roundTripMs;
+        setServiceBadge(document.getElementById('badge-vercel'), true, 'Operational');
+        document.getElementById('text-vercel-region').innerText = data.vercel?.region || 'sin1';
+        document.getElementById('ping-vercel').innerText = `${roundTripMs} ms`;
+        document.getElementById('bar-vercel').style.width = `${calcHealthPercent(roundTripMs)}%`;
+
+        // Update MongoDB Card
+        const mongoOnline = Boolean(data.mongodb?.online);
+        const mongoMs = data.mongodb?.latencyMs;
+        setServiceBadge(document.getElementById('badge-mongo'), mongoOnline, 'Connected', 'Error');
+        document.getElementById('text-mongo-cluster').innerText = data.mongodb?.cluster || 'unknown';
+        document.getElementById('ping-mongo').innerText = mongoOnline ? `${mongoMs} ms` : 'ERR';
+        document.getElementById('ping-mongo').className = mongoOnline ? 'font-mono text-emerald-400 font-bold' : 'font-mono text-rose-400 font-bold';
+        document.getElementById('bar-mongo').style.width = mongoOnline ? `${calcHealthPercent(mongoMs)}%` : '10%';
+
+        // Update Pengunjung Web
+        if (data.visitors) {
+          document.getElementById('stat-visitors-online').innerText = data.visitors.onlineNow.toLocaleString('id-ID');
+          document.getElementById('stat-visitors-today').innerText = data.visitors.todayViews.toLocaleString('id-ID');
+          document.getElementById('stat-visitors-total').innerText = data.visitors.totalUniqueVisitors.toLocaleString('id-ID');
+        }
+
+        backendOk = mongoOnline;
+      } catch (err) {
+        console.error('Gagal memuat /api/logs:', err);
+        backendOk = false;
+        setServiceBadge(document.getElementById('badge-vercel'), false, 'Operational', 'Unreachable');
+        setServiceBadge(document.getElementById('badge-mongo'), false, 'Connected', 'Offline');
+        document.getElementById('ping-mongo').innerText = 'ERR';
+        document.getElementById('ping-vercel').innerText = 'ERR';
+      }
+      updateOverallBanner();
     }
 
     function getLanyardImageUrl(activity) {
       if (!activity || !activity.assets || !activity.assets.large_image) {
         return 'https://cdn.discordapp.com/embed/avatars/0.png';
       }
-
       const imgKey = activity.assets.large_image;
-
-      if (imgKey.startsWith('spotify:')) {
-        return `https://i.scdn.co/image/${imgKey.replace('spotify:', '')}`;
-      }
-
+      if (imgKey.startsWith('spotify:')) return `https://i.scdn.co/image/${imgKey.replace('spotify:', '')}`;
       if (imgKey.startsWith('mp:external/')) {
         const match = imgKey.match(/https?:\/\/.*/);
         if (match) return match[0];
         return `https://media.discordapp.net/${imgKey.replace('mp:', '')}`;
       }
-
-      if (imgKey.startsWith('http://') || imgKey.startsWith('https://')) {
-        return imgKey;
-      }
-
+      if (imgKey.startsWith('http://') || imgKey.startsWith('https://')) return imgKey;
       return `https://cdn.discordapp.com/app-assets/${activity.application_id}/${imgKey}.png`;
     }
 
@@ -310,54 +544,22 @@
       const badges = [];
 
       if (flags & DISCORD_FLAGS.ACTIVE_DEVELOPER) {
-        badges.push({ 
-          title: 'Active Developers', 
-          imgUrl: 'https://cdn3.emoji.gg/emojis/6699-activedev-blue.png',
-          linkUrl: 'https://emoji.gg/emoji/6699-activedev-blue'
-        });
+        badges.push({ title: 'Active Developers', imgUrl: 'https://cdn3.emoji.gg/emojis/6699-activedev-blue.png', linkUrl: 'https://emoji.gg/emoji/6699-activedev-blue' });
       }
-
       if (user && user.premium_type && user.premium_type > 0) {
-        badges.push({ 
-          title: 'Nitro Subscribers', 
-          imgUrl: 'https://cdn3.emoji.gg/emojis/789630-nitro.png',
-          linkUrl: 'https://emoji.gg/emojis/789630-nitro'
-        });
+        badges.push({ title: 'Nitro Subscribers', imgUrl: 'https://cdn3.emoji.gg/emojis/789630-nitro.png', linkUrl: 'https://emoji.gg/emojis/789630-nitro' });
       }
-
       if (flags & DISCORD_FLAGS.HYPESQUAD_BRAVERY) {
-        badges.push({ 
-          title: 'HYPESQUAD BRAVERY', 
-          imgUrl: 'https://cdn3.emoji.gg/emojis/677453-houseofbravery.png',
-          linkUrl: 'https://emoji.gg/emojis/677453-houseofbravery'
-        });
+        badges.push({ title: 'HYPESQUAD BRAVERY', imgUrl: 'https://cdn3.emoji.gg/emojis/677453-houseofbravery.png', linkUrl: 'https://emoji.gg/emojis/677453-houseofbravery' });
       } else if (flags & DISCORD_FLAGS.HYPESQUAD_BRILLIANCE) {
-        badges.push({ 
-          title: 'HYPESQUAD BRILLIANCE', 
-          imgUrl: 'https://cdn3.emoji.gg/emojis/271697-houseofbrilliance.png',
-          linkUrl: 'https://emoji.gg/emojis/271697-houseofbrilliance'
-        });
+        badges.push({ title: 'HYPESQUAD BRILLIANCE', imgUrl: 'https://cdn3.emoji.gg/emojis/271697-houseofbrilliance.png', linkUrl: 'https://emoji.gg/emojis/271697-houseofbrilliance' });
       } else if (flags & DISCORD_FLAGS.HYPESQUAD_BALANCE) {
-        badges.push({ 
-          title: 'HYPESQUAD BALANCE', 
-          imgUrl: 'https://cdn3.emoji.gg/emojis/251341-discordhypesquadbalancebadge.png',
-          linkUrl: 'https://emoji.gg/emojis/251341-discordhypesquadbalancebadge'
-        });
+        badges.push({ title: 'HYPESQUAD BALANCE', imgUrl: 'https://cdn3.emoji.gg/emojis/251341-discordhypesquadbalancebadge.png', linkUrl: 'https://emoji.gg/emojis/251341-discordhypesquadbalancebadge' });
       }
-
       if (flags & DISCORD_FLAGS.PREMIUM_EARLY_SUPPORTER) {
-        badges.push({ 
-          title: 'PREMIUM EARLY SUPPORTER', 
-          imgUrl: 'https://cdn3.emoji.gg/emojis/544377-discordearlysupporterbadge.png',
-          linkUrl: 'https://emoji.gg/emojis/544377-discordearlysupporterbadge'
-        });
+        badges.push({ title: 'PREMIUM EARLY SUPPORTER', imgUrl: 'https://cdn3.emoji.gg/emojis/544377-discordearlysupporterbadge.png', linkUrl: 'https://emoji.gg/emojis/544377-discordearlysupporterbadge' });
       }
-
-      badges.push({ 
-        title: 'Completed Quest', 
-        imgUrl: 'https://cdn3.emoji.gg/emojis/215207-discordcompletedaquestbadge.png',
-        linkUrl: 'https://emoji.gg/emoji/215207-discordcompletedaquestbadge'
-      });
+      badges.push({ title: 'Completed Quest', imgUrl: 'https://cdn3.emoji.gg/emojis/215207-discordcompletedaquestbadge.png', linkUrl: 'https://emoji.gg/emoji/215207-discordcompletedaquestbadge' });
 
       badges.forEach(b => {
         const a = document.createElement('a');
@@ -371,18 +573,24 @@
         img.src = b.imgUrl;
         img.alt = b.title;
         img.className = 'w-5 h-5 object-contain';
-        
         a.appendChild(img);
         container.appendChild(a);
       });
     }
 
     async function fetchOwnerPresence() {
+      const t0 = performance.now();
       try {
         const res = await fetch(`https://api.lanyard.rest/v1/users/${OWNER_ID}`);
+        const lanyardMs = Math.round(performance.now() - t0);
         const data = await res.json();
 
         if (data.success && data.data) {
+          lanyardOk = true;
+          setServiceBadge(document.getElementById('badge-lanyard'), true, 'Connected');
+          document.getElementById('ping-lanyard').innerText = `${lanyardMs} ms`;
+          document.getElementById('bar-lanyard').style.width = `${calcHealthPercent(lanyardMs)}%`;
+
           const lData = data.data;
           const user = lData.discord_user;
           const status = lData.discord_status;
@@ -421,7 +629,6 @@
 
           const statusDot = document.getElementById('owner-status-dot');
           const statusLabel = document.getElementById('owner-status-label');
-          
           statusDot.className = 'w-5 h-5 border-4 border-[#232428] rounded-full absolute bottom-0 right-0 z-20 ';
           
           if (status === 'online') {
@@ -497,20 +704,30 @@
               this.src = 'https://cdn.discordapp.com/embed/avatars/0.png';
             };
 
-            if (primaryActivity.timestamps && primaryActivity.timestamps.start) {
-              activityStartTime = primaryActivity.timestamps.start;
-            } else {
-              activityStartTime = Date.now();
-            }
-
+            activityStartTime = primaryActivity.timestamps?.start || Date.now();
           } else {
             activityBox.classList.add('hidden');
             activityStartTime = null;
           }
-
         }
       } catch (err) {
         console.error("Gagal mengambil Lanyard presence:", err);
+        lanyardOk = false;
+        setServiceBadge(document.getElementById('badge-lanyard'), false, 'Connected', 'Offline');
+        document.getElementById('ping-lanyard').innerText = 'ERR';
+      }
+      updateOverallBanner();
+    }
+
+    async function refreshAllTelemetry(manualClick = false) {
+      const icon = document.getElementById('refresh-icon');
+      if (manualClick && icon) icon.classList.add('fa-spin');
+      await Promise.all([
+        fetchBackendTelemetry(false),
+        fetchOwnerPresence()
+      ]);
+      if (manualClick && icon) {
+        setTimeout(() => icon.classList.remove('fa-spin'), 400);
       }
     }
 
@@ -520,35 +737,37 @@
       let elapsedSeconds = 0;
       presenceTimerInterval = setInterval(() => {
         elapsedSeconds++;
-        document.getElementById('presence-uptime-counter').innerText = `🔄 Live Monitor Active (${elapsedSeconds}s)`;
+        document.getElementById('presence-uptime-counter').innerText = `🔄 Live Monitor (${elapsedSeconds}s)`;
 
         if (activityStartTime) {
           const currentElapsed = Math.floor((Date.now() - activityStartTime) / 1000);
           const timerBadge = document.getElementById('activity-timer-badge');
-          if (timerBadge) {
-            timerBadge.innerText = `${formatTime(currentElapsed)} elapsed`;
-          }
+          if (timerBadge) timerBadge.innerText = `${formatTime(currentElapsed)} elapsed`;
         }
       }, 1000);
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      // Check role/owner visibility for nav item
+      detectDeviceSummary();
+
       const savedUser = localStorage.getItem('discord_user');
       if (savedUser) {
         try {
           const userData = JSON.parse(savedUser);
-          if (userData.id === '628205121704296458') {
+          if (userData.id === OWNER_ID) {
             const activityNav = document.getElementById('nav-activity-log');
             if (activityNav) activityNav.classList.remove('hidden');
           }
         } catch(e) {}
       }
 
+      fetchBackendTelemetry(true);
       fetchOwnerPresence();
       startTimerLoop();
-      setInterval(fetchOwnerPresence, 10000);
+
+      // Auto-sync setiap 10 detik
+      setInterval(() => refreshAllTelemetry(false), 10000);
     });
   </script>
 </body>
-</html>
+</html>a
