@@ -100,7 +100,7 @@ export default async function handler(req, res) {
       mongodb: mongoStatus,
       vercel: {
         online: true,
-        region: process.env.VERCEL_REGION || 'sin1 (Singapore)',
+        region: process.env.VERCEL_REGION || 'sin1',
         latencyMs: Date.now() - reqStart,
         nodeVersion: process.version,
       },
