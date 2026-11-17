@@ -1,6 +1,6 @@
 /* ==========================================================================
    Rakan Aditya Community - System Status & Presence Responsive Stylesheet (statsmob.css)
-   Tailwind CSS Slate & Discord Theme Aesthetic
+   Tailwind CSS Slate & Discord Theme Aesthetic + Japanese Cyber-Silver Mobile
    ========================================================================== */
 
 /* Base Adjustments for Desktop / Large Screens */
@@ -88,6 +88,68 @@ header nav#main-nav-links {
   }
 }
 
+/* ==========================================================================
+   Mobile Phones Optimization (Max-width 640px)
+   Visitor Grid, Japanese Silver Buttons, Status Cards & Iframe Widget
+   ========================================================================== */
+@media screen and (max-width: 640px) {
+  /* Japanese Modern Silver Buttons */
+  .btn-jp-silver,
+  .btn-jp-silver-dark {
+    padding: 0.42rem 0.72rem !important;
+    font-size: 11px !important;
+    border-radius: 0.7rem !important;
+    min-height: 32px;
+    gap: 0.35rem;
+  }
+
+  /* Visitor Analytics 3-Column Compact Cards */
+  .visitor-grid-mobile {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0.5rem !important;
+  }
+
+  .visitor-grid-mobile > div {
+    padding: 0.7rem 0.55rem !important;
+    border-radius: 0.9rem !important;
+  }
+
+  .visitor-grid-mobile > div p {
+    font-size: 1.15rem !important;
+    line-height: 1.35rem !important;
+    margin: 0.15rem 0;
+  }
+
+  .visitor-grid-mobile > div span:first-child {
+    font-size: 9.5px !important;
+    line-height: 1.15;
+  }
+
+  .visitor-grid-mobile > div span:last-child {
+    font-size: 8.5px !important;
+    display: block;
+    line-height: 1.2;
+  }
+
+  /* Services Status Cards & Overall Banner */
+  .services-grid-mobile > div,
+  #overall-status-banner {
+    padding: 0.95rem !important;
+    border-radius: 1rem !important;
+  }
+
+  /* Discord Server Widget & YouTube Live Subscriber Iframe */
+  iframe[src*="discord.com/widget"] {
+    width: 100% !important;
+    height: 380px !important;
+    border-radius: 0.75rem !important;
+  }
+
+  iframe[src*="livecounts.io"] {
+    max-width: 100% !important;
+  }
+}
+
 /* Extra Small Devices (Phones under 380px) */
 @media screen and (max-width: 380px) {
   header h1.font-bold {
@@ -101,5 +163,10 @@ header nav#main-nav-links {
   header nav#main-nav-links a.nav-item {
     font-size: 10.5px !important;
     padding: 4px 7px !important;
+  }
+
+  /* Stack visitor cards into 1 column on ultra-narrow screens */
+  .visitor-grid-mobile {
+    grid-template-columns: 1fr !important;
   }
 }
